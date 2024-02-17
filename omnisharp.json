@@ -2,8 +2,7 @@
   "fileOptions": {
     "systemExcludeSearchPatterns": [
       "**/bin/**/*",
-      "**/obj/**/*",
-      "**/node_modules/**/*"
+      "**/obj/**/*"
     ],
     "excludeSearchPatterns": []
   },

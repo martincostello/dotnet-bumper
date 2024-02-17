@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>A library containing types for upgrading projects to a newer version of .NET.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>false</IsPackable>
+    <OutputType>Library</OutputType>
+    <PackageId>MartinCostello.DotNetBumper.Core</PackageId>
+    <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
+    <Summary>$(Description)</Summary>
+    <TargetFramework>net8.0</TargetFramework>
+    <Title>MartinCostello.DotNetBumper.Core</Title>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Spectre.Console" />
+  </ItemGroup>
+</Project>

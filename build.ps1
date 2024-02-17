@@ -99,32 +99,13 @@ function DotNetTest {
     }
 }
 
-function DotNetPublish {
-    param([string]$Project)
-
-    & $dotnet publish $Project
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "dotnet publish failed with exit code $LASTEXITCODE"
-    }
-}
-
 $packageProjects = @(
-    (Join-Path $solutionPath "src" "CHANGE_ME" "CHANGE_ME.csproj")
-)
-
-$publishProjects = @(
-    (Join-Path $solutionPath "src" "CHANGE_ME" "CHANGE_ME.csproj")
+    (Join-Path $solutionPath "src" "DotNetBumper" "DotNetBumper.csproj")
 )
 
 $testProjects = @(
-    (Join-Path $solutionPath "tests" "CHANGE_ME.Tests" "CHANGE_ME.Tests.csproj")
+    (Join-Path $solutionPath "tests" "DotNetBumper.Tests" "DotNetBumper.Tests.csproj")
 )
-
-Write-Host "Publishing solution..." -ForegroundColor Green
-ForEach ($project in $publishProjects) {
-    DotNetPublish $project $Configuration
-}
 
 Write-Host "Packaging libraries..." -ForegroundColor Green
 ForEach ($project in $packageProjects) {

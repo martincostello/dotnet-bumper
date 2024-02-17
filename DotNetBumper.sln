@@ -1,0 +1,111 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AD637F2E-02F5-49F6-BFA6-881E8C77DE61}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBumper.Core", "src\DotNetBumper.Core\DotNetBumper.Core.csproj", "{875BD719-675D-458B-B596-60347EB2F49B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBumper", "src\DotNetBumper\DotNetBumper.csproj", "{36BA84A1-789F-4A38-957F-30AFA47592E6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{30A47037-7ED7-495C-8FA2-703CA73FDE70}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBumper.Tests", "tests\DotNetBumper.Tests\DotNetBumper.Tests.csproj", "{95DA702F-5B29-4004-A498-5FEB10783FCA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4CFD8621-B558-4A35-8780-E56A3C5F29CB}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		.vsconfig = .vsconfig
+		build.ps1 = build.ps1
+		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		Directory.Packages.props = Directory.Packages.props
+		DotNetBumper.ruleset = DotNetBumper.ruleset
+		DotNetBumper.snk = DotNetBumper.snk
+		exclusion.dic = exclusion.dic
+		global.json = global.json
+		LICENSE = LICENSE
+		NuGet.config = NuGet.config
+		omnisharp.json = omnisharp.json
+		README.md = README.md
+		SECURITY.MD = SECURITY.MD
+		startvs.cmd = startvs.cmd
+		startvscode.cmd = startvscode.cmd
+		stylecop.json = stylecop.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".vscode", ".vscode", "{7D32F5B8-DE8C-4903-94B9-F46C349CB71A}"
+	ProjectSection(SolutionItems) = preProject
+		.vscode\extensions.json = .vscode\extensions.json
+		.vscode\launch.json = .vscode\launch.json
+		.vscode\settings.json = .vscode\settings.json
+		.vscode\tasks.json = .vscode\tasks.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{1746AEA9-65C0-4D6A-9F9D-D32113149F43}"
+	ProjectSection(SolutionItems) = preProject
+		.github\actionlint-matcher.json = .github\actionlint-matcher.json
+		.github\CODEOWNERS = .github\CODEOWNERS
+		.github\CONTRIBUTING.md = .github\CONTRIBUTING.md
+		.github\dependabot.yml = .github\dependabot.yml
+		.github\FUNDING.yml = .github\FUNDING.yml
+		.github\ISSUE_TEMPLATE.md = .github\ISSUE_TEMPLATE.md
+		.github\PULL_REQUEST_TEMPLATE.md = .github\PULL_REQUEST_TEMPLATE.md
+		.github\update-dotnet-sdk.json = .github\update-dotnet-sdk.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{0E685C90-528A-4C24-BC8B-9090C80B8B76}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build.yml = .github\workflows\build.yml
+		.github\workflows\code-scan.yml = .github\workflows\code-scan.yml
+		.github\workflows\dependency-review.yml = .github\workflows\dependency-review.yml
+		.github\workflows\lint.yml = .github\workflows\lint.yml
+		.github\workflows\ossf-scorecard.yml = .github\workflows\ossf-scorecard.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{CAE60372-3F77-4878-85D6-63AA223918BC}"
+	ProjectSection(SolutionItems) = preProject
+		.github\ISSUE_TEMPLATE\bug_report.md = .github\ISSUE_TEMPLATE\bug_report.md
+		.github\ISSUE_TEMPLATE\config.yml = .github\ISSUE_TEMPLATE\config.yml
+		.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{875BD719-675D-458B-B596-60347EB2F49B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{875BD719-675D-458B-B596-60347EB2F49B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{875BD719-675D-458B-B596-60347EB2F49B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{875BD719-675D-458B-B596-60347EB2F49B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36BA84A1-789F-4A38-957F-30AFA47592E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36BA84A1-789F-4A38-957F-30AFA47592E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36BA84A1-789F-4A38-957F-30AFA47592E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36BA84A1-789F-4A38-957F-30AFA47592E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95DA702F-5B29-4004-A498-5FEB10783FCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95DA702F-5B29-4004-A498-5FEB10783FCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95DA702F-5B29-4004-A498-5FEB10783FCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95DA702F-5B29-4004-A498-5FEB10783FCA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{875BD719-675D-458B-B596-60347EB2F49B} = {AD637F2E-02F5-49F6-BFA6-881E8C77DE61}
+		{36BA84A1-789F-4A38-957F-30AFA47592E6} = {AD637F2E-02F5-49F6-BFA6-881E8C77DE61}
+		{95DA702F-5B29-4004-A498-5FEB10783FCA} = {30A47037-7ED7-495C-8FA2-703CA73FDE70}
+		{7D32F5B8-DE8C-4903-94B9-F46C349CB71A} = {4CFD8621-B558-4A35-8780-E56A3C5F29CB}
+		{1746AEA9-65C0-4D6A-9F9D-D32113149F43} = {4CFD8621-B558-4A35-8780-E56A3C5F29CB}
+		{0E685C90-528A-4C24-BC8B-9090C80B8B76} = {1746AEA9-65C0-4D6A-9F9D-D32113149F43}
+		{CAE60372-3F77-4878-85D6-63AA223918BC} = {1746AEA9-65C0-4D6A-9F9D-D32113149F43}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {164EB134-6EF3-479B-88ED-80863BBB2732}
+	EndGlobalSection
+EndGlobal

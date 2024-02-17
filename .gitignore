@@ -18,8 +18,6 @@ node_modules
 obj
 packages
 project.lock.json
-src/CHANGE_ME/wwwroot/static/**/*.js
-src/CHANGE_ME/wwwroot/static/**/*.map
 TestResults
 typings
 UpgradeLog*.htm

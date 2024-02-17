@@ -3,20 +3,14 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
-  "extensions": [
-    "dbaeumer.vscode-eslint",
-    "EditorConfig.EditorConfig",
-    "ms-dotnettools.csharp",
-    "ms-vscode.PowerShell"
-  ],
-  "forwardPorts": [ 5000, 5001 ],
-  "portsAttributes":{
-    "5000": {
-      "onAutoForward": "silent"
-    },
-    "5001": {
-      "label": "CHANGE_ME",
-      "onAutoForward": "openBrowserOnce"
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "EditorConfig.EditorConfig",
+        "ms-dotnettools.csharp",
+        "ms-vscode.PowerShell"
+      ]
     }
   },
   "postCreateCommand": "./build.ps1 -SkipTests",

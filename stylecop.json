@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
   "settings": {
     "documentationRules": {
-      "companyName": "https://github.com/martincostello/CHANGE_ME",
+      "companyName": "https://github.com/martincostello/dotnet-bumper",
       "copyrightText": "Copyright (c) {ownerName}, {year}. All rights reserved.\nLicensed under the {licenseName} license. See the {licenseFile} file in the project root for full license information.",
       "documentExposedElements": true,
       "documentInterfaces": true,
@@ -15,7 +15,7 @@
         "licenseFile": "LICENSE",
         "licenseName": "Apache 2.0",
         "ownerName": "Martin Costello",
-        "year": "2022"
+        "year": "2024"
       }
     },
     "layoutRules": {

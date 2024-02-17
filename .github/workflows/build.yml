@@ -2,7 +2,8 @@ name: build
 
 on:
   push:
-    #branches: [ main ]
+    branches: [ main ]
+    tags: [ v* ]
     paths-ignore:
       - '**/*.gitattributes'
       - '**/*.gitignore'
@@ -33,32 +34,143 @@ jobs:
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
+    outputs:
+      dotnet-sdk-version: ${{ steps.setup-dotnet.outputs.dotnet-version }}
+
     strategy:
       fail-fast: false
       matrix:
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
         include:
           - os: macos-latest
-            codecov_os: macos
+            os_name: macos
           - os: ubuntu-latest
-            codecov_os: linux
+            os_name: linux
           - os: windows-latest
-            codecov_os: windows
+            os_name: windows
 
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
     - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      id: setup-dotnet
 
-    - name: Build, Test and Publish
+    - name: Build, Test and Package
       shell: pwsh
       run: ./build.ps1
 
-    - uses: codecov/codecov-action@v4
+    - uses: codecov/codecov-action@e0b68c6749509c5f83f984dd99a76a1c1a231044 # v4.0.1
       name: Upload coverage to Codecov
       with:
         file: ./artifacts/coverage/coverage.cobertura.xml
-        flags: ${{ matrix.codecov_os }}
+        flags: ${{ matrix.os_name }}
         token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Publish artifacts
+      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      with:
+        name: artifacts-${{ matrix.os_name }}
+        path: ./artifacts
+
+    - name: Publish NuGet packages
+      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      with:
+        name: packages-${{ matrix.os_name }}
+        path: ./artifacts/package/release
+        if-no-files-found: error
+
+
+  validate-packages:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Download packages
+      uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4.1.2
+      with:
+        name: packages-windows
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      with:
+        dotnet-version: ${{ needs.build.outputs.dotnet-sdk-version }}
+
+    - name: Validate NuGet packages
+      shell: pwsh
+      run: |
+        dotnet tool install --global dotnet-validate --version 0.0.1-preview.304
+        $packages = Get-ChildItem -Filter "*.nupkg" | ForEach-Object { $_.FullName }
+        $invalidPackages = 0
+        foreach ($package in $packages) {
+          dotnet validate package local $package
+          if ($LASTEXITCODE -ne 0) {
+            $invalidPackages++
+          }
+        }
+        if ($invalidPackages -gt 0) {
+          Write-Output "::error::$invalidPackages NuGet package(s) failed validation."
+        }
+
+  publish-feedz-io:
+    needs: [ build, validate-packages ]
+    runs-on: ubuntu-latest
+    if: |
+      github.event.repository.fork == false &&
+      (github.ref_name == github.event.repository.default_branch ||
+       startsWith(github.ref, 'refs/tags/v'))
+
+    environment:
+      name: feedz.io
+      url: https://feedz.io/org/${{ github.repository_owner }}/repository/dotnet-bumper/packages/MartinCostello.DotNetBumper
+
+    steps:
+
+    - name: Download packages
+      uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4.1.2
+      with:
+        name: packages-windows
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      with:
+        dotnet-version: ${{ needs.build.outputs.dotnet-sdk-version }}
+
+    - name: Push NuGet packages to feedz.io
+      shell: bash
+      env:
+        API_KEY: ${{ secrets.FEEDZ_IO_TOKEN }}
+        SOURCE: "https://f.feedz.io/${{ github.repository }}/nuget/index.json"
+      run: dotnet nuget push "*.nupkg" --api-key "${API_KEY}" --skip-duplicate --source "${SOURCE}"
+
+  publish-nuget:
+    needs: [ build, validate-packages ]
+    runs-on: ubuntu-latest
+    if: |
+      github.event.repository.fork == false &&
+      startsWith(github.ref, 'refs/tags/v')
+
+    environment:
+      name: NuGet.org
+      url: https://www.nuget.org/packages/MartinCostello.DotNetBumper
+
+    steps:
+
+    - name: Download packages
+      uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4.1.2
+      with:
+        name: packages-windows
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      with:
+        dotnet-version: ${{ needs.build.outputs.dotnet-sdk-version }}
+
+    - name: Push NuGet packages to NuGet.org
+      shell: bash
+      env:
+        API_KEY: ${{ secrets.NUGET_TOKEN }}
+        SOURCE: https://api.nuget.org/v3/index.json
+      run: dotnet nuget push "*.nupkg" --api-key "${API_KEY}" --skip-duplicate --source "${SOURCE}"

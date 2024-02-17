@@ -1,8 +1,6 @@
 <Project>
-  <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
-    <Using Include="Shouldly" />
-    <Using Include="Xunit" />
-    <Using Include="Xunit.Abstractions" />
+  <ItemGroup>
+    <Using Include="System.Globalization" />
   </ItemGroup>
   <PropertyGroup>
     <CommitBranch Condition=" '$(CommitBranch)' == '' ">$(BUILD_SOURCEBRANCHNAME)</CommitBranch>

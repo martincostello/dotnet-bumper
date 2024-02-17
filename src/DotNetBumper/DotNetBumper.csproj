@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>A .NET Global Tool that upgrades projects to a newer version of .NET.</Description>
+    <IsPackable>true</IsPackable>
+    <OutputType>Exe</OutputType>
+    <PackAsTool>true</PackAsTool>
+    <PackageId>MartinCostello.DotNetBumper</PackageId>
+    <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
+    <Summary>$(Description)</Summary>
+    <TargetFramework>net8.0</TargetFramework>
+    <Title>DotNetBumper</Title>
+    <ToolCommandName>dotnet-bumper</ToolCommandName>
+  </PropertyGroup>
+  <PropertyGroup>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+  <PropertyGroup Condition="false">
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>0.1.0</PackageValidationBaselineVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DotNetBumper.Core\DotNetBumper.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="DotNetBumper.Tests" Key="$(StrongNamePublicKey)" />
+  </ItemGroup>
+</Project>
