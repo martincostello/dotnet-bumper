@@ -121,7 +121,7 @@ public partial class DotNetUpgradeFinder(
             return options.Value.UpgradeType switch
             {
                 UpgradeType.Preview => channel.SdkVersion.IsPrerelease,
-                UpgradeType.Lts => channel.ReleaseType is DotNetReleaseType.Lts,
+                UpgradeType.Lts => channel.ReleaseType is DotNetReleaseType.Lts && !channel.SdkVersion.IsPrerelease,
                 _ => !channel.SdkVersion.IsPrerelease,
             };
         }
