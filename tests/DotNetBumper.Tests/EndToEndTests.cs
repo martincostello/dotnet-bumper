@@ -12,7 +12,7 @@ public static class EndToEndTests
         using var directory = new Project();
 
         // Act
-        int actual = await Program.Main([directory.Path]);
+        int actual = await Program.Main([directory.Path, "--verbose"]);
 
         // Assert
         actual.ShouldBe(0);
