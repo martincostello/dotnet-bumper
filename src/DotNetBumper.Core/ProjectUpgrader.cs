@@ -50,7 +50,7 @@ public partial class ProjectUpgrader(
             return;
         }
 
-        console.WriteLine("Upgrading project...");
+        console.WriteLine($"Upgrading project to .NET {upgrade.Channel}...");
 
         Log.Upgrading(logger, options.Value.ProjectPath);
 
