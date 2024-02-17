@@ -19,4 +19,15 @@
     <Rule Id="CA2227" Action="None" />
     <Rule Id="CA2234" Action="None" />
   </Rules>
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <Rule Id="AD0001" Action="None" />
+    <Rule Id="SA1100" Action="None" />
+    <Rule Id="SA1101" Action="None" />
+    <Rule Id="SA1129" Action="None" />
+    <Rule Id="SA1135" Action="None" />
+    <Rule Id="SA1309" Action="None" />
+    <Rule Id="SA1601" Action="None" />
+    <Rule Id="SA1609" Action="None" />
+    <Rule Id="SA1652" Action="None" />
+  </Rules>
 </RuleSet>

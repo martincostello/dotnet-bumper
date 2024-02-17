@@ -3,7 +3,11 @@
 
 using System.Reflection;
 using McMaster.Extensions.CommandLineUtils;
+using McMaster.Extensions.CommandLineUtils.Abstractions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper;
@@ -12,19 +16,49 @@ namespace MartinCostello.DotNetBumper;
     Name = "dotnet bumper",
     FullName = "Upgrades projects to a newer version of .NET.")]
 [VersionOptionFromMember(MemberName = nameof(GetVersion))]
-internal class Program(ProjectUpgrader upgrader) : Command
+internal partial class Program(ProjectUpgrader upgrader) : Command
 {
+    [Argument(0, Description = "The path to directory containing a .NET 6+ project to be upgraded. If not specified, the current directory will be used.")]
+    public string? ProjectPath { get; set; }
+
+    [Option(
+        "-gh|--github-api-url <GITHUB_API_URL>",
+        Description = "The URL to use for the GitHub API. Defaults to the value of the GITHUB_API_URL environment variable or https://api.github.com.")]
+    public string? GitHubApiUrl { get; set; }
+
+    [Option(
+        "-repo|--github-repo <GITHUB_REPOSITORY>",
+        Description = "The full name of the GitHub repository for the project in the format \"owner/repo\". Defaults to the value of the GITHUB_REPOSITORY environment variable.")]
+    public string? GitHubRepository { get; set; }
+
+    [Option(
+        "-token|--github-token <GITHUB_TOKEN>",
+        Description = "The GitHub access token to use. Defaults to the value of the GITHUB_TOKEN environment variable.")]
+    public string? GitHubToken { get; set; }
+
+    [Option(
+        "-pr|--open-pull-request",
+        Description = "Whether to open a GitHub pull request after upgrading the project.")]
+    public bool OpenPullRequest { get; set; }
+
     public static async Task<int> Main(string[] args)
     {
-        using var services = new ServiceCollection()
-            .AddSingleton<IAnsiConsole>(AnsiConsole.Console)
-            .AddSingleton<ProjectUpgrader>()
-            .BuildServiceProvider();
+        var configuration = new ConfigurationBuilder()
+            .AddEnvironmentVariables()
+            .AddUserSecrets<Program>()
+            .Build();
 
         using var app = new CommandLineApplication<Program>();
+
+        using var serviceProvider = new ServiceCollection()
+            .AddSingleton<IModelAccessor>(app)
+            .AddSingleton<IPostConfigureOptions<UpgradeOptions>, UpgradePostConfigureOptions>()
+            .AddProjectUpgrader(configuration, AnsiConsole.Console, (builder) => builder.AddConsole())
+            .BuildServiceProvider();
+
         app.Conventions
             .UseDefaultConventions()
-            .UseConstructorInjection(services);
+            .UseConstructorInjection(serviceProvider);
 
         using var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (_, args) =>
@@ -42,9 +76,27 @@ internal class Program(ProjectUpgrader upgrader) : Command
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
         .InformationalVersion;
 
-    public async Task<int> OnExecute(CancellationToken cancellationToken)
+    public async Task<int> OnExecute(ILogger<Program> logger, CancellationToken cancellationToken)
     {
-        await upgrader.UpgradeAsync(cancellationToken);
-        return 0;
+        try
+        {
+            await upgrader.UpgradeAsync(cancellationToken);
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Log.UpgradeFailed(logger, ex);
+            return 1;
+        }
+    }
+
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    private static partial class Log
+    {
+        [LoggerMessage(
+           EventId = 1,
+           Level = LogLevel.Error,
+           Message = "Failed to upgrade project.")]
+        public static partial void UpgradeFailed(ILogger logger, Exception exception);
     }
 }
