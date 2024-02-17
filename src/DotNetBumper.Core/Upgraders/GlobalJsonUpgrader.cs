@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,49 +21,57 @@ internal sealed partial class GlobalJsonUpgrader(
 
         bool filesChanged = false;
 
-        var files = Directory.GetFiles(options.Value.ProjectPath, "global.json", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(
+            options.Value.ProjectPath,
+            "global.json",
+            SearchOption.AllDirectories);
 
         foreach (var path in files)
         {
             string json = await File.ReadAllTextAsync(path, cancellationToken);
-            using var globalJson = JsonDocument.Parse(json);
 
-            if (!globalJson.RootElement.TryGetProperty("sdk", out var sdk))
+            if (!TryParseSdkVersion(json, out var currentVersion))
             {
-                // TODO Log
+                Log.ParseSdkVersionFailed(logger, path);
                 continue;
             }
 
-            if (!sdk.TryGetProperty("version", out var version) ||
-                version.ValueKind != JsonValueKind.String)
+            if (currentVersion < upgrade.SdkVersion)
             {
-                // TODO Log
-                continue;
-            }
-
-            var versionString = version.GetString();
-
-            if (!NuGetVersion.TryParse(versionString, out var sdkVersion))
-            {
-                // TODO Log
-                continue;
-            }
-
-            if (sdkVersion < upgrade.SdkVersion)
-            {
-                string upgradeVersion = upgrade.SdkVersion.ToString();
-
-                json = json.Replace($@"""{versionString}""", $@"""{upgradeVersion}""", StringComparison.Ordinal);
+                json = json.Replace($@"""{currentVersion}""", $@"""{upgrade.SdkVersion}""", StringComparison.Ordinal);
 
                 await File.WriteAllTextAsync(path, json, cancellationToken);
 
-                Log.UpgradedDotNetSdk(logger, path, sdkVersion.ToString(), upgradeVersion);
+                Log.UpgradedDotNetSdk(
+                    logger,
+                    path,
+                    currentVersion.ToString(),
+                    upgrade.SdkVersion.ToString());
 
                 filesChanged = true;
             }
         }
 
         return filesChanged;
+    }
+
+    private static bool TryParseSdkVersion(
+        string json,
+        [NotNullWhen(true)] out NuGetVersion? sdkVersion)
+    {
+        sdkVersion = null;
+
+        using var globalJson = JsonDocument.Parse(json);
+
+        if (globalJson.RootElement.TryGetProperty("sdk", out var sdk) &&
+            sdk.TryGetProperty("version", out var version) &&
+            version.ValueKind == JsonValueKind.String &&
+            NuGetVersion.TryParse(version.GetString(), out sdkVersion))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -76,21 +85,18 @@ internal sealed partial class GlobalJsonUpgrader(
 
         [LoggerMessage(
            EventId = 2,
+           Level = LogLevel.Warning,
+           Message = "Unable to parse .NET SDK version from {FileName}.")]
+        public static partial void ParseSdkVersionFailed(ILogger logger, string fileName);
+
+        [LoggerMessage(
+           EventId = 3,
            Level = LogLevel.Debug,
-           Message = "Upgrading .NET SDK version in {FileName} from {PreviousVersion} to {UpgradedVersion}.")]
+           Message = "Upgraded .NET SDK version in {FileName} from {PreviousVersion} to {UpgradedVersion}.")]
         public static partial void UpgradedDotNetSdk(
             ILogger logger,
             string fileName,
             string previousVersion,
             string upgradedVersion);
-    }
-
-    private sealed class DotNetChannel
-    {
-        public required Version Channel { get; set; }
-
-        public required NuGetVersion LatestSdkVersion { get; set; }
-
-        public required bool IsLts { get; set; }
     }
 }

@@ -46,6 +46,7 @@ public partial class ProjectUpgrader(
 
         if (upgrade is null)
         {
+            console.WriteLine("No eligible .NET upgrade was found.");
             return;
         }
 
