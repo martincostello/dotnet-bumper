@@ -34,13 +34,13 @@ internal sealed partial class TargetFrameworkUpgrader(
         {
             (var project, var encoding) = await LoadProjectAsync(filePath, cancellationToken);
 
+            bool edited = false;
+            string newTfm = $"net{upgrade.Channel}";
+
             var property = project
                 .Root?
                 .Element("PropertyGroup")?
                 .Element("TargetFramework");
-
-            bool edited = false;
-            string newTfm = $"net{upgrade.Channel}";
 
             if (property is not null &&
                 !string.Equals(property.Value, newTfm, StringComparison.Ordinal))
