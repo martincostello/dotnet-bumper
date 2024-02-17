@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch CHANGE_ME",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/CHANGE_ME/bin/Debug/net8.0/CHANGE_ME.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/CHANGE_ME",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_FORWARDEDHEADERS_ENABLED": "${env:CODESPACES}"
+      }
+    },
+    {
+      "name": "Run tests",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "dotnet",
+      "args": [
+        "test"
+      ],
+      "cwd": "${workspaceFolder}/tests/CHANGE_ME.Tests",
+      "console": "internalConsole",
+      "stopAtEntry": false,
+      "internalConsoleOptions": "openOnSessionStart"
+    }
+  ]
+}

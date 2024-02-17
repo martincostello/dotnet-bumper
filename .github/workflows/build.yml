@@ -1,0 +1,64 @@
+name: build
+
+on:
+  push:
+    #branches: [ main ]
+    paths-ignore:
+      - '**/*.gitattributes'
+      - '**/*.gitignore'
+      - '**/*.md'
+  pull_request:
+    branches:
+      - main
+      - dotnet-vnext
+      - dotnet-nightly
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+  DOTNET_MULTILEVEL_LOOKUP: 0
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
+  FORCE_COLOR: 3
+  NUGET_XMLDOC_MODE: skip
+  TERM: xterm
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            codecov_os: macos
+          - os: ubuntu-latest
+            codecov_os: linux
+          - os: windows-latest
+            codecov_os: windows
+
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+
+    - name: Build, Test and Publish
+      shell: pwsh
+      run: ./build.ps1
+
+    - uses: codecov/codecov-action@v4
+      name: Upload coverage to Codecov
+      with:
+        file: ./artifacts/coverage/coverage.cobertura.xml
+        flags: ${{ matrix.codecov_os }}
+        token: ${{ secrets.CODECOV_TOKEN }}

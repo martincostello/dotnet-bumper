@@ -1,0 +1,25 @@
+name: dependency-review
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dotnet-vnext
+      - dotnet-nightly
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Review dependencies
+        uses: actions/dependency-review-action@v4
+        with:
+          allow-licenses: 'Apache-2.0,BSD-2-Clause,BSD-3-Clause,MIT'
