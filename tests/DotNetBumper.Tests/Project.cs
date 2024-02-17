@@ -9,6 +9,9 @@ internal sealed class Project : IDisposable
 
     public string DirectoryName => _directory.FullName;
 
+    public void AddDirectory(string path)
+        => Directory.CreateDirectory(GetFilePath(path));
+
     public async Task AddFileAsync(string path, string content)
         => await File.WriteAllTextAsync(GetFilePath(path), content);
 
