@@ -11,7 +11,7 @@ namespace MartinCostello.DotNetBumper.Upgrades;
 
 internal sealed partial class TargetFrameworkUpgrader(
     IOptions<UpgradeOptions> options,
-    ILogger<GlobalJsonUpgrader> logger) : IUpgrader
+    ILogger<TargetFrameworkUpgrader> logger) : IUpgrader
 {
     public async Task<bool> UpgradeAsync(
         UpgradeInfo upgrade,
