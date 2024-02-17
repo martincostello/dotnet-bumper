@@ -11,6 +11,21 @@ internal sealed class UpgradePostConfigureOptions(IModelAccessor accessor) : IPo
     public void PostConfigure(string? name, UpgradeOptions options)
     {
         var program = (Program)accessor.GetModel();
+
+        options.DotNetChannel ??= program.DotNetChannel;
+        options.GitHubRepository ??= program.GitHubRepository;
+        options.GitHubToken ??= program.GitHubToken;
+        options.OpenPullRequest = program.OpenPullRequest;
         options.ProjectPath = program.ProjectPath ?? Environment.CurrentDirectory;
+
+        if (program.GitHubApiUrl is { } url)
+        {
+            options.GitHubApiUri = new(url, UriKind.Absolute);
+        }
+
+        if (program.ReleaseType is { } releaseType)
+        {
+            options.ReleaseType = releaseType;
+        }
     }
 }

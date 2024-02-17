@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Reflection;
+using MartinCostello.DotNetBumper.Upgrades;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -12,10 +13,12 @@ namespace MartinCostello.DotNetBumper;
 /// A class that upgrades a project  to a newer version of .NET.
 /// </summary>
 /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
+/// <param name="upgraders">The <see cref="IUpgrader"/> implementations to use.</param>
 /// <param name="options">The <see cref="IOptions{UpgradeOptions}"/> to use.</param>
 /// <param name="logger">The <see cref="ILogger{ProjectUpgrader}"/> to use.</param>
 public partial class ProjectUpgrader(
     IAnsiConsole console,
+    IEnumerable<IUpgrader> upgraders,
     IOptions<UpgradeOptions> options,
     ILogger<ProjectUpgrader> logger)
 {
@@ -39,13 +42,30 @@ public partial class ProjectUpgrader(
     {
         console.WriteLine("Upgrading project...");
 
-        Log.UpgradingProject(logger, options.Value.ProjectPath);
+        Log.Upgrading(logger, options.Value.ProjectPath);
 
-        await Task.CompletedTask;
+        bool hasChanges = false;
 
-        Log.UpgradedProject(logger, options.Value.ProjectPath);
+        foreach (var upgrader in upgraders)
+        {
+            hasChanges |= await upgrader.UpgradeAsync(cancellationToken);
+        }
 
-        console.WriteLine("Project upgraded.");
+        if (hasChanges)
+        {
+            Log.Upgraded(logger, options.Value.ProjectPath);
+            console.WriteLine("Project upgraded.");
+
+            if (options.Value.OpenPullRequest)
+            {
+                // TODO Open pull request
+            }
+        }
+        else
+        {
+            Log.NothingToUpgrade(logger, options.Value.ProjectPath);
+            console.WriteLine("The project upgrade did not result in any changes being made.");
+        }
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -55,12 +75,18 @@ public partial class ProjectUpgrader(
            EventId = 1,
            Level = LogLevel.Debug,
            Message = "Upgrading project {ProjectPath}.")]
-        public static partial void UpgradingProject(ILogger logger, string projectPath);
+        public static partial void Upgrading(ILogger logger, string projectPath);
 
         [LoggerMessage(
            EventId = 2,
            Level = LogLevel.Debug,
            Message = "Upgrading project {ProjectPath} successfully.")]
-        public static partial void UpgradedProject(ILogger logger, string projectPath);
+        public static partial void Upgraded(ILogger logger, string projectPath);
+
+        [LoggerMessage(
+           EventId = 3,
+           Level = LogLevel.Debug,
+           Message = "Project {ProjectPath} did not contain any eligible changes to upgrade.")]
+        public static partial void NothingToUpgrade(ILogger logger, string projectPath);
     }
 }
