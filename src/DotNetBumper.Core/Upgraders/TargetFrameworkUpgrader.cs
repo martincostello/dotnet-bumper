@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,6 +22,7 @@ internal sealed partial class TargetFrameworkUpgrader(
         string projectPath = options.Value.ProjectPath;
 
         bool filesChanged = false;
+        XmlWriterSettings? writerSettings = null;
 
         string[] files =
         [
@@ -29,22 +32,70 @@ internal sealed partial class TargetFrameworkUpgrader(
 
         foreach (var filePath in files)
         {
-            XDocument project;
+            (var project, var encoding) = await LoadProjectAsync(filePath, cancellationToken);
 
-            using (var stream = File.OpenRead(filePath))
+            var property = project
+                .Root?
+                .Element("PropertyGroup")?
+                .Element("TargetFramework");
+
+            bool edited = false;
+            string newTfm = $"net{upgrade.Channel}";
+
+            if (property is not null &&
+                !string.Equals(property.Value, newTfm, StringComparison.Ordinal))
             {
-                project = await XDocument.LoadAsync(stream, LoadOptions.PreserveWhitespace, cancellationToken);
+                property.SetValue(newTfm);
+                edited = true;
             }
 
-            var tfm = project.Root?.Element("PropertyGroup")?.Element("TargetFramework");
+            property = project
+                .Root?
+                .Element("PropertyGroup")?
+                .Element("TargetFrameworks");
 
-            if (tfm is not null)
+            if (property is not null &&
+                !property.Value.Contains(newTfm, StringComparison.Ordinal))
             {
-                // TODO Update the TFM
+                property.SetValue($"{property.Value};{newTfm}");
+                edited = true;
+            }
+
+            if (edited)
+            {
+                // Ensure that the user's own formatting is preserved
+                string xml = project.ToString(SaveOptions.DisableFormatting);
+
+                writerSettings ??= new XmlWriterSettings()
+                {
+                    Async = true,
+                    Indent = true,
+                    OmitXmlDeclaration = true,
+                };
+
+                await File.WriteAllTextAsync(
+                    filePath,
+                    xml,
+                    encoding,
+                    cancellationToken);
+
+                filesChanged = true;
             }
         }
 
         return filesChanged;
+    }
+
+    private static async Task<(XDocument Project, Encoding Encoding)> LoadProjectAsync(
+        string filePath,
+        CancellationToken cancellationToken)
+    {
+        using var stream = File.OpenRead(filePath);
+        using var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
+
+        var project = await XDocument.LoadAsync(reader, LoadOptions.PreserveWhitespace, cancellationToken);
+
+        return (project, reader.CurrentEncoding);
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
