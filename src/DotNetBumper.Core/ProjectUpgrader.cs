@@ -63,8 +63,13 @@ public partial class ProjectUpgrader(
 
         if (hasChanges)
         {
-            Log.Upgraded(logger, options.Value.ProjectPath);
-            console.WriteLine("Project upgraded.");
+            Log.Upgraded(
+                logger,
+                options.Value.ProjectPath,
+                upgrade.Channel.ToString(),
+                upgrade.SdkVersion.ToString());
+
+            console.WriteLine($"Project upgraded to .NET {upgrade.Channel}.");
 
             if (options.Value.OpenPullRequest)
             {
@@ -90,8 +95,12 @@ public partial class ProjectUpgrader(
         [LoggerMessage(
            EventId = 2,
            Level = LogLevel.Debug,
-           Message = "Upgrading project {ProjectPath} successfully.")]
-        public static partial void Upgraded(ILogger logger, string projectPath);
+           Message = "Successfully upgraded project {ProjectPath} to .NET {Channel} and .NET SDK {SdkVersion}.")]
+        public static partial void Upgraded(
+            ILogger logger,
+            string projectPath,
+            string channel,
+            string sdkVersion);
 
         [LoggerMessage(
            EventId = 3,
