@@ -7,7 +7,15 @@ internal sealed class Project : IDisposable
 {
     private readonly DirectoryInfo _directory = Directory.CreateTempSubdirectory("dotnet-bumper");
 
-    public string Path => _directory.FullName;
+    public string DirectoryName => _directory.FullName;
+
+    public async Task AddFileAsync(string path, string content)
+        => await File.WriteAllTextAsync(GetFilePath(path), content);
+
+    public string GetFilePath(string path) => Path.Combine(DirectoryName, path);
+
+    public async Task<string> GetFileAsync(string path)
+        => await File.ReadAllTextAsync(GetFilePath(path));
 
     public void Dispose()
     {

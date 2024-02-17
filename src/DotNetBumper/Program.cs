@@ -22,6 +22,11 @@ internal partial class Program(ProjectUpgrader upgrader) : Command
     public string? ProjectPath { get; set; }
 
     [Option(
+        "-c|--channel <CHANNEL>",
+        Description = "The .NET release channel to upgrade to in the format \"major.minor\".")]
+    public string? DotNetChannel { get; set; }
+
+    [Option(
         "-gh|--github-api-url <GITHUB_API_URL>",
         Description = "The URL to use for the GitHub API. Defaults to the value of the GITHUB_API_URL environment variable or https://api.github.com.")]
     public string? GitHubApiUrl { get; set; }
@@ -40,6 +45,12 @@ internal partial class Program(ProjectUpgrader upgrader) : Command
         "-pr|--open-pull-request",
         Description = "Whether to open a GitHub pull request after upgrading the project.")]
     public bool OpenPullRequest { get; set; }
+
+    [Option(
+        "-t|--release-type <TYPE>",
+        Description = "The .NET release type to upgrade to. Possible values for <TYPE> is LTS (default), STS or Preview.",
+        ValueName = "TYPE")]
+    public DotNetReleaseType? ReleaseType { get; set; }
 
     public static async Task<int> Main(string[] args)
     {
@@ -79,7 +90,10 @@ internal partial class Program(ProjectUpgrader upgrader) : Command
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
         .InformationalVersion;
 
-    public async Task<int> OnExecute(ILogger<Program> logger, CancellationToken cancellationToken)
+    public async Task<int> OnExecute(
+        IAnsiConsole console,
+        ILogger<Program> logger,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -89,6 +103,7 @@ internal partial class Program(ProjectUpgrader upgrader) : Command
         catch (Exception ex)
         {
             Log.UpgradeFailed(logger, ex);
+            console.WriteLine($"Failed to upgrade project: {ex.Message}");
             return 1;
         }
     }

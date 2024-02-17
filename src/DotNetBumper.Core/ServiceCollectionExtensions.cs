@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using MartinCostello.DotNetBumper.Upgrades;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,8 @@ namespace MartinCostello.DotNetBumper;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
+    private static readonly (string Product, string Version) UserAgent = ("dotnet-bumper", ProjectUpgrader.Version);
+
     /// <summary>
     /// Adds the project upgrader to the specified service collection.
     /// </summary>
@@ -41,6 +44,15 @@ public static class ServiceCollectionExtensions
                 .AddSingleton<IPostConfigureOptions<UpgradeOptions>, UpgradePostConfigureOptions>()
                 .AddSingleton<IValidateOptions<UpgradeOptions>, UpgradeOptionsValidator>();
 
+        services.AddHttpClient()
+                .ConfigureHttpClientDefaults((options) =>
+                {
+                    options.ConfigureHttpClient((client) => client.DefaultRequestHeaders.UserAgent.Add(new(UserAgent.Product, UserAgent.Version)));
+                    options.AddStandardResilienceHandler();
+                });
+
+        services.AddHttpClient<IUpgrader, GlobalJsonUpgrader>();
+
         services.AddSingleton<ICredentialStore>((provider) =>
         {
             var options = provider.GetRequiredService<IOptions<UpgradeOptions>>().Value;
@@ -54,7 +66,7 @@ public static class ServiceCollectionExtensions
             var options = provider.GetRequiredService<IOptions<UpgradeOptions>>().Value;
             var credentialStore = provider.GetRequiredService<ICredentialStore>();
 
-            var productInformation = new ProductHeaderValue("dotnet-bumper", ProjectUpgrader.Version);
+            var productInformation = new ProductHeaderValue(UserAgent.Product, UserAgent.Version);
 
             return new GitHubClient(productInformation, credentialStore, options.GitHubApiUri);
         });

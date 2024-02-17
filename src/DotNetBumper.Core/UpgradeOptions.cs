@@ -11,6 +11,11 @@ namespace MartinCostello.DotNetBumper;
 public sealed class UpgradeOptions
 {
     /// <summary>
+    /// Gets or sets a specific .NET release channel to upgrade to.
+    /// </summary>
+    public string? DotNetChannel { get; set; }
+
+    /// <summary>
     /// Gets or sets the URI of the GitHub API to use.
     /// </summary>
     public Uri? GitHubApiUri { get; set; }
@@ -35,4 +40,9 @@ public sealed class UpgradeOptions
     /// </summary>
     [Required]
     public string ProjectPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets a value the release type to upgrade to.
+    /// </summary>
+    public DotNetReleaseType ReleaseType { get; set; }
 }

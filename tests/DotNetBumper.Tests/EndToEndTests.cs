@@ -1,25 +1,48 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Text.Json;
+using Spectre.Console;
+
 namespace MartinCostello.DotNetBumper;
 
-public static class EndToEndTests
+public class EndToEndTests(ITestOutputHelper outputHelper)
 {
-    [Fact]
-    public static async Task Application_Does_Not_Error()
+    [Theory]
+    [InlineData("6.0.100", "--channel=7.0")]
+    [InlineData("6.0.100", "--channel=8.0")]
+    [InlineData("6.0.100", "--channel=9.0")]
+    [InlineData("6.0.100", "--release-type=preview")]
+    [InlineData("6.0.100", "--release-type=lts")]
+    [InlineData("6.0.100", "--release-type=sts")]
+    public async Task Application_Does_Not_Error(string sdkVersion, params string[] args)
     {
         // Arrange
-        using var directory = new Project();
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        await fixture.Project.AddFileAsync("global.json", $@"{{""sdk"":{{""version"":""{sdkVersion}""}}}}");
 
         // Act
-        int actual = await Program.Main([directory.Path, "--verbose"]);
+        int status = await Program.Main([fixture.Project.DirectoryName, "--verbose", ..args]);
 
         // Assert
-        actual.ShouldBe(0);
+        status.ShouldBe(0);
+
+        var transformed = await fixture.Project.GetFileAsync("global.json");
+        using var globalJson = JsonDocument.Parse(transformed);
+
+        string? actual = globalJson.RootElement
+            .GetProperty("sdk")
+            .GetProperty("version")
+            .GetString();
+
+        fixture.Console.WriteLine($".NET SDK version: {actual}");
+
+        actual.ShouldNotBe(sdkVersion);
     }
 
     [Fact]
-    public static async Task Application_Validates_Project_Exists()
+    public async Task Application_Validates_Project_Exists()
     {
         // Arrange
         string projectPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
