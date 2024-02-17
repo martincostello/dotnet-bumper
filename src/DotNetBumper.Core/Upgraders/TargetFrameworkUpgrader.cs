@@ -6,10 +6,12 @@ using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper.Upgrades;
 
 internal sealed partial class TargetFrameworkUpgrader(
+    IAnsiConsole console,
     IOptions<UpgradeOptions> options,
     ILogger<TargetFrameworkUpgrader> logger) : IUpgrader
 {
@@ -18,6 +20,8 @@ internal sealed partial class TargetFrameworkUpgrader(
         CancellationToken cancellationToken)
     {
         Log.UpgradingTargetFramework(logger);
+
+        console.WriteLine("Upgrading target frameworks...");
 
         string projectPath = options.Value.ProjectPath;
 
