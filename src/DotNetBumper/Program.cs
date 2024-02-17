@@ -82,14 +82,7 @@ internal partial class Program(ProjectUpgrader upgrader)
             cts.Cancel();
         };
 
-        try
-        {
-            return await app.ExecuteAsync(args, cts.Token);
-        }
-        catch (OperationCanceledException ex) when (ex.CancellationToken == cts.Token)
-        {
-            return 1;
-        }
+        return await app.ExecuteAsync(args, cts.Token);
     }
 
     public static string GetVersion() =>
@@ -111,7 +104,13 @@ internal partial class Program(ProjectUpgrader upgrader)
         catch (Exception ex)
         {
             Log.UpgradeFailed(logger, ex);
-            console.WriteLine($"Failed to upgrade project: {ex.Message}");
+
+            if (ex is not OperationCanceledException oce ||
+                oce.CancellationToken != cancellationToken)
+            {
+                console.WriteLine($"Failed to upgrade project: {ex.Message}");
+            }
+
             return 1;
         }
     }
