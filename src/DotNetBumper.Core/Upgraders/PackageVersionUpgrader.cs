@@ -5,10 +5,12 @@ using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper.Upgrades;
 
 internal sealed partial class PackageVersionUpgrader(
+    IAnsiConsole console,
     IOptions<UpgradeOptions> options,
     ILogger<PackageVersionUpgrader> logger) : IUpgrader
 {
@@ -17,6 +19,8 @@ internal sealed partial class PackageVersionUpgrader(
         CancellationToken cancellationToken)
     {
         Log.UpgradingPackages(logger);
+
+        console.WriteLine("Upgrading NuGet packages...");
 
         string tempFile = Path.GetTempFileName();
 

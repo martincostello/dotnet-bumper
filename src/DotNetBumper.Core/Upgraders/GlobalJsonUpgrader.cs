@@ -6,10 +6,12 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Versioning;
+using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper.Upgrades;
 
 internal sealed partial class GlobalJsonUpgrader(
+    IAnsiConsole console,
     IOptions<UpgradeOptions> options,
     ILogger<GlobalJsonUpgrader> logger) : IUpgrader
 {
@@ -18,6 +20,8 @@ internal sealed partial class GlobalJsonUpgrader(
         CancellationToken cancellationToken)
     {
         Log.UpgradingDotNetSdk(logger);
+
+        console.WriteLine("Upgrading .NET SDK...");
 
         bool filesChanged = false;
 

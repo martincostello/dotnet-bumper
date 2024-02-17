@@ -108,7 +108,8 @@ internal partial class Program(ProjectUpgrader upgrader)
             if (ex is not OperationCanceledException oce ||
                 oce.CancellationToken != cancellationToken)
             {
-                console.WriteLine($"Failed to upgrade project: {ex.Message}");
+                console.WriteLine("Failed to upgrade project.");
+                console.WriteException(ex);
             }
 
             return 1;
