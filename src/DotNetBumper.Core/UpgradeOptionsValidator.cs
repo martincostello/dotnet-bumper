@@ -9,6 +9,12 @@ internal sealed class UpgradeOptionsValidator : IValidateOptions<UpgradeOptions>
 {
     public ValidateOptionsResult Validate(string? name, UpgradeOptions options)
     {
+        if (options.DotNetChannel is { Length: > 0 } version &&
+            !Version.TryParse(version, out _))
+        {
+            return ValidateOptionsResult.Fail($"The specified .NET channel \"{version}\" is invalid.");
+        }
+
         if (options.OpenPullRequest)
         {
             if (string.IsNullOrWhiteSpace(options.GitHubRepository))
