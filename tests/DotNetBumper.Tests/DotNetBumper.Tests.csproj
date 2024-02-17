@@ -14,6 +14,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.msbuild" />
     <PackageReference Include="GitHubActionsTestLogger" />
+    <PackageReference Include="MartinCostello.Logging.XUnit" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="ReportGenerator" />

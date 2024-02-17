@@ -10,6 +10,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Title>DotNetBumper</Title>
     <ToolCommandName>dotnet-bumper</ToolCommandName>
+    <UserSecretsId>MartinCostello.DotNetBumper</UserSecretsId>
   </PropertyGroup>
   <PropertyGroup>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
@@ -24,6 +25,11 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetBumper.Core\DotNetBumper.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="DotNetBumper.Tests" Key="$(StrongNamePublicKey)" />
