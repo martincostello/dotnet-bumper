@@ -43,17 +43,20 @@ internal partial class Program(ProjectUpgrader upgrader) : Command
 
     public static async Task<int> Main(string[] args)
     {
+        var logLevel = GetLogLevel(args);
+
         var configuration = new ConfigurationBuilder()
             .AddEnvironmentVariables()
             .AddUserSecrets<Program>()
             .Build();
 
         using var app = new CommandLineApplication<Program>();
+        app.VerboseOption();
 
         using var serviceProvider = new ServiceCollection()
             .AddSingleton<IModelAccessor>(app)
             .AddSingleton<IPostConfigureOptions<UpgradeOptions>, UpgradePostConfigureOptions>()
-            .AddProjectUpgrader(configuration, AnsiConsole.Console, (builder) => builder.AddConsole())
+            .AddProjectUpgrader(configuration, AnsiConsole.Console, (builder) => builder.AddConsole().SetMinimumLevel(logLevel))
             .BuildServiceProvider();
 
         app.Conventions
@@ -88,6 +91,15 @@ internal partial class Program(ProjectUpgrader upgrader) : Command
             Log.UpgradeFailed(logger, ex);
             return 1;
         }
+    }
+
+    private static LogLevel GetLogLevel(string[] args)
+    {
+        bool verbose =
+            args.Contains("-v", StringComparer.OrdinalIgnoreCase) ||
+            args.Contains("--verbose", StringComparer.OrdinalIgnoreCase);
+
+        return verbose ? LogLevel.Debug : LogLevel.None;
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
