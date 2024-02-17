@@ -26,27 +26,8 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string globalJson =
-            $$"""
-            {
-              "sdk": {
-                "version": "{{sdkVersion}}"
-              }
-            }
-            """;
-
-        string tfmXml = targetFrameworks.Length == 1
-            ? $"<TargetFramework>{targetFrameworks[0]}</TargetFramework>"
-            : $"<TargetFrameworks>{string.Join(";", targetFrameworks)}</TargetFrameworks>";
-
-        string projectXml =
-            $"""
-            <Project Sdk="Microsoft.NET.Sdk">
-              <PropertyGroup>
-                {tfmXml}
-              </PropertyGroup>
-            </Project>
-            """;
+        string globalJson = CreateGlobalJson(sdkVersion);
+        string projectXml = CreateProjectXml(targetFrameworks);
 
         fixture.Project.AddDirectory("src");
         await fixture.Project.AddFileAsync("global.json", globalJson);
@@ -77,6 +58,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     [InlineData("3.0.100", "netcoreapp3.0", "--channel=3.0")]
     [InlineData("3.1.100", "netcoreapp3.1", "--channel=3.1")]
     [InlineData("5.0.100", "net5.0", "--channel=5.0")]
+    [InlineData("6.0.100", "net6.0", "--channel=5.0")]
     public async Task Application_Does_Not_Upgrade_Project(
         string sdkVersion,
         string targetFramework,
@@ -85,23 +67,8 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string globalJson =
-            $$"""
-            {
-              "sdk": {
-                "version": "{{sdkVersion}}"
-              }
-            }
-            """;
-
-        string projectXml =
-            $"""
-            <Project Sdk="Microsoft.NET.Sdk">
-              <PropertyGroup>
-                <TargetFramework>{targetFramework}</TargetFramework>
-              </PropertyGroup>
-            </Project>
-            """;
+        string globalJson = CreateGlobalJson(sdkVersion);
+        string projectXml = CreateProjectXml(targetFramework);
 
         fixture.Project.AddDirectory("src");
         await fixture.Project.AddFileAsync("global.json", globalJson);
@@ -144,6 +111,32 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         // Assert
         actual.ShouldBe(1);
+    }
+
+    private static string CreateGlobalJson(string sdkVersion)
+    {
+        return $$"""
+                 {
+                   "sdk": {
+                     "version": "{{sdkVersion}}"
+                   }
+                 }
+                 """;
+    }
+
+    private static string CreateProjectXml(params string[] targetFrameworks)
+    {
+        string tfmXml = targetFrameworks.Length == 1
+            ? $"<TargetFramework>{targetFrameworks[0]}</TargetFramework>"
+            : $"<TargetFrameworks>{string.Join(";", targetFrameworks)}</TargetFrameworks>";
+
+        return $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    {tfmXml}
+                  </PropertyGroup>
+                </Project>
+                """;
     }
 
     private static async Task<string?> GetSdkVersionAsync(
