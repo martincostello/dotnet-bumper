@@ -81,7 +81,14 @@ internal partial class Program(ProjectUpgrader upgrader) : Command
             cts.Cancel();
         };
 
-        return await app.ExecuteAsync(args, cts.Token);
+        try
+        {
+            return await app.ExecuteAsync(args, cts.Token);
+        }
+        catch (OperationCanceledException ex) when (ex.CancellationToken == cts.Token)
+        {
+            return 1;
+        }
     }
 
     public static string GetVersion() =>

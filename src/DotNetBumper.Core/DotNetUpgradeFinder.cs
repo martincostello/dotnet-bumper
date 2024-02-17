@@ -163,7 +163,7 @@ public partial class DotNetUpgradeFinder(
         [LoggerMessage(
            EventId = 3,
            Level = LogLevel.Warning,
-           Message = "Unable to parse .NET release JSON {Channel}.")]
+           Message = "Unable to parse .NET release JSON: {Channel}.")]
         public static partial void UnableToParseRelease(ILogger logger, JsonElement channel);
 
         [LoggerMessage(
