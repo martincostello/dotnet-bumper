@@ -13,11 +13,13 @@ namespace MartinCostello.DotNetBumper;
 /// A class that upgrades a project  to a newer version of .NET.
 /// </summary>
 /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
+/// <param name="upgradeFinder">The <see cref="DotNetUpgradeFinder"/> to use.</param>
 /// <param name="upgraders">The <see cref="IUpgrader"/> implementations to use.</param>
 /// <param name="options">The <see cref="IOptions{UpgradeOptions}"/> to use.</param>
 /// <param name="logger">The <see cref="ILogger{ProjectUpgrader}"/> to use.</param>
 public partial class ProjectUpgrader(
     IAnsiConsole console,
+    DotNetUpgradeFinder upgradeFinder,
     IEnumerable<IUpgrader> upgraders,
     IOptions<UpgradeOptions> options,
     ILogger<ProjectUpgrader> logger)
@@ -40,6 +42,13 @@ public partial class ProjectUpgrader(
     /// </returns>
     public virtual async Task UpgradeAsync(CancellationToken cancellationToken = default)
     {
+        var upgrade = await upgradeFinder.GetUpgradeAsync(cancellationToken);
+
+        if (upgrade is null)
+        {
+            return;
+        }
+
         console.WriteLine("Upgrading project...");
 
         Log.Upgrading(logger, options.Value.ProjectPath);
@@ -48,7 +57,7 @@ public partial class ProjectUpgrader(
 
         foreach (var upgrader in upgraders)
         {
-            hasChanges |= await upgrader.UpgradeAsync(cancellationToken);
+            hasChanges |= await upgrader.UpgradeAsync(upgrade, cancellationToken);
         }
 
         if (hasChanges)

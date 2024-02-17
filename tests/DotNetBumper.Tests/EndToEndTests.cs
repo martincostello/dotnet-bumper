@@ -12,9 +12,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     [InlineData("6.0.100", "--channel=7.0")]
     [InlineData("6.0.100", "--channel=8.0")]
     [InlineData("6.0.100", "--channel=9.0")]
-    [InlineData("6.0.100", "--release-type=preview")]
-    [InlineData("6.0.100", "--release-type=lts")]
-    [InlineData("6.0.100", "--release-type=sts")]
+    [InlineData("6.0.100", "--upgrade-type=latest")]
+    [InlineData("6.0.100", "--upgrade-type=lts")]
+    [InlineData("6.0.100", "--upgrade-type=preview")]
     public async Task Application_Does_Not_Error(string sdkVersion, params string[] args)
     {
         // Arrange

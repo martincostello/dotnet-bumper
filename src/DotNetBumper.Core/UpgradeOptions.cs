@@ -42,7 +42,7 @@ public sealed class UpgradeOptions
     public string ProjectPath { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets a value the release type to upgrade to.
+    /// Gets or sets a value the type of upgrade to perform.
     /// </summary>
-    public DotNetReleaseType ReleaseType { get; set; }
+    public UpgradeType UpgradeType { get; set; }
 }
