@@ -23,9 +23,9 @@ internal sealed class UpgradePostConfigureOptions(IModelAccessor accessor) : IPo
             options.GitHubApiUri = new(url, UriKind.Absolute);
         }
 
-        if (program.ReleaseType is { } releaseType)
+        if (program.UpgradeType is { } upgradeType)
         {
-            options.ReleaseType = releaseType;
+            options.UpgradeType = upgradeType;
         }
     }
 }

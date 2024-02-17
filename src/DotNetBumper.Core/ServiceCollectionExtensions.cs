@@ -44,6 +44,9 @@ public static class ServiceCollectionExtensions
                 .AddSingleton<IPostConfigureOptions<UpgradeOptions>, UpgradePostConfigureOptions>()
                 .AddSingleton<IValidateOptions<UpgradeOptions>, UpgradeOptionsValidator>();
 
+        services.AddSingleton<IUpgrader, GlobalJsonUpgrader>();
+        services.AddSingleton<IUpgrader, TargetFrameworkUpgrader>();
+
         services.AddHttpClient()
                 .ConfigureHttpClientDefaults((options) =>
                 {
@@ -51,7 +54,7 @@ public static class ServiceCollectionExtensions
                     options.AddStandardResilienceHandler();
                 });
 
-        services.AddHttpClient<IUpgrader, GlobalJsonUpgrader>();
+        services.AddHttpClient<DotNetUpgradeFinder>();
 
         services.AddSingleton<ICredentialStore>((provider) =>
         {

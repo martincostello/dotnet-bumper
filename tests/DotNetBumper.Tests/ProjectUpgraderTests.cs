@@ -22,19 +22,25 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
 
     private ProjectUpgrader CreateTarget(
         UpgraderFixture fixture,
-        UpgradeOptions? options = null)
+        UpgradeOptions? upgradeOptions = null)
     {
-        options ??= new UpgradeOptions()
+        upgradeOptions ??= new UpgradeOptions()
         {
             ProjectPath = fixture.Project.DirectoryName,
         };
 
-        var logger = outputHelper.ToLogger<ProjectUpgrader>();
+        var options = Options.Create(upgradeOptions);
+
+        var finder = new DotNetUpgradeFinder(
+            new HttpClient(),
+            options,
+            outputHelper.ToLogger<DotNetUpgradeFinder>());
 
         return new ProjectUpgrader(
             fixture.Console,
+            finder,
             [Substitute.For<IUpgrader>()],
-            Options.Create(options),
-            logger);
+            options,
+            outputHelper.ToLogger<ProjectUpgrader>());
     }
 }

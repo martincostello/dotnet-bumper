@@ -47,10 +47,10 @@ internal partial class Program(ProjectUpgrader upgrader) : Command
     public bool OpenPullRequest { get; set; }
 
     [Option(
-        "-t|--release-type <TYPE>",
-        Description = "The .NET release type to upgrade to. Possible values for <TYPE> is LTS (default), STS or Preview.",
+        "-t|--upgrade-type <TYPE>",
+        Description = "The type of upgrade to perform. Possible values for <TYPE> are LTS (default), Latest or Preview.",
         ValueName = "TYPE")]
-    public DotNetReleaseType? ReleaseType { get; set; }
+    public UpgradeType? UpgradeType { get; set; }
 
     public static async Task<int> Main(string[] args)
     {
