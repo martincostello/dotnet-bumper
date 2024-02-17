@@ -15,8 +15,9 @@ namespace MartinCostello.DotNetBumper;
 [Command(
     Name = "dotnet bumper",
     FullName = "Upgrades projects to a newer version of .NET.")]
+[HelpOption]
 [VersionOptionFromMember(MemberName = nameof(GetVersion))]
-internal partial class Program(ProjectUpgrader upgrader) : Command
+internal partial class Program(ProjectUpgrader upgrader)
 {
     [Argument(0, Description = "The path to directory containing a .NET 6+ project to be upgraded. If not specified, the current directory will be used.")]
     public string? ProjectPath { get; set; }

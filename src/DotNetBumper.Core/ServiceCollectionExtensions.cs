@@ -40,9 +40,9 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton(configuration)
                 .AddSingleton<IAnsiConsole>(console)
-                .AddSingleton<ProjectUpgrader>()
                 .AddSingleton<IPostConfigureOptions<UpgradeOptions>, UpgradePostConfigureOptions>()
-                .AddSingleton<IValidateOptions<UpgradeOptions>, UpgradeOptionsValidator>();
+                .AddSingleton<IValidateOptions<UpgradeOptions>, UpgradeOptionsValidator>()
+                .AddSingleton<ProjectUpgrader>();
 
         services.AddSingleton<IUpgrader, GlobalJsonUpgrader>();
         services.AddSingleton<IUpgrader, TargetFrameworkUpgrader>();
