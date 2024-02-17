@@ -1,5 +1,8 @@
 # .NET Bumper ⛐📦⤴️
 
+> [!NOTE]
+> This project is currently experimental.
+
 <!--
 [![NuGet][package-badge]][package-download]
 -->

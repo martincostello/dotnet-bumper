@@ -1,15 +1,15 @@
 name: code-scan
 
 on:
-  #push:
-  #  branches: [ main ]
-  #pull_request:
-  #  branches:
-  #    - main
-  #    - dotnet-vnext
-  #    - dotnet-nightly
-  #schedule:
-  #  - cron: '0 6 * * MON'
+  push:
+    branches: [ main ]
+  pull_request:
+    branches:
+      - main
+      - dotnet-vnext
+      - dotnet-nightly
+  schedule:
+    - cron: '0 6 * * MON'
   workflow_dispatch:
 
 permissions:

@@ -1,12 +1,11 @@
 name: dependency-review
 
 on:
-  #pull_request:
-  #  branches:
-  #    - main
-  #    - dotnet-vnext
-  #    - dotnet-nightly
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - dotnet-vnext
+      - dotnet-nightly
 
 permissions:
   contents: read
