@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
-using System.Reflection;
 using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.Abstractions;
 using Microsoft.Extensions.Configuration;
@@ -86,11 +85,7 @@ internal partial class Program(ProjectUpgrader upgrader)
         return await app.ExecuteAsync(args, cts.Token);
     }
 
-    public static string GetVersion() =>
-        typeof(Program)
-        .Assembly
-        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
-        .InformationalVersion;
+    public static string GetVersion() => ProjectUpgrader.Version;
 
     public async Task<int> OnExecute(
         IAnsiConsole console,
