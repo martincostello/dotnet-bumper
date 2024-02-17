@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Diagnostics;
 using System.Reflection;
 using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.Abstractions;
@@ -98,7 +99,13 @@ internal partial class Program(ProjectUpgrader upgrader)
     {
         try
         {
+            var stopwatch = Stopwatch.StartNew();
+
             await upgrader.UpgradeAsync(cancellationToken);
+
+            stopwatch.Stop();
+            console.WriteLine($"Operation completed in {stopwatch.Elapsed}.");
+
             return 0;
         }
         catch (Exception ex)
