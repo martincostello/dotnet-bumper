@@ -5,7 +5,7 @@ labels: feature-request
 ---
 
 <!-- markdownlint-disable MD041 -->
-### Is your feature request related to a problem? Please describe.
+### Is your feature request related to a problem?
 
 <!--
   A clear and concise description of what the problem is. For example: _It would be useful if [...]_
