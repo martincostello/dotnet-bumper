@@ -87,6 +87,12 @@ public partial class DotNetUpgradeFinder(
             var channelString = GetString(element, "channel-version");
             var latestSdkVersion = GetString(element, "latest-sdk");
             var releaseTypeString = GetString(element, "release-type");
+            var supportPhase = GetString(element, "support-phase");
+
+            if (supportPhase is "eol")
+            {
+                return false;
+            }
 
             return
                 Version.TryParse(channelString, out channel) &&
