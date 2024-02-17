@@ -58,9 +58,15 @@ public partial class DotNetUpgradeFinder(
                     release,
                     out var channel,
                     out var sdkVersion,
-                    out var releaseType))
+                    out var releaseType,
+                    out var isEndOfLife)
+                || isEndOfLife)
             {
-                Log.UnableToParseRelease(logger, release);
+                if (!isEndOfLife)
+                {
+                    Log.UnableToParseRelease(logger, release);
+                }
+
                 continue;
             }
 
@@ -78,7 +84,8 @@ public partial class DotNetUpgradeFinder(
             JsonElement element,
             [NotNullWhen(true)] out Version? channel,
             [NotNullWhen(true)] out NuGetVersion? sdkVersion,
-            out DotNetReleaseType releaseType)
+            out DotNetReleaseType releaseType,
+            out bool isEndOfLife)
         {
             channel = null;
             sdkVersion = null;
@@ -89,10 +96,7 @@ public partial class DotNetUpgradeFinder(
             var releaseTypeString = GetString(element, "release-type");
             var supportPhase = GetString(element, "support-phase");
 
-            if (supportPhase is "eol")
-            {
-                return false;
-            }
+            isEndOfLife = supportPhase is "eol";
 
             return
                 Version.TryParse(channelString, out channel) &&
