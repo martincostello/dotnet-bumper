@@ -68,6 +68,58 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actualTfm.ShouldNotBe(string.Join(';', targetFrameworks));
     }
 
+    [Theory]
+    [InlineData("1.0.100", "netcoreapp1.0", "--channel=1.0")]
+    [InlineData("1.1.100", "netcoreapp1.1", "--channel=1.1")]
+    [InlineData("2.0.100", "netcoreapp2.0", "--channel=2.0")]
+    [InlineData("2.1.100", "netcoreapp2.1", "--channel=2.1")]
+    [InlineData("2.2.100", "netcoreapp2.2", "--channel=2.2")]
+    [InlineData("3.0.100", "netcoreapp3.0", "--channel=3.0")]
+    [InlineData("3.1.100", "netcoreapp3.1", "--channel=3.1")]
+    [InlineData("5.0.100", "net5.0", "--channel=5.0")]
+    public async Task Application_Does_Not_Upgrade_Project(
+        string sdkVersion,
+        string targetFramework,
+        params string[] args)
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string globalJson =
+            $$"""
+            {
+              "sdk": {
+                "version": "{{sdkVersion}}"
+              }
+            }
+            """;
+
+        string projectXml =
+            $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{targetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """;
+
+        fixture.Project.AddDirectory("src");
+        await fixture.Project.AddFileAsync("global.json", globalJson);
+        await fixture.Project.AddFileAsync("src/Project.csproj", projectXml);
+
+        // Act
+        int status = await Program.Main([fixture.Project.DirectoryName, "--verbose", .. args]);
+
+        // Assert
+        status.ShouldBe(0);
+
+        string? actualSdk = await GetSdkVersionAsync(fixture, "global.json");
+        string? actualTfm = await GetTargetFrameworksAsync(fixture, "src/Project.csproj");
+
+        actualSdk.ShouldBe(sdkVersion);
+        actualTfm.ShouldBe(targetFramework);
+    }
+
     [Fact]
     public async Task Application_Validates_Project_Exists()
     {
