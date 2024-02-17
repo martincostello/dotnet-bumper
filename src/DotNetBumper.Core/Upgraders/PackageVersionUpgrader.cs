@@ -22,6 +22,15 @@ internal sealed partial class PackageVersionUpgrader(
 
         console.WriteLine("Upgrading NuGet packages...");
 
+        using var restore = StartDotNet(["restore", options.Value.ProjectPath]);
+        await restore!.WaitForExitAsync(cancellationToken);
+
+        if (restore.ExitCode != 0)
+        {
+            // TODO log
+            return false;
+        }
+
         string tempFile = Path.GetTempFileName();
 
         List<string> arguments =
@@ -30,7 +39,6 @@ internal sealed partial class PackageVersionUpgrader(
             "--output",
             tempFile,
             "--output-format:json",
-            "--recursive",
             "--upgrade",
         ];
 
@@ -53,23 +61,17 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.Add(package);
         }
 
-        var startInfo = new ProcessStartInfo("dotnet", arguments)
-        {
-            RedirectStandardOutput = true,
-            WorkingDirectory = options.Value.ProjectPath,
-        };
+        using var outdated = StartDotNet(arguments);
 
-        using var process = Process.Start(startInfo);
-
-        if (process is null)
+        if (outdated is null)
         {
             // TODO log
             return false;
         }
 
-        await process.WaitForExitAsync(cancellationToken);
+        await outdated.WaitForExitAsync(cancellationToken);
 
-        if (process.ExitCode != 0)
+        if (outdated.ExitCode != 0)
         {
             // TODO log
             return false;
@@ -83,8 +85,8 @@ internal sealed partial class PackageVersionUpgrader(
 
             if (json.Length > 0)
             {
-                var outdated = JsonDocument.Parse(json);
-                var projects = outdated.RootElement.GetProperty("Projects");
+                var updates = JsonDocument.Parse(json);
+                var projects = updates.RootElement.GetProperty("Projects");
 
                 foreach (var project in projects.EnumerateArray())
                 {
@@ -106,6 +108,21 @@ internal sealed partial class PackageVersionUpgrader(
         }
 
         return updatedDependencies > 0;
+    }
+
+    private Process? StartDotNet(IEnumerable<string> arguments)
+    {
+        var startInfo = new ProcessStartInfo("dotnet", arguments)
+        {
+            EnvironmentVariables =
+            {
+                ["DOTNET_ROLL_FORWARD"] = "Major",
+            },
+            RedirectStandardOutput = true,
+            WorkingDirectory = options.Value.ProjectPath,
+        };
+
+        return Process.Start(startInfo);
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
