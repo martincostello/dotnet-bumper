@@ -11,6 +11,9 @@
     <Title>MartinCostello.DotNetBumper.Core</Title>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Octokit" />
     <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 </Project>
