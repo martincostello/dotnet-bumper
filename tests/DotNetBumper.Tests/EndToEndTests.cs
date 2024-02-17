@@ -81,6 +81,19 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(1);
     }
 
+    [Fact]
+    public async Task Application_Validates_Channel()
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        // Act
+        int actual = await Program.Main([fixture.Project.DirectoryName, "--channel=foo"]);
+
+        // Assert
+        actual.ShouldBe(1);
+    }
+
     private static async Task<string?> GetSdkVersionAsync(
         UpgraderFixture fixture,
         string fileName)
