@@ -113,7 +113,7 @@ public partial class ProjectUpgrader(
                 }
                 else
                 {
-                    (success, var stdout, var stderr) = await console
+                    (success, var output) = await console
                         .Status()
                         .Spinner(Spinner.Known.Dots)
                         .SpinnerStyle(Style.Parse("green"))
@@ -132,16 +132,10 @@ public partial class ProjectUpgrader(
                         console.MarkupLine("[yellow]:warning: The project upgrade did not result in a successful test run.[/]");
                         console.MarkupLine("[yellow]:warning: The project may not be in a working state.[/]");
 
-                        if (!string.IsNullOrWhiteSpace(stderr))
+                        if (!string.IsNullOrWhiteSpace(output))
                         {
                             console.WriteLine();
-                            console.MarkupLineInterpolated($"[grey]{stderr}[/]");
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(stdout))
-                        {
-                            console.WriteLine();
-                            console.MarkupLineInterpolated($"[grey]{stdout}[/]");
+                            console.MarkupLineInterpolated($"[grey]{output}[/]");
                         }
                     }
                 }
@@ -172,7 +166,7 @@ public partial class ProjectUpgrader(
         }
     }
 
-    private async Task<(bool Success, string Stdout, string StdErr)> RunTestsAsync(
+    private async Task<(bool Success, string Stdout)> RunTestsAsync(
         IReadOnlyList<string> projects,
         StatusContext context,
         CancellationToken cancellationToken)
@@ -182,18 +176,18 @@ public partial class ProjectUpgrader(
             string name = ProjectHelpers.RelativeName(ProjectPath, project);
             context.Status = $"[teal]Running tests for {name}...[/]";
 
-            (var success, var stdout, var stderr) = await dotnet.RunAsync(
+            (var success, var ouput) = await dotnet.RunAsync(
                 project,
                 ["test", "--nologo", "--verbosity", "quiet"],
                 cancellationToken);
 
             if (!success)
             {
-                return (false, stdout, stderr);
+                return (false, ouput);
             }
         }
 
-        return (true, string.Empty, string.Empty);
+        return (true, string.Empty);
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
