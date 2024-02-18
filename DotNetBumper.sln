@@ -74,6 +74,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEM
 		.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".config", ".config", "{1ADAEDC3-EF73-492F-9B81-42DE296E4FBE}"
+	ProjectSection(SolutionItems) = preProject
+		.config\dotnet-tools.json = .config\dotnet-tools.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -104,6 +109,7 @@ Global
 		{1746AEA9-65C0-4D6A-9F9D-D32113149F43} = {4CFD8621-B558-4A35-8780-E56A3C5F29CB}
 		{0E685C90-528A-4C24-BC8B-9090C80B8B76} = {1746AEA9-65C0-4D6A-9F9D-D32113149F43}
 		{CAE60372-3F77-4878-85D6-63AA223918BC} = {1746AEA9-65C0-4D6A-9F9D-D32113149F43}
+		{1ADAEDC3-EF73-492F-9B81-42DE296E4FBE} = {4CFD8621-B558-4A35-8780-E56A3C5F29CB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {164EB134-6EF3-479B-88ED-80863BBB2732}
