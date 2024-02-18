@@ -34,42 +34,47 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     public async Task Application_Upgrades_Project(BumperTestCase testCase)
     {
         // Arrange
+        var testPackages = new Dictionary<string, string>()
+        {
+            ["Microsoft.NET.Test.Sdk"] = "17.9.0",
+        };
+
         using var fixture = new UpgraderFixture(outputHelper);
 
-        var globalJson = CreateGlobalJson(testCase.SdkVersion);
-        var project = CreateProjectXml(testCase.TargetFrameworks);
+        fixture.Project.AddDirectory("src")
+                       .AddDirectory("src/Project")
+                       .AddDirectory("tests")
+                       .AddDirectory("tests/Project.Tests");
 
-        if (testCase.PackageReferences.Count > 0)
-        {
-            project.Root!.Add(
-                new XElement(
-                    "ItemGroup",
-                    testCase.PackageReferences.Select((p) =>
-                        new XElement(
-                            "PackageReference",
-                            new XAttribute("Include", p.Key),
-                            new XAttribute("Version", p.Value)))));
-        }
+        await fixture.Project.AddSolutionAsync("Project.sln");
+        string globalJson = await fixture.Project.AddGlobalJsonAsync(testCase.SdkVersion);
 
-        string globalJsonName = "global.json";
-        string projectFileName = "src/Project.csproj";
+        string appProject = await fixture.Project.AddProjectAsync(
+            "src/Project/Project.csproj",
+            testCase.TargetFrameworks,
+            testCase.PackageReferences);
 
-        fixture.Project.AddDirectory("src");
-        await fixture.Project.AddFileAsync(globalJsonName, globalJson);
-        await fixture.Project.AddFileAsync(projectFileName, project);
+        string testProject = await fixture.Project.AddProjectAsync(
+            "tests/Project.Tests/Project.Tests.csproj",
+            testCase.TargetFrameworks,
+            testPackages);
 
         // Act
-        int status = await RunAsync(fixture, testCase.Arguments);
+        int status = await RunAsync(fixture, [..testCase.Arguments, "--test"]);
 
         // Assert
         status.ShouldBe(0);
 
-        var actualSdk = await GetSdkVersionAsync(fixture, globalJsonName);
-        var actualTfm = await GetTargetFrameworksAsync(fixture, projectFileName);
-        var actualPackages = await GetPackageReferencesAsync(fixture, projectFileName);
-
+        var actualSdk = await GetSdkVersionAsync(fixture, globalJson);
         actualSdk.ShouldNotBe(testCase.SdkVersion);
-        actualTfm.ShouldNotBe(string.Join(';', testCase.TargetFrameworks));
+
+        var appTfms = await GetTargetFrameworksAsync(fixture, appProject);
+        var testTfms = await GetTargetFrameworksAsync(fixture, testProject);
+
+        appTfms.ShouldNotBe(string.Join(';', testCase.TargetFrameworks));
+        testTfms.ShouldNotBe(string.Join(';', testCase.TargetFrameworks));
+
+        var actualPackages = await GetPackageReferencesAsync(fixture, appProject);
 
         if (testCase.PackageReferences.Count is 0)
         {
@@ -84,6 +89,10 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                 actualPackages.ShouldNotContainValueForKey(key, value);
             }
         }
+
+        actualPackages = await GetPackageReferencesAsync(fixture, testProject);
+
+        actualPackages.ShouldBe(testPackages);
     }
 
     [Theory]
@@ -104,18 +113,17 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        var globalJson = CreateGlobalJson(sdkVersion);
         var project = CreateProjectXml([targetFramework]);
 
-        string globalJsonName = "global.json";
         string projectFileName = "src/Project.csproj";
-
         fixture.Project.AddDirectory("src");
-        await fixture.Project.AddFileAsync(globalJsonName, globalJson);
+
+        string globalJsonName = await fixture.Project.AddGlobalJsonAsync(sdkVersion);
+
         await fixture.Project.AddFileAsync(projectFileName, project);
 
         // Act
-        int status = await RunAsync(fixture, args);
+        int status = await RunAsync(fixture, [..args, "--test"]);
 
         // Assert
         status.ShouldBe(0);
@@ -189,17 +197,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             [fixture.Project.DirectoryName, "--verbose", ..args],
             (builder) => builder.AddXUnit(fixture).AddFilter(LogFilter),
             CancellationToken.None);
-    }
-
-    private static string CreateGlobalJson(string sdkVersion)
-    {
-        return $$"""
-                 {
-                   "sdk": {
-                     "version": "{{sdkVersion}}"
-                   }
-                 }
-                 """;
     }
 
     private static XDocument CreateProjectXml(IList<string> targetFrameworks)

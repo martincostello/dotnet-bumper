@@ -39,6 +39,8 @@ public partial class ProjectUpgrader(
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!
         .InformationalVersion;
 
+    private string ProjectPath => options.Value.ProjectPath;
+
     /// <summary>
     /// Upgrades the project.
     /// </summary>
@@ -57,7 +59,7 @@ public partial class ProjectUpgrader(
             return 0;
         }
 
-        var name = Path.GetFileNameWithoutExtension(options.Value.ProjectPath);
+        var name = Path.GetFileNameWithoutExtension(ProjectPath);
 
         console.MarkupLineInterpolated($"Upgrading project [aqua]{name}[/] to .NET [purple]{upgrade.Channel}[/]...");
         console.WriteLine();
@@ -79,7 +81,7 @@ public partial class ProjectUpgrader(
             }
         }
 
-        Log.Upgrading(logger, options.Value.ProjectPath);
+        Log.Upgrading(logger, ProjectPath);
 
         bool hasChanges = false;
 
@@ -92,7 +94,7 @@ public partial class ProjectUpgrader(
         {
             Log.Upgraded(
                 logger,
-                options.Value.ProjectPath,
+                ProjectPath,
                 upgrade.Channel.ToString(),
                 upgrade.SdkVersion.ToString());
 
@@ -102,35 +104,45 @@ public partial class ProjectUpgrader(
             {
                 console.MarkupLine("[grey]Verifying upgrade...[/]");
 
-                (success, var stdout, var stderr) = await console
-                    .Status()
-                    .Spinner(Spinner.Known.Dots)
-                    .SpinnerStyle(Style.Parse("green"))
-                    .StartAsync(
-                        $"[teal]Running tests...[/]",
-                        async (_) => await dotnet.RunAsync(options.Value.ProjectPath, ["test", "--disable-build-servers"], cancellationToken));
+                var projects = ProjectHelpers.FindProjects(ProjectPath);
 
-                console.WriteLine();
-
-                if (success)
+                if (projects.Count is 0)
                 {
-                    console.MarkupLine("[green]:check_mark_button: Upgrade successfully tested.[/]");
+                    console.MarkupLine("[yellow]:warning: Could not find any test projects.[/]");
+                    console.MarkupLine("[yellow]:warning: The project may not be in a working state.[/]");
                 }
                 else
                 {
-                    console.MarkupLine("[yellow]:warning: The project upgrade did not result in a successful test run.[/]");
-                    console.MarkupLine("[yellow]:warning: The project may not be in a working state.[/]");
+                    (success, var stdout, var stderr) = await console
+                        .Status()
+                        .Spinner(Spinner.Known.Dots)
+                        .SpinnerStyle(Style.Parse("green"))
+                        .StartAsync(
+                            $"[teal]Running tests...[/]",
+                            async (context) => await RunTestsAsync(projects, context, cancellationToken));
 
-                    if (!string.IsNullOrWhiteSpace(stderr))
+                    console.WriteLine();
+
+                    if (success)
                     {
-                        console.WriteLine();
-                        console.MarkupLineInterpolated($"[grey]{stderr}[/]");
+                        console.MarkupLine("[green]:check_mark_button: Upgrade successfully tested.[/]");
                     }
-
-                    if (!string.IsNullOrWhiteSpace(stdout))
+                    else
                     {
-                        console.WriteLine();
-                        console.MarkupLineInterpolated($"[grey]{stdout}[/]");
+                        console.MarkupLine("[yellow]:warning: The project upgrade did not result in a successful test run.[/]");
+                        console.MarkupLine("[yellow]:warning: The project may not be in a working state.[/]");
+
+                        if (!string.IsNullOrWhiteSpace(stderr))
+                        {
+                            console.WriteLine();
+                            console.MarkupLineInterpolated($"[grey]{stderr}[/]");
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(stdout))
+                        {
+                            console.WriteLine();
+                            console.MarkupLineInterpolated($"[grey]{stdout}[/]");
+                        }
                     }
                 }
             }
@@ -150,7 +162,7 @@ public partial class ProjectUpgrader(
         }
         else
         {
-            Log.NothingToUpgrade(logger, options.Value.ProjectPath);
+            Log.NothingToUpgrade(logger, ProjectPath);
 
             console.WriteLine();
             console.MarkupLine("[yellow]:warning: The project upgrade did not result in any changes being made.[/]");
@@ -158,6 +170,27 @@ public partial class ProjectUpgrader(
 
             return 0;
         }
+    }
+
+    private async Task<(bool Success, string Stdout, string StdErr)> RunTestsAsync(
+        IReadOnlyList<string> projects,
+        StatusContext context,
+        CancellationToken cancellationToken)
+    {
+        foreach (var project in projects)
+        {
+            string name = ProjectHelpers.RelativeName(ProjectPath, project);
+            context.Status = $"[teal]Running tests for {name}...[/]";
+
+            (var success, var stdout, var stderr) = await dotnet.RunAsync(project, ["test"], cancellationToken);
+
+            if (!success)
+            {
+                return (false, stdout, stderr);
+            }
+        }
+
+        return (true, string.Empty, string.Empty);
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

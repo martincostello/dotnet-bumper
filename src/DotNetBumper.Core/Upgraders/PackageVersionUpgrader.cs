@@ -71,26 +71,7 @@ internal sealed partial class PackageVersionUpgrader(
     }
 
     private List<string> FindProjects()
-    {
-        string path = Options.ProjectPath;
-        var searchOption = SearchOption.AllDirectories;
-
-        List<string> projects =
-        [
-            ..Directory.GetFiles(path, "*.sln", searchOption),
-        ];
-
-        if (projects.Count == 0)
-        {
-            projects.AddRange(Directory.GetFiles(path, "*.csproj", searchOption));
-            projects.AddRange(Directory.GetFiles(path, "*.fsproj", searchOption));
-        }
-
-        return projects
-            .Select(Path.GetDirectoryName)
-            .Cast<string>()
-            .ToList();
-    }
+        => ProjectHelpers.FindProjects(Options.ProjectPath, SearchOption.AllDirectories);
 
     private async Task TryRestoreNuGetPackagesAsync(string directory, CancellationToken cancellationToken)
     {
