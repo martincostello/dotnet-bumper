@@ -47,7 +47,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUpgrader, GlobalJsonUpgrader>();
         services.AddSingleton<IUpgrader, TargetFrameworkUpgrader>();
 
-        // Packages need to be updated last so the packages relate to the updated TFM
+        // Packages need to be updated after the TFM so the packages relate to the update
         services.AddSingleton<IUpgrader, PackageVersionUpgrader>();
 
         services.AddHttpClient()
