@@ -164,7 +164,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         // Act
-        int actual = await Program.Main([fixture.Project.DirectoryName, .. args]);
+        int actual = await Program.Main([fixture.Project.DirectoryName, ..args]);
 
         // Assert
         actual.ShouldBe(0);
@@ -186,7 +186,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         return await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, "--verbose", "--test", ..args],
+            [fixture.Project.DirectoryName, "--verbose", ..args],
             (builder) => builder.AddXUnit(fixture).AddFilter(LogFilter),
             CancellationToken.None);
     }

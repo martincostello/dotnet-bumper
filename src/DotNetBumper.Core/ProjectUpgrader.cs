@@ -102,7 +102,7 @@ public partial class ProjectUpgrader(
             {
                 console.MarkupLine("[grey]Verifying upgrade...[/]");
 
-                success = await console
+                (success, var stdout, var stderr) = await console
                     .Status()
                     .Spinner(Spinner.Known.Dots)
                     .SpinnerStyle(Style.Parse("green"))
@@ -119,6 +119,19 @@ public partial class ProjectUpgrader(
                 else
                 {
                     console.MarkupLine("[yellow]:warning: The project upgrade did not result in a successful test run.[/]");
+                    console.MarkupLine("[yellow]:warning: The project may not be in a working state.[/]");
+
+                    if (!string.IsNullOrWhiteSpace(stderr))
+                    {
+                        console.WriteLine();
+                        console.MarkupLineInterpolated($"[grey]{stderr}[/]");
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(stdout))
+                    {
+                        console.WriteLine();
+                        console.MarkupLineInterpolated($"[grey]{stdout}[/]");
+                    }
                 }
             }
 

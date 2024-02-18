@@ -27,7 +27,7 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
     /// that returns <see langword="true"/> if the process exited with an exit code
     /// of <c>0</c>; otherwise <see langword="false"/>.
     /// </returns>
-    public async Task<bool> RunAsync(
+    public async Task<(bool Success, string StdOut, string StdErr)> RunAsync(
         string workingDirectory,
         IReadOnlyList<string> arguments,
         CancellationToken cancellationToken)
@@ -65,13 +65,16 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
 
         await process.WaitForExitAsync(cancellationToken);
 
-        if (process.ExitCode != 0)
+        bool success = process.ExitCode == 0;
+        string stdout = output.ToString();
+        string stderr = string.Empty;
+
+        if (!success)
         {
-            await Log.LogCommandFailedAsync(_logger, process, output.ToString());
-            return false;
+            stderr = await Log.LogCommandFailedAsync(_logger, process, stdout);
         }
 
-        return true;
+        return (success, stdout, stderr);
     }
 
     private static Process StartDotNet(string workingDirectory, IReadOnlyList<string> arguments)
@@ -94,18 +97,19 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private static partial class Log
     {
-        public static async Task LogCommandFailedAsync(
+        public static async Task<string> LogCommandFailedAsync(
             ILogger logger,
             Process process,
             string output)
         {
             string command = process.StartInfo.ArgumentList[0];
+            string error = string.Empty;
 
             Log.CommandFailed(logger, command, process.ExitCode);
 
             if (!logger.IsEnabled(LogLevel.Debug))
             {
-                string error = await process.StandardError.ReadToEndAsync(CancellationToken.None);
+                error = await process.StandardError.ReadToEndAsync(CancellationToken.None);
 
                 if (!string.IsNullOrEmpty(output))
                 {
@@ -117,6 +121,8 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
                     Log.CommandFailedError(logger, command, error);
                 }
             }
+
+            return error;
         }
 
         [LoggerMessage(
