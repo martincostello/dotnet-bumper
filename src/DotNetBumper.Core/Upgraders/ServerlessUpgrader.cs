@@ -144,8 +144,8 @@ internal sealed partial class ServerlessUpgrader(
         protected override void VisitPair(YamlNode key, YamlNode value)
         {
             if (key is YamlScalarNode { Value: "runtime" } &&
-                value is YamlScalarNode runtimeValue/* &&
-                runtimeValue.Value?.StartsWith("dotnet", StringComparison.Ordinal) is true*/)
+                value is YamlScalarNode runtimeValue &&
+                runtimeValue.Value?.StartsWith("dotnet", StringComparison.Ordinal) is true)
             {
                 runtimeValue.Value = runtime;
                 Edited = true;
