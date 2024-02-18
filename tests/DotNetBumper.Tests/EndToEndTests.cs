@@ -26,12 +26,12 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string globalJson = CreateGlobalJson(sdkVersion);
-        string projectXml = CreateProjectXml(targetFrameworks);
+        var globalJson = CreateGlobalJson(sdkVersion);
+        var project = CreateProjectXml(targetFrameworks);
 
         fixture.Project.AddDirectory("src");
         await fixture.Project.AddFileAsync("global.json", globalJson);
-        await fixture.Project.AddFileAsync("src/Project.csproj", projectXml);
+        await fixture.Project.AddFileAsync("src/Project.csproj", project);
 
         // Act
         int status = await RunAsync(fixture, args);
@@ -64,12 +64,12 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string globalJson = CreateGlobalJson(sdkVersion);
-        string projectXml = CreateProjectXml(targetFramework);
+        var globalJson = CreateGlobalJson(sdkVersion);
+        var project = CreateProjectXml(targetFramework);
 
         fixture.Project.AddDirectory("src");
         await fixture.Project.AddFileAsync("global.json", globalJson);
-        await fixture.Project.AddFileAsync("src/Project.csproj", projectXml);
+        await fixture.Project.AddFileAsync("src/Project.csproj", project);
 
         // Act
         int status = await RunAsync(fixture, args);
@@ -157,19 +157,21 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                  """;
     }
 
-    private static string CreateProjectXml(params string[] targetFrameworks)
+    private static XDocument CreateProjectXml(params string[] targetFrameworks)
     {
-        string tfmXml = targetFrameworks.Length == 1
+        string tfms = targetFrameworks.Length == 1
             ? $"<TargetFramework>{targetFrameworks[0]}</TargetFramework>"
             : $"<TargetFrameworks>{string.Join(";", targetFrameworks)}</TargetFrameworks>";
 
-        return $"""
-                <Project Sdk="Microsoft.NET.Sdk">
-                  <PropertyGroup>
-                    {tfmXml}
-                  </PropertyGroup>
-                </Project>
-                """;
+        string xml = $"""
+                      <Project Sdk="Microsoft.NET.Sdk">
+                        <PropertyGroup>
+                          {tfms}
+                        </PropertyGroup>
+                      </Project>
+                      """;
+
+        return XDocument.Parse(xml);
     }
 
     private static async Task<string?> GetSdkVersionAsync(
