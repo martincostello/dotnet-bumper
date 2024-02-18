@@ -113,7 +113,7 @@ public partial class ProjectUpgrader(
                 }
                 else
                 {
-                    (success, var output) = await console
+                    var result = await console
                         .Status()
                         .Spinner(Spinner.Known.Dots)
                         .SpinnerStyle(Style.Parse("green"))
@@ -121,9 +121,11 @@ public partial class ProjectUpgrader(
                             $"[teal]Running tests...[/]",
                             async (context) => await RunTestsAsync(projects, context, cancellationToken));
 
+                    success = result.Success;
+
                     console.WriteLine();
 
-                    if (success)
+                    if (result.Success)
                     {
                         console.MarkupLine("[green]:check_mark_button: Upgrade successfully tested.[/]");
                     }
@@ -132,10 +134,16 @@ public partial class ProjectUpgrader(
                         console.MarkupLine("[yellow]:warning: The project upgrade did not result in a successful test run.[/]");
                         console.MarkupLine("[yellow]:warning: The project may not be in a working state.[/]");
 
-                        if (!string.IsNullOrWhiteSpace(output))
+                        if (!string.IsNullOrWhiteSpace(result.StandardError))
                         {
                             console.WriteLine();
-                            console.MarkupLineInterpolated($"[grey]{output}[/]");
+                            console.MarkupLineInterpolated($"[grey]{result.StandardError}[/]");
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(result.StandardOutput))
+                        {
+                            console.WriteLine();
+                            console.MarkupLineInterpolated($"[grey]{result.StandardOutput}[/]");
                         }
                     }
                 }
@@ -166,7 +174,7 @@ public partial class ProjectUpgrader(
         }
     }
 
-    private async Task<(bool Success, string Stdout)> RunTestsAsync(
+    private async Task<DotNetResult> RunTestsAsync(
         IReadOnlyList<string> projects,
         StatusContext context,
         CancellationToken cancellationToken)
@@ -176,18 +184,18 @@ public partial class ProjectUpgrader(
             string name = ProjectHelpers.RelativeName(ProjectPath, project);
             context.Status = $"[teal]Running tests for {name}...[/]";
 
-            (var success, var ouput) = await dotnet.RunAsync(
+            var result = await dotnet.RunAsync(
                 project,
                 ["test", "--nologo", "--verbosity", "quiet"],
                 cancellationToken);
 
-            if (!success)
+            if (!result.Success)
             {
-                return (false, ouput);
+                return result;
             }
         }
 
-        return (true, string.Empty);
+        return new(true, string.Empty, string.Empty);
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

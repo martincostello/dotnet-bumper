@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
-using System.Text;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
@@ -23,48 +22,25 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
     /// <param name="arguments">The arguments to the command.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to use.</param>
     /// <returns>
-    /// A <see cref="Task"/> representing the asynchronous operation to run the command
-    /// that returns <see langword="true"/> if the process exited with an exit code
-    /// of <c>0</c>; otherwise <see langword="false"/>.
+    /// A <see cref="Task{DotNetResult}"/> representing the asynchronous operation to run the command.
     /// </returns>
-    public async Task<(bool Success, string StdOut)> RunAsync(
+    public async Task<DotNetResult> RunAsync(
         string workingDirectory,
         IReadOnlyList<string> arguments,
         CancellationToken cancellationToken)
     {
         using var process = StartDotNet(workingDirectory, arguments);
-        using var exited = new CancellationTokenSource();
-        using var combined = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, exited.Token);
 
-        var debug = _logger.IsEnabled(LogLevel.Debug);
-        var output = new StringBuilder();
-
-        var command = process.StartInfo.ArgumentList[0];
-        var logger = loggerFactory.CreateLogger($"dotnet {command}");
-
-        // See https://stackoverflow.com/a/16326426/1064169
-        process.OutputDataReceived += (_, args) =>
-        {
-            if (args.Data is { Length: > 0 } message)
-            {
-                if (debug)
-                {
-                    if (!string.IsNullOrWhiteSpace(message))
-                    {
-                        Log.CommandOutput(logger, args.Data);
-                    }
-                }
-                else
-                {
-                    output.Append(message);
-                }
-            }
-        };
-
-        process.BeginOutputReadLine();
+        string error = string.Empty;
+        string output = string.Empty;
 
         try
         {
+            // See https://stackoverflow.com/a/16326426/1064169 and
+            // https://learn.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.redirectstandardoutput.
+            error = await process.StandardError.ReadToEndAsync(cancellationToken);
+            output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
+
             await process.WaitForExitAsync(cancellationToken);
         }
         catch (OperationCanceledException)
@@ -79,17 +55,19 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
             }
         }
 
-        bool success = process.ExitCode == 0;
-        string stdout = output.ToString();
+        var result = new DotNetResult(
+            process.ExitCode == 0,
+            output.ToString(),
+            error.ToString());
 
-        if (!success)
+        if (!result.Success)
         {
-            Log.LogCommandFailed(_logger, process, stdout);
+            Log.LogCommandFailed(_logger, process, result.StandardOutput, result.StandardError);
         }
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        return (success, stdout);
+        return result;
     }
 
     private static Process StartDotNet(string workingDirectory, IReadOnlyList<string> arguments)
@@ -115,7 +93,8 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
         public static void LogCommandFailed(
             ILogger logger,
             Process process,
-            string output)
+            string output,
+            string error)
         {
             string command = process.StartInfo.ArgumentList[0];
 
@@ -126,6 +105,11 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
                 if (!string.IsNullOrEmpty(output))
                 {
                     Log.CommandFailedOutput(logger, command, output);
+                }
+
+                if (!string.IsNullOrEmpty(error))
+                {
+                    Log.CommandFailedError(logger, command, error);
                 }
             }
         }
@@ -138,21 +122,13 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
 
         [LoggerMessage(
             EventId = 2,
-            Level = LogLevel.Debug,
-            Message = "{Output}",
-            SkipEnabledCheck = true)]
-        public static partial void CommandOutput(ILogger logger, string output);
-
-        [LoggerMessage(
-            EventId = 3,
             Level = LogLevel.Warning,
-            Message = "Command \"dotnet {Command}\" standard output: {Output}",
-            SkipEnabledCheck = true)]
+            Message = "Command \"dotnet {Command}\" standard output: {Output}")]
         public static partial void CommandFailedOutput(ILogger logger, string command, string output);
 
         [LoggerMessage(
-            EventId = 4,
-            Level = LogLevel.Warning,
+            EventId = 3,
+            Level = LogLevel.Error,
             Message = "Command \"dotnet {Command}\" standard error: {Error}")]
         public static partial void CommandFailedError(ILogger logger, string command, string error);
     }
