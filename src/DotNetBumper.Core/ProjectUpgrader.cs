@@ -13,6 +13,7 @@ namespace MartinCostello.DotNetBumper;
 /// A class that upgrades a project  to a newer version of .NET.
 /// </summary>
 /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
+/// <param name="dotnet">The <see cref="DotNetProcess"/> to use.</param>
 /// <param name="upgradeFinder">The <see cref="DotNetUpgradeFinder"/> to use.</param>
 /// <param name="upgraders">The <see cref="IUpgrader"/> implementations to use.</param>
 /// <param name="timeProvider">The <see cref="TimeProvider"/> to use.</param>
@@ -20,6 +21,7 @@ namespace MartinCostello.DotNetBumper;
 /// <param name="logger">The <see cref="ILogger{ProjectUpgrader}"/> to use.</param>
 public partial class ProjectUpgrader(
     IAnsiConsole console,
+    DotNetProcess dotnet,
     DotNetUpgradeFinder upgradeFinder,
     IEnumerable<IUpgrader> upgraders,
     TimeProvider timeProvider,
@@ -94,8 +96,30 @@ public partial class ProjectUpgrader(
                 upgrade.Channel.ToString(),
                 upgrade.SdkVersion.ToString());
 
+            if (options.Value.TestUpgrade)
+            {
+                console.MarkupLine("[grey]Verifying upgrade...[/]");
+
+                bool success = await console
+                    .Status()
+                    .Spinner(Spinner.Known.Dots)
+                    .SpinnerStyle(Style.Parse("green"))
+                    .StartAsync(
+                        $"[teal]Running tests...[/]",
+                        async (_) => await dotnet.RunAsync(options.Value.ProjectPath, ["test"], cancellationToken));
+
+                if (await dotnet.RunAsync(options.Value.ProjectPath, ["test"], cancellationToken))
+                {
+                    console.MarkupLine("[green]:check_mark_button: Upgrade successfully tested.[/]");
+                }
+                else
+                {
+                    console.MarkupLine("[yellow]:warning: The project upgrade did not result in a successful build.[/]");
+                }
+            }
+
             console.WriteLine();
-            console.MarkupLine($"[aqua]{name}[/] upgraded to [white on purple].NET {upgrade.Channel}[/] :rocket:!");
+            console.MarkupLine($"[aqua]{name}[/] upgrade to [white on purple].NET {upgrade.Channel}[/] [green]successful[/]! :rocket:");
         }
         else
         {

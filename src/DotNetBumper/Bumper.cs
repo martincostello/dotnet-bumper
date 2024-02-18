@@ -33,6 +33,11 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         ValueName = "TYPE")]
     public UpgradeType? UpgradeType { get; set; }
 
+    [Option(
+        "-test|--test",
+        Description = "Whether to test the upgrade by running <c>dotnet test</c> on completion. The default value is false.")]
+    public bool TestUpgrade { get; set; }
+
     public static async Task<int> RunAsync(
         IAnsiConsole console,
         string[] args,

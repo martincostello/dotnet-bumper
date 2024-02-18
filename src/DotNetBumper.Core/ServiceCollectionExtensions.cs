@@ -40,6 +40,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
 
         services.AddSingleton(configuration)
+                .AddSingleton<DotNetProcess>()
                 .AddSingleton<IAnsiConsole>(console)
                 .AddSingleton<IValidateOptions<UpgradeOptions>, UpgradeOptionsValidator>()
                 .AddSingleton<ProjectUpgrader>();
