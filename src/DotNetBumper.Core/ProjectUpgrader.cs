@@ -182,7 +182,10 @@ public partial class ProjectUpgrader(
             string name = ProjectHelpers.RelativeName(ProjectPath, project);
             context.Status = $"[teal]Running tests for {name}...[/]";
 
-            (var success, var stdout, var stderr) = await dotnet.RunAsync(project, ["test"], cancellationToken);
+            (var success, var stdout, var stderr) = await dotnet.RunAsync(
+                project,
+                ["test", "--verbosity", "quiet"],
+                cancellationToken);
 
             if (!success)
             {
