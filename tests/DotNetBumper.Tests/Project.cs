@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Xml.Linq;
+
 namespace MartinCostello.DotNetBumper;
 
 internal sealed class Project : IDisposable
@@ -11,6 +13,12 @@ internal sealed class Project : IDisposable
 
     public void AddDirectory(string path)
         => Directory.CreateDirectory(GetFilePath(path));
+
+    public async Task AddFileAsync(string path, XDocument content)
+    {
+        var xml = content.ToString(SaveOptions.DisableFormatting);
+        await AddFileAsync(path, xml);
+    }
 
     public async Task AddFileAsync(string path, string content)
         => await File.WriteAllTextAsync(GetFilePath(path), content);
