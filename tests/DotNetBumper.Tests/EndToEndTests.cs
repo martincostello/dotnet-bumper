@@ -144,7 +144,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             [targetFramework]);
 
         // Act
-        int status = await RunAsync(fixture, [..args, "--test", "--verbose"]);
+        int status = await RunAsync(fixture, [..args, "--test"]);
 
         // Assert
         status.ShouldBe(0);
@@ -209,9 +209,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             }
 
             return !(category.StartsWith("Microsoft", StringComparison.Ordinal) ||
-#if !DEBUG
                      category.StartsWith("dotnet", StringComparison.Ordinal) ||
-#endif
                      category.StartsWith("Polly", StringComparison.Ordinal) ||
                      category.StartsWith("System", StringComparison.Ordinal));
         }
@@ -220,7 +218,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         return await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, ..args],
+            [fixture.Project.DirectoryName, "--verbose", ..args],
             (builder) => builder.AddXUnit(fixture).AddFilter(LogFilter),
             cts.Token);
     }

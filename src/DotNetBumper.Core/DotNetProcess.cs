@@ -77,14 +77,16 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
             EnvironmentVariables =
             {
                 ["DOTNET_ROLL_FORWARD"] = "Major",
-                ["MSBUILDDISABLENODEREUSE"] = "1",
-                ["MSBUILDENSURESTDOUTFORTASKPROCESSES"] = "1", // See https://github.com/dotnet/msbuild/issues/6753
                 ["MSBuildSDKsPath"] = null,
             },
             RedirectStandardError = true,
             RedirectStandardOutput = true,
             WorkingDirectory = workingDirectory,
         };
+
+        // HACK See https://github.com/dotnet/msbuild/issues/6753
+        startInfo.EnvironmentVariables["MSBUILDDISABLENODEREUSE"] = "1";
+        startInfo.EnvironmentVariables["MSBUILDENSURESTDOUTFORTASKPROCESSES"] = "1";
 
         return Process.Start(startInfo) ?? throw new InvalidOperationException($"Failed to start process for dotnet {arguments[0]}.");
     }
