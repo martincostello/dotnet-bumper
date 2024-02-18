@@ -184,7 +184,7 @@ public partial class ProjectUpgrader(
 
             (var success, var stdout, var stderr) = await dotnet.RunAsync(
                 project,
-                ["test", "--verbosity", "quiet"],
+                ["test", "--nologo", "--verbosity", "quiet"],
                 cancellationToken);
 
             if (!success)
