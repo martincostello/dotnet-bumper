@@ -159,27 +159,27 @@ public partial class DotNetUpgradeFinder(
     private static partial class Log
     {
         [LoggerMessage(
-           EventId = 1,
-           Level = LogLevel.Debug,
-           Message = "Getting .NET release notes from GitHub.")]
+            EventId = 1,
+            Level = LogLevel.Debug,
+            Message = "Getting .NET release notes from GitHub.")]
         public static partial void GetReleaseNotes(ILogger logger);
 
         [LoggerMessage(
-           EventId = 2,
-           Level = LogLevel.Warning,
-           Message = "No .NET releases found in GitHub.")]
+            EventId = 2,
+            Level = LogLevel.Warning,
+            Message = "No .NET releases found in GitHub.")]
         public static partial void NoDotNetReleasesFound(ILogger logger);
 
         [LoggerMessage(
-           EventId = 3,
-           Level = LogLevel.Warning,
-           Message = "Unable to parse .NET release JSON: {Channel}.")]
+            EventId = 3,
+            Level = LogLevel.Warning,
+            Message = "Unable to parse .NET release JSON: {Channel}.")]
         public static partial void UnableToParseRelease(ILogger logger, JsonElement channel);
 
         [LoggerMessage(
-           EventId = 4,
-           Level = LogLevel.Information,
-           Message = "Found eligible .NET upgrade. Channel: {Channel}, SDK Version: {SdkVersion}, Release Type: {ReleaseType}.")]
+            EventId = 4,
+            Level = LogLevel.Information,
+            Message = "Found eligible .NET upgrade. Channel: {Channel}, SDK Version: {SdkVersion}, Release Type: {ReleaseType}.")]
         public static partial void FoundEligibleUpgrade(
             ILogger logger,
             string channel,

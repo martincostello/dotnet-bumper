@@ -37,9 +37,9 @@ internal sealed partial class UpgradePostConfigureOptions(
     private static partial class Log
     {
         [LoggerMessage(
-           EventId = 1,
-           Level = LogLevel.Warning,
-           Message = "The configured value of the {VariableName} environment variable, {Url}, is not a valid URI.")]
+            EventId = 1,
+            Level = LogLevel.Warning,
+            Message = "The configured value of the {VariableName} environment variable, {Url}, is not a valid URI.")]
         public static partial void InvalidGitHubApiUrl(ILogger logger, string url, string variableName);
     }
 }

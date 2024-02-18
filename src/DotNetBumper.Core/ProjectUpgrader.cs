@@ -87,15 +87,15 @@ public partial class ProjectUpgrader(
     private static partial class Log
     {
         [LoggerMessage(
-           EventId = 1,
-           Level = LogLevel.Debug,
-           Message = "Upgrading project {ProjectPath}.")]
+            EventId = 1,
+            Level = LogLevel.Debug,
+            Message = "Upgrading project {ProjectPath}.")]
         public static partial void Upgrading(ILogger logger, string projectPath);
 
         [LoggerMessage(
-           EventId = 2,
-           Level = LogLevel.Debug,
-           Message = "Successfully upgraded project {ProjectPath} to .NET {Channel} and .NET SDK {SdkVersion}.")]
+            EventId = 2,
+            Level = LogLevel.Debug,
+            Message = "Successfully upgraded project {ProjectPath} to .NET {Channel} and .NET SDK {SdkVersion}.")]
         public static partial void Upgraded(
             ILogger logger,
             string projectPath,
@@ -103,9 +103,9 @@ public partial class ProjectUpgrader(
             string sdkVersion);
 
         [LoggerMessage(
-           EventId = 3,
-           Level = LogLevel.Debug,
-           Message = "Project {ProjectPath} did not contain any eligible changes to upgrade.")]
+            EventId = 3,
+            Level = LogLevel.Debug,
+            Message = "Project {ProjectPath} did not contain any eligible changes to upgrade.")]
         public static partial void NothingToUpgrade(ILogger logger, string projectPath);
     }
 }

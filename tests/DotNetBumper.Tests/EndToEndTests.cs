@@ -15,6 +15,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         {
             new("6.0.100", ["net6.0"]),
             new("7.0.100", ["net6.0", "net7.0"]),
+            new("6.0.100", ["net6.0"], packageReferences: Packages(("System.Text.Json", "6.0.0"))),
             new("6.0.100", ["net6.0"], ["--channel=7.0"]),
             new("6.0.100", ["net6.0"], ["--channel=8.0"]),
             new("6.0.100", ["net6.0"], ["--channel=9.0"]),
@@ -61,17 +62,20 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Assert
         status.ShouldBe(0);
 
-        string? actualSdk = await GetSdkVersionAsync(fixture, globalJsonName);
-        string? actualTfm = await GetTargetFrameworksAsync(fixture, projectFileName);
+        var actualSdk = await GetSdkVersionAsync(fixture, globalJsonName);
+        var actualTfm = await GetTargetFrameworksAsync(fixture, projectFileName);
+        var actualPackages = await GetPackageReferencesAsync(fixture, projectFileName);
 
         actualSdk.ShouldNotBe(testCase.SdkVersion);
         actualTfm.ShouldNotBe(string.Join(';', testCase.TargetFrameworks));
 
-        if (testCase.PackageReferences.Count > 0)
+        if (testCase.PackageReferences.Count is 0)
         {
-            var actualPackages = await GetPackageReferencesAsync(fixture, projectFileName);
-
-            actualPackages.ShouldBe(testCase.PackageReferences);
+            actualPackages.ShouldBe([]);
+        }
+        else
+        {
+            actualPackages.ShouldNotBe(testCase.PackageReferences);
 
             foreach ((string key, string value) in testCase.PackageReferences)
             {
@@ -101,9 +105,12 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         var globalJson = CreateGlobalJson(sdkVersion);
         var project = CreateProjectXml([targetFramework]);
 
+        string globalJsonName = "global.json";
+        string projectFileName = "src/Project.csproj";
+
         fixture.Project.AddDirectory("src");
-        await fixture.Project.AddFileAsync("global.json", globalJson);
-        await fixture.Project.AddFileAsync("src/Project.csproj", project);
+        await fixture.Project.AddFileAsync(globalJsonName, globalJson);
+        await fixture.Project.AddFileAsync(projectFileName, project);
 
         // Act
         int status = await RunAsync(fixture, args);
@@ -111,11 +118,13 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Assert
         status.ShouldBe(0);
 
-        string? actualSdk = await GetSdkVersionAsync(fixture, "global.json");
-        string? actualTfm = await GetTargetFrameworksAsync(fixture, "src/Project.csproj");
+        var actualSdk = await GetSdkVersionAsync(fixture, globalJsonName);
+        var actualTfm = await GetTargetFrameworksAsync(fixture, projectFileName);
+        var actualPackages = await GetPackageReferencesAsync(fixture, projectFileName);
 
         actualSdk.ShouldBe(sdkVersion);
         actualTfm.ShouldBe(targetFramework);
+        actualPackages.ShouldBe([]);
     }
 
     [Fact]

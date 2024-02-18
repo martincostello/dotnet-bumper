@@ -73,9 +73,13 @@ internal sealed partial class PackageVersionUpgrader(
 
     private async Task TryRestoreNuGetPackagesAsync(string directory, CancellationToken cancellationToken)
     {
-        if (!await RunDotNetCommandAsync(directory, ["restore"], cancellationToken))
+        if (await RunDotNetCommandAsync(directory, ["restore"], cancellationToken))
         {
-            Log.UnableToRestore(logger);
+            Log.RestoredPackages(logger, directory);
+        }
+        else
+        {
+            Log.UnableToRestorePackages(logger, directory);
         }
     }
 
@@ -194,25 +198,31 @@ internal sealed partial class PackageVersionUpgrader(
 
         [LoggerMessage(
             EventId = 3,
-            Level = LogLevel.Warning,
-            Message = "Unable to restore NuGet packages.")]
-        public static partial void UnableToRestore(ILogger logger);
+            Level = LogLevel.Debug,
+            Message = "Restored NuGet packages for {Directory}.")]
+        public static partial void RestoredPackages(ILogger logger, string directory);
 
         [LoggerMessage(
             EventId = 4,
+            Level = LogLevel.Warning,
+            Message = "Unable to restore NuGet packages for {Directory}.")]
+        public static partial void UnableToRestorePackages(ILogger logger, string directory);
+
+        [LoggerMessage(
+            EventId = 5,
             Level = LogLevel.Warning,
             Message = "Command \"dotnet {Command}\" failed with exit code {ExitCode}.")]
         public static partial void CommandFailed(ILogger logger, string command, int exitCode);
 
         [LoggerMessage(
-            EventId = 5,
+            EventId = 6,
             Level = LogLevel.Warning,
             Message = "Command \"dotnet {Command}\" standard output: {Output}",
             SkipEnabledCheck = true)]
         public static partial void CommandFailedOutput(ILogger logger, string command, string output);
 
         [LoggerMessage(
-            EventId = 6,
+            EventId = 7,
             Level = LogLevel.Warning,
             Message = "Command \"dotnet {Command}\" standard error: {Error}")]
         public static partial void CommandFailedError(ILogger logger, string command, string error);
