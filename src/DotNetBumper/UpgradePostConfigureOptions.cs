@@ -10,7 +10,7 @@ internal sealed class UpgradePostConfigureOptions(IModelAccessor accessor) : IPo
 {
     public void PostConfigure(string? name, UpgradeOptions options)
     {
-        var program = (Program)accessor.GetModel();
+        var program = (Bumper)accessor.GetModel();
 
         options.DotNetChannel ??= program.DotNetChannel;
         options.GitHubRepository ??= program.GitHubRepository;
