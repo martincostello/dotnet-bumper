@@ -22,22 +22,27 @@ internal sealed partial class PackageVersionUpgrader(
 
         console.WriteLine("Upgrading NuGet packages...");
 
-        using var restore = StartDotNet(["restore", options.Value.ProjectPath]);
-        await restore!.WaitForExitAsync(cancellationToken);
+        await TryRestoreNuGetPackagesAsync(cancellationToken);
 
-        if (restore.ExitCode != 0)
+        return await TryUpgradePackagesAsync(cancellationToken);
+    }
+
+    private async Task TryRestoreNuGetPackagesAsync(CancellationToken cancellationToken)
+    {
+        if (!await RunDotNetCommandAsync(["restore", options.Value.ProjectPath], cancellationToken))
         {
-            // TODO log
-            return false;
+            Log.UnableToRestore(logger);
         }
+    }
 
-        string tempFile = Path.GetTempFileName();
+    private async Task<bool> TryUpgradePackagesAsync(CancellationToken cancellationToken)
+    {
+        using var tempFile = new TemporaryFile();
 
         List<string> arguments =
         [
-            "outdated",
             "--output",
-            tempFile,
+            tempFile.Path,
             "--output-format:json",
             "--upgrade",
         ];
@@ -61,27 +66,16 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.Add(package);
         }
 
-        using var outdated = StartDotNet(arguments);
-
-        if (outdated is null)
+        if (!await RunDotNetCommandAsync(["outdated", .. arguments], cancellationToken))
         {
-            // TODO log
-            return false;
-        }
-
-        await outdated.WaitForExitAsync(cancellationToken);
-
-        if (outdated.ExitCode != 0)
-        {
-            // TODO log
             return false;
         }
 
         int updatedDependencies = 0;
 
-        if (File.Exists(tempFile))
+        if (tempFile.Exists())
         {
-            string json = await File.ReadAllTextAsync(tempFile, cancellationToken);
+            string json = await File.ReadAllTextAsync(tempFile.Path, cancellationToken);
 
             if (json.Length > 0)
             {
@@ -98,19 +92,26 @@ internal sealed partial class PackageVersionUpgrader(
             }
         }
 
-        try
-        {
-            File.Delete(tempFile);
-        }
-        catch (Exception)
-        {
-            // Ignore
-        }
+        Log.UpgradedPackages(logger, updatedDependencies);
 
         return updatedDependencies > 0;
     }
 
-    private Process? StartDotNet(IEnumerable<string> arguments)
+    private async Task<bool> RunDotNetCommandAsync(IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    {
+        using var process = StartDotNet(arguments);
+        await process.WaitForExitAsync(cancellationToken);
+
+        if (process.ExitCode != 0)
+        {
+            await Log.LogCommandFailedAsync(logger, process);
+            return false;
+        }
+
+        return true;
+    }
+
+    private Process StartDotNet(IReadOnlyList<string> arguments)
     {
         var startInfo = new ProcessStartInfo("dotnet", arguments)
         {
@@ -118,20 +119,90 @@ internal sealed partial class PackageVersionUpgrader(
             {
                 ["DOTNET_ROLL_FORWARD"] = "Major",
             },
+            RedirectStandardError = true,
             RedirectStandardOutput = true,
             WorkingDirectory = options.Value.ProjectPath,
         };
 
-        return Process.Start(startInfo);
+        return Process.Start(startInfo) ?? throw new InvalidOperationException($"Failed to start process for dotnet {arguments[0]}.");
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private static partial class Log
     {
+        public static async Task LogCommandFailedAsync(ILogger logger, Process process)
+        {
+            string command = process.StartInfo.ArgumentList[0];
+            string output = await process.StandardOutput.ReadToEndAsync(CancellationToken.None);
+            string error = await process.StandardError.ReadToEndAsync(CancellationToken.None);
+
+            Log.CommandFailed(logger, command, process.ExitCode);
+
+            if (!string.IsNullOrEmpty(output))
+            {
+                Log.CommandFailedOutput(logger, command, output);
+            }
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                Log.CommandFailedError(logger, command, error);
+            }
+        }
+
         [LoggerMessage(
-           EventId = 1,
-           Level = LogLevel.Debug,
-           Message = "Upgrading NuGet package versions.")]
+            EventId = 1,
+            Level = LogLevel.Debug,
+            Message = "Upgrading NuGet package versions.")]
         public static partial void UpgradingPackages(ILogger logger);
+
+        [LoggerMessage(
+            EventId = 2,
+            Level = LogLevel.Information,
+            Message = "Upgraded {Count} NuGet package(s).")]
+        public static partial void UpgradedPackages(ILogger logger, int count);
+
+        [LoggerMessage(
+            EventId = 3,
+            Level = LogLevel.Warning,
+            Message = "Unable to restore NuGet packages.")]
+        public static partial void UnableToRestore(ILogger logger);
+
+        [LoggerMessage(
+            EventId = 4,
+            Level = LogLevel.Warning,
+            Message = "Command \"dotnet {Command}\" failed with exit code {ExitCode}.")]
+        public static partial void CommandFailed(ILogger logger, string command, int exitCode);
+
+        [LoggerMessage(
+            EventId = 5,
+            Level = LogLevel.Warning,
+            Message = "Command \"dotnet {Command}\" standard output: {Output}",
+            SkipEnabledCheck = true)]
+        public static partial void CommandFailedOutput(ILogger logger, string command, string output);
+
+        [LoggerMessage(
+            EventId = 6,
+            Level = LogLevel.Warning,
+            Message = "Command \"dotnet {Command}\" standard error: {Error}")]
+        public static partial void CommandFailedError(ILogger logger, string command, string error);
+    }
+
+    private sealed class TemporaryFile : IDisposable
+    {
+        public string Path { get; } = System.IO.Path.GetTempFileName();
+
+        public void Dispose()
+        {
+            try
+            {
+                File.Delete(Path);
+            }
+            catch (Exception)
+            {
+                // Ignore
+            }
+        }
+
+        public bool Exists() => File.Exists(Path);
     }
 }
