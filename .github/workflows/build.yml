@@ -69,7 +69,10 @@ jobs:
 
     - name: Install .NET Tools
       shell: pwsh
-      run: dotnet tool restore
+      run: |
+        dotnet tool restore
+        $dotnetOutdatedVersion = (Get-Content "./.config/dotnet-tools.json" | Out-String | ConvertFrom-Json).tools.'dotnet-outdated-tool'.version
+        dotnet tool install --global dotnet-outdated-tool --version "$dotnetOutdatedVersion"
 
     - name: Build, Test and Package
       shell: pwsh
