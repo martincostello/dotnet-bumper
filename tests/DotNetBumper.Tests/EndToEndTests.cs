@@ -208,7 +208,8 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                 return false;
             }
 
-            return !(category.StartsWith("Microsoft", StringComparison.Ordinal) ||
+            return !(category.StartsWith("dotnet", StringComparison.Ordinal) ||
+                     category.StartsWith("Microsoft", StringComparison.Ordinal) ||
                      category.StartsWith("Polly", StringComparison.Ordinal) ||
                      category.StartsWith("System", StringComparison.Ordinal));
         }
