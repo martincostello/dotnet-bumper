@@ -4,7 +4,6 @@
 using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
-using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper;
 
@@ -42,9 +41,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         string? actualSdk = await GetSdkVersionAsync(fixture, "global.json");
         string? actualTfm = await GetTargetFrameworksAsync(fixture, "src/Project.csproj");
-
-        fixture.Console.WriteLine($".NET SDK version: {actualSdk}");
-        fixture.Console.WriteLine($"Target Framework(s): {actualTfm}");
 
         actualSdk.ShouldNotBe(sdkVersion);
         actualTfm.ShouldNotBe(string.Join(';', targetFrameworks));
@@ -131,10 +127,22 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
     private static async Task<int> RunAsync(UpgraderFixture fixture, params string[] args)
     {
+        static bool LogFilter(string? category, LogLevel level)
+        {
+            if (category is null)
+            {
+                return false;
+            }
+
+            return !(category.StartsWith("Microsoft", StringComparison.Ordinal) ||
+                     category.StartsWith("Polly", StringComparison.Ordinal) ||
+                     category.StartsWith("System", StringComparison.Ordinal));
+        }
+
         return await Bumper.RunAsync(
             fixture.Console,
             [fixture.Project.DirectoryName, "--verbose", ..args],
-            (builder) => builder.AddXUnit(fixture),
+            (builder) => builder.AddXUnit(fixture).AddFilter(LogFilter),
             CancellationToken.None);
     }
 
