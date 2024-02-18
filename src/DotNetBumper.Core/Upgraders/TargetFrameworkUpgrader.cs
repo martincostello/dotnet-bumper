@@ -49,7 +49,8 @@ internal sealed partial class TargetFrameworkUpgrader(
                 .Element("TargetFramework");
 
             if (property is not null &&
-                !string.Equals(property.Value, newTfm, StringComparison.Ordinal))
+                !string.Equals(property.Value, newTfm, StringComparison.Ordinal) &&
+                CanUpgrade(property.Value, upgrade.Channel))
             {
                 property.SetValue(newTfm);
                 edited = true;
@@ -61,7 +62,8 @@ internal sealed partial class TargetFrameworkUpgrader(
                 .Element("TargetFrameworks");
 
             if (property is not null &&
-                !property.Value.Contains(newTfm, StringComparison.Ordinal))
+                !property.Value.Contains(newTfm, StringComparison.Ordinal) &&
+                CanUpgrade(property.Value, upgrade.Channel))
             {
                 property.SetValue($"{property.Value};{newTfm}");
                 edited = true;
@@ -92,6 +94,24 @@ internal sealed partial class TargetFrameworkUpgrader(
         }
 
         return filesChanged;
+    }
+
+    private static bool CanUpgrade(string targetFrameworks, Version candidate)
+    {
+        var tfms = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var tfm in tfms)
+        {
+            if (Version.TryParse(tfm[3..], out var version) && version >= candidate)
+            {
+                if (version > candidate)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     private static async Task<(XDocument Project, Encoding Encoding)> LoadProjectAsync(
