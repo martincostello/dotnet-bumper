@@ -75,7 +75,10 @@ internal sealed partial class PackageVersionUpgrader(
 
     private async Task TryRestoreNuGetPackagesAsync(string directory, CancellationToken cancellationToken)
     {
-        (bool success, _, _) = await dotnet.RunAsync(directory, ["restore"], cancellationToken);
+        (bool success, _, _) = await dotnet.RunAsync(
+            directory,
+            ["restore", "--verbosity", "quiet"],
+            cancellationToken);
 
         if (success)
         {
