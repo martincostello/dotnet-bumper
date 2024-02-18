@@ -36,32 +36,36 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
         using var exited = new CancellationTokenSource();
         using var combined = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, exited.Token);
 
-        var debug = _logger.IsEnabled(LogLevel.Debug);
-
-        var command = process.StartInfo.ArgumentList[0];
-        var logger = loggerFactory.CreateLogger($"dotnet {command}");
-
-        // See https://stackoverflow.com/a/16326426/1064169
         var output = new StringBuilder(ushort.MaxValue);
-        process.OutputDataReceived += (_, args) =>
+
+        if (process.StartInfo.RedirectStandardInput)
         {
-            if (args.Data is { Length: > 0 } message)
+            var debug = _logger.IsEnabled(LogLevel.Debug);
+
+            var command = process.StartInfo.ArgumentList[0];
+            var logger = loggerFactory.CreateLogger($"dotnet {command}");
+
+            // See https://stackoverflow.com/a/16326426/1064169
+            process.OutputDataReceived += (_, args) =>
             {
-                if (debug)
+                if (args.Data is { Length: > 0 } message)
                 {
-                    if (!string.IsNullOrWhiteSpace(message))
+                    if (debug)
                     {
-                        Log.CommandOutput(logger, args.Data);
+                        if (!string.IsNullOrWhiteSpace(message))
+                        {
+                            Log.CommandOutput(logger, args.Data);
+                        }
+                    }
+                    else
+                    {
+                        output.Append(message);
                     }
                 }
-                else
-                {
-                    output.Append(message);
-                }
-            }
-        };
+            };
 
-        process.BeginOutputReadLine();
+            process.BeginOutputReadLine();
+        }
 
         try
         {
@@ -85,7 +89,14 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
 
         if (!success)
         {
-            stderr = await Log.LogCommandFailedAsync(_logger, process, stdout);
+            try
+            {
+                stderr = await Log.LogCommandFailedAsync(_logger, process, stdout);
+            }
+            catch (Exception)
+            {
+                // Ignore
+            }
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -102,8 +113,8 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
                 ["DOTNET_ROLL_FORWARD"] = "Major",
                 ["MSBuildSDKsPath"] = null,
             },
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
+            ////RedirectStandardError = true,
+            ////RedirectStandardOutput = true,
             WorkingDirectory = workingDirectory,
         };
 
