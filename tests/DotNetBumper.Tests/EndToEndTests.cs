@@ -13,9 +13,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     {
         var testCases = new TheoryData<BumperTestCase>
         {
-#if DEBUG
-            new("6.0.100", ["net6.0"]), // HACK Skip in CI as it takes too long and times out for some reason
-#endif
+            new("6.0.100", ["net6.0"]),
             new("7.0.100", ["net6.0", "net7.0"]),
             new("6.0.100", ["net6.0"], ["--channel=7.0"]),
             new("6.0.100", ["net6.0"], ["--channel=8.0"]),

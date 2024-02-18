@@ -63,7 +63,21 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
 
         process.BeginOutputReadLine();
 
-        await process.WaitForExitAsync(cancellationToken);
+        try
+        {
+            await process.WaitForExitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch (Exception)
+            {
+                // Ignore
+            }
+        }
 
         bool success = process.ExitCode == 0;
         string stdout = output.ToString();
@@ -73,6 +87,8 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
         {
             stderr = await Log.LogCommandFailedAsync(_logger, process, stdout);
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         return (success, stdout, stderr);
     }
