@@ -15,24 +15,6 @@ internal sealed class UpgradeOptionsValidator : IValidateOptions<UpgradeOptions>
             return ValidateOptionsResult.Fail($"The specified .NET channel \"{version}\" is invalid.");
         }
 
-        if (options.OpenPullRequest)
-        {
-            if (string.IsNullOrWhiteSpace(options.GitHubRepository))
-            {
-                return ValidateOptionsResult.Fail("The full name of the GitHub repository is required to open a pull request.");
-            }
-
-            if (string.IsNullOrWhiteSpace(options.GitHubToken))
-            {
-                return ValidateOptionsResult.Fail("A GitHub token is required to open a pull request.");
-            }
-
-            if (options.GitHubApiUri is null)
-            {
-                return ValidateOptionsResult.Fail("The URI of the GitHub API is required to open a pull request.");
-            }
-        }
-
         if (!Directory.Exists(options.ProjectPath))
         {
             return ValidateOptionsResult.Fail($"The project path '{options.ProjectPath}' could not be found.");

@@ -19,7 +19,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="NuGet.Versioning" />
-    <PackageReference Include="Octokit" />
     <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 </Project>

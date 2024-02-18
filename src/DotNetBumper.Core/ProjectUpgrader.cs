@@ -75,11 +75,6 @@ public partial class ProjectUpgrader(
 
             console.WriteLine();
             console.MarkupLine($"[aqua]{name}[/] upgraded to [white on purple].NET {upgrade.Channel}[/] :rocket:!");
-
-            if (options.Value.OpenPullRequest)
-            {
-                // TODO Open pull request
-            }
         }
         else
         {
