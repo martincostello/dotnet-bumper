@@ -26,6 +26,7 @@ internal sealed class UpgraderFixture(ITestOutputHelper outputHelper) : IDisposa
     {
         if (_console is { })
         {
+            outputHelper.WriteLine(string.Empty);
             outputHelper.WriteLine(_console.Output);
             _console.Dispose();
         }
