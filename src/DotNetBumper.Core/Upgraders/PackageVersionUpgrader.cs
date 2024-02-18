@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Text.Json;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -26,8 +27,14 @@ internal sealed partial class PackageVersionUpgrader(
 
         foreach (string project in FindProjects())
         {
-            await TryRestoreNuGetPackagesAsync(project, cancellationToken);
-            filesChanged |= await TryUpgradePackagesAsync(project, cancellationToken);
+            using (TryHideGlobalJson(project))
+            {
+                await RunDotNetCommandAsync(project, ["--info"], cancellationToken);
+                await RunDotNetCommandAsync(project, ["--version"], cancellationToken);
+
+                await TryRestoreNuGetPackagesAsync(project, cancellationToken);
+                filesChanged |= await TryUpgradePackagesAsync(project, cancellationToken);
+            }
         }
 
         return filesChanged;
@@ -35,7 +42,7 @@ internal sealed partial class PackageVersionUpgrader(
 
     private static Process StartDotNet(string workingDirectory, IReadOnlyList<string> arguments)
     {
-        var startInfo = new ProcessStartInfo("dotnet", arguments)
+        var startInfo = new ProcessStartInfo(DotNetExe.FullPathOrDefault(), arguments)
         {
             EnvironmentVariables =
             {
@@ -47,6 +54,26 @@ internal sealed partial class PackageVersionUpgrader(
         };
 
         return Process.Start(startInfo) ?? throw new InvalidOperationException($"Failed to start process for dotnet {arguments[0]}.");
+    }
+
+    private static HiddenFile? TryHideGlobalJson(string path)
+    {
+        var directory = new DirectoryInfo(path);
+
+        do
+        {
+            var globalJson = Directory.EnumerateFiles(directory.FullName, "global.json").FirstOrDefault();
+
+            if (globalJson != null)
+            {
+                return new HiddenFile(Path.GetFullPath(Path.Combine(directory.FullName, globalJson)));
+            }
+
+            directory = directory.Parent;
+        }
+        while (directory is not null);
+
+        return null;
     }
 
     private List<string> FindProjects()
@@ -226,6 +253,22 @@ internal sealed partial class PackageVersionUpgrader(
             Level = LogLevel.Warning,
             Message = "Command \"dotnet {Command}\" standard error: {Error}")]
         public static partial void CommandFailedError(ILogger logger, string command, string error);
+    }
+
+    private sealed class HiddenFile : IDisposable
+    {
+        private readonly string _original;
+        private readonly string _temporary;
+
+        public HiddenFile(string source)
+        {
+            _original = source;
+            _temporary = $"{source}.{Guid.NewGuid().ToString()[0..8]}.tmp";
+            File.Move(_original, _temporary);
+        }
+
+        public void Dispose()
+            => File.Move(_temporary, _original, overwrite: true);
     }
 
     private sealed class TemporaryFile : IDisposable
