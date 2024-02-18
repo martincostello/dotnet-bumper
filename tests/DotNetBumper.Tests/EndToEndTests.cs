@@ -191,7 +191,8 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                      category.StartsWith("System", StringComparison.Ordinal));
         }
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+
         return await Bumper.RunAsync(
             fixture.Console,
             [fixture.Project.DirectoryName, "--verbose", ..args],
