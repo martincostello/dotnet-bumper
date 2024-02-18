@@ -15,13 +15,15 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         {
             new("6.0.100", ["net6.0"]),
             new("7.0.100", ["net6.0", "net7.0"]),
-            new("6.0.100", ["net6.0"], packageReferences: Packages(("System.Text.Json", "6.0.0"))),
             new("6.0.100", ["net6.0"], ["--channel=7.0"]),
             new("6.0.100", ["net6.0"], ["--channel=8.0"]),
             new("6.0.100", ["net6.0"], ["--channel=9.0"]),
             new("6.0.100", ["net6.0"], ["--upgrade-type=latest"]),
             new("6.0.100", ["net6.0"], ["--upgrade-type=lts"]),
             new("6.0.100", ["net6.0"], ["--upgrade-type=preview"]),
+            new("6.0.100", ["net6.0"], [], Packages(("System.Text.Json", "6.0.0"))),
+            new("7.0.100", ["net7.0"], [], Packages(("System.Text.Json", "7.0.0"))),
+            new("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("System.Text.Json", "8.0.0"))),
         };
 
         return testCases;
