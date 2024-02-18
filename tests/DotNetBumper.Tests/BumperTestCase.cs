@@ -8,8 +8,8 @@ namespace MartinCostello.DotNetBumper;
 public sealed class BumperTestCase(
     string sdkVersion,
     IList<string>? targetFrameworks = null,
-    IDictionary<string, string>? packageReferences = null,
-    IList<string>? args = null)
+    IList<string>? args = null,
+    IDictionary<string, string>? packageReferences = null)
 {
     public string SdkVersion { get; } = sdkVersion;
 

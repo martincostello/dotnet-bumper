@@ -15,12 +15,12 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         {
             new("6.0.100", ["net6.0"]),
             new("7.0.100", ["net6.0", "net7.0"]),
-            new("6.0.100", ["net6.0"], args: ["--channel=7.0"]),
-            new("6.0.100", ["net6.0"], args: ["--channel=8.0"]),
-            new("6.0.100", ["net6.0"], args: ["--channel=9.0"]),
-            new("6.0.100", ["net6.0"], args: ["--upgrade-type=latest"]),
-            new("6.0.100", ["net6.0"], args: ["--upgrade-type=lts"]),
-            new("6.0.100", ["net6.0"], args: ["--upgrade-type=preview"]),
+            new("6.0.100", ["net6.0"], ["--channel=7.0"]),
+            new("6.0.100", ["net6.0"], ["--channel=8.0"]),
+            new("6.0.100", ["net6.0"], ["--channel=9.0"]),
+            new("6.0.100", ["net6.0"], ["--upgrade-type=latest"]),
+            new("6.0.100", ["net6.0"], ["--upgrade-type=lts"]),
+            new("6.0.100", ["net6.0"], ["--upgrade-type=preview"]),
         };
 
         return testCases;
