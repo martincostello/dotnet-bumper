@@ -36,9 +36,24 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         var globalJson = CreateGlobalJson(testCase.SdkVersion);
         var project = CreateProjectXml(testCase.TargetFrameworks);
 
+        if (testCase.PackageReferences.Count > 0)
+        {
+            project.Root!.Add(
+                new XElement(
+                    "ItemGroup",
+                    testCase.PackageReferences.Select((p) =>
+                        new XElement(
+                            "PackageReference",
+                            new XAttribute("Include", p.Key),
+                            new XAttribute("Version", p.Value)))));
+        }
+
+        string globalJsonName = "global.json";
+        string projectFileName = "src/Project.csproj";
+
         fixture.Project.AddDirectory("src");
-        await fixture.Project.AddFileAsync("global.json", globalJson);
-        await fixture.Project.AddFileAsync("src/Project.csproj", project);
+        await fixture.Project.AddFileAsync(globalJsonName, globalJson);
+        await fixture.Project.AddFileAsync(projectFileName, project);
 
         // Act
         int status = await RunAsync(fixture, testCase.Arguments);
@@ -46,11 +61,23 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Assert
         status.ShouldBe(0);
 
-        string? actualSdk = await GetSdkVersionAsync(fixture, "global.json");
-        string? actualTfm = await GetTargetFrameworksAsync(fixture, "src/Project.csproj");
+        string? actualSdk = await GetSdkVersionAsync(fixture, globalJsonName);
+        string? actualTfm = await GetTargetFrameworksAsync(fixture, projectFileName);
 
         actualSdk.ShouldNotBe(testCase.SdkVersion);
         actualTfm.ShouldNotBe(string.Join(';', testCase.TargetFrameworks));
+
+        if (testCase.PackageReferences.Count > 0)
+        {
+            var actualPackages = await GetPackageReferencesAsync(fixture, projectFileName);
+
+            actualPackages.ShouldBe(testCase.PackageReferences);
+
+            foreach ((string key, string value) in testCase.PackageReferences)
+            {
+                actualPackages.ShouldNotContainValueForKey(key, value);
+            }
+        }
     }
 
     [Theory]
@@ -194,6 +221,26 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             .GetString();
     }
 
+    private static async Task<Dictionary<string, string>> GetPackageReferencesAsync(
+        UpgraderFixture fixture,
+        string fileName)
+    {
+        var xml = await fixture.Project.GetFileAsync(fileName);
+        var project = XDocument.Parse(xml);
+
+        return project
+            .Root?
+            .Elements("ItemGroup")
+            .Elements("PackageReference")
+            .Select((p) =>
+                new
+                {
+                    Key = p.Attribute("Include")?.Value ?? string.Empty,
+                    Value = p.Attribute("Version")?.Value ?? string.Empty,
+                })
+            .ToDictionary((p) => p.Key, (p) => p.Value) ?? [];
+    }
+
     private static async Task<string?> GetTargetFrameworksAsync(
         UpgraderFixture fixture,
         string fileName)
@@ -218,4 +265,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             .Element("TargetFrameworks")?
             .Value;
     }
+
+    private static Dictionary<string, string> Packages(params (string Name, string Version)[] packages)
+        => packages.ToDictionary((p) => p.Name, (p) => p.Version);
 }
