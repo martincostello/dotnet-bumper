@@ -46,7 +46,7 @@ public partial class ProjectUpgrader(
     /// <returns>
     /// A <see cref="Task"/> representing the asynchronous operation to upgrade the project.
     /// </returns>
-    public virtual async Task UpgradeAsync(CancellationToken cancellationToken = default)
+    public virtual async Task<int> UpgradeAsync(CancellationToken cancellationToken = default)
     {
         var upgrade = await upgradeFinder.GetUpgradeAsync(cancellationToken);
 
@@ -54,7 +54,7 @@ public partial class ProjectUpgrader(
         {
             console.MarkupLine("[yellow]:warning: No eligible .NET upgrade was found.[/]");
             console.WriteLine();
-            return;
+            return 0;
         }
 
         var name = Path.GetFileNameWithoutExtension(options.Value.ProjectPath);
@@ -96,30 +96,44 @@ public partial class ProjectUpgrader(
                 upgrade.Channel.ToString(),
                 upgrade.SdkVersion.ToString());
 
+            bool success = true;
+
             if (options.Value.TestUpgrade)
             {
                 console.MarkupLine("[grey]Verifying upgrade...[/]");
 
-                bool success = await console
+                success = await console
                     .Status()
                     .Spinner(Spinner.Known.Dots)
                     .SpinnerStyle(Style.Parse("green"))
                     .StartAsync(
                         $"[teal]Running tests...[/]",
-                        async (_) => await dotnet.RunAsync(options.Value.ProjectPath, ["test"], cancellationToken));
+                        async (_) => await dotnet.RunAsync(options.Value.ProjectPath, ["test", "--disable-build-servers"], cancellationToken));
 
-                if (await dotnet.RunAsync(options.Value.ProjectPath, ["test"], cancellationToken))
+                console.WriteLine();
+
+                if (success)
                 {
                     console.MarkupLine("[green]:check_mark_button: Upgrade successfully tested.[/]");
                 }
                 else
                 {
-                    console.MarkupLine("[yellow]:warning: The project upgrade did not result in a successful build.[/]");
+                    console.MarkupLine("[yellow]:warning: The project upgrade did not result in a successful test run.[/]");
                 }
             }
 
             console.WriteLine();
-            console.MarkupLine($"[aqua]{name}[/] upgrade to [white on purple].NET {upgrade.Channel}[/] [green]successful[/]! :rocket:");
+
+            if (success)
+            {
+                console.MarkupLine($"[aqua]{name}[/] upgrade to [white on purple].NET {upgrade.Channel}[/] [green]successful[/]! :rocket:");
+                return 0;
+            }
+            else
+            {
+                console.MarkupLine($"[aqua]{name}[/] upgrade to [purple].NET {upgrade.Channel}[/] [red]failed[/]! :cross_mark:");
+                return 1;
+            }
         }
         else
         {
@@ -128,6 +142,8 @@ public partial class ProjectUpgrader(
             console.WriteLine();
             console.MarkupLine("[yellow]:warning: The project upgrade did not result in any changes being made.[/]");
             console.MarkupLine("[yellow]:warning: Maybe the project has already been upgraded?[/]");
+
+            return 0;
         }
     }
 

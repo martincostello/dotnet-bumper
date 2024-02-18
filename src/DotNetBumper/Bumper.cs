@@ -78,14 +78,14 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         {
             var stopwatch = Stopwatch.StartNew();
 
-            await upgrader.UpgradeAsync(cancellationToken);
+            int status = await upgrader.UpgradeAsync(cancellationToken);
 
             stopwatch.Stop();
 
             console.WriteLine();
             console.MarkupLine($"Duration: [green]{stopwatch.Elapsed}.[/]");
 
-            return 0;
+            return status;
         }
         catch (Exception ex)
         {
