@@ -77,6 +77,7 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
             EnvironmentVariables =
             {
                 ["DOTNET_ROLL_FORWARD"] = "Major",
+                ["MSBUILDENSURESTDOUTFORTASKPROCESSES"] = "1", // See https://github.com/dotnet/msbuild/issues/6753
                 ["MSBuildSDKsPath"] = null,
             },
             RedirectStandardError = true,
