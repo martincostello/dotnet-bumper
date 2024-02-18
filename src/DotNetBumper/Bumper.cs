@@ -35,7 +35,7 @@ internal partial class Bumper(ProjectUpgrader upgrader)
 
     [Option(
         "-test|--test",
-        Description = "Whether to test the upgrade by running <c>dotnet test</c> on completion. The default value is false.")]
+        Description = "Whether to test the upgrade by running dotnet test on completion. The default value is false.")]
     public bool TestUpgrade { get; set; }
 
     public static async Task<int> RunAsync(
