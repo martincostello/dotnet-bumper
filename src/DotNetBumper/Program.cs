@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using MartinCostello.DotNetBumper;
+using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
 internal static class Program
@@ -15,6 +16,10 @@ internal static class Program
             cts.Cancel();
         };
 
-        return await Bumper.RunAsync(AnsiConsole.Console, args, cts.Token);
+        return await Bumper.RunAsync(
+            AnsiConsole.Console,
+            args,
+            (builder) => builder.AddConsole(),
+            cts.Token);
     }
 }
