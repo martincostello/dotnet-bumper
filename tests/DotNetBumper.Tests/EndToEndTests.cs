@@ -215,9 +215,13 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(3));
 
+#if DEBUG
+        args.Add("--verbose");
+#endif
+
         return await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, "--verbose", ..args],
+            [fixture.Project.DirectoryName, ..args],
             (builder) => builder.AddXUnit(fixture).AddFilter(LogFilter),
             cts.Token);
     }
