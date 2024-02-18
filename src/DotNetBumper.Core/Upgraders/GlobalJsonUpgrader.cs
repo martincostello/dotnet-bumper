@@ -13,24 +13,22 @@ namespace MartinCostello.DotNetBumper.Upgrades;
 internal sealed partial class GlobalJsonUpgrader(
     IAnsiConsole console,
     IOptions<UpgradeOptions> options,
-    ILogger<GlobalJsonUpgrader> logger) : IUpgrader
+    ILogger<GlobalJsonUpgrader> logger) : FileUpgrader(console, options, logger)
 {
-    public async Task<bool> UpgradeAsync(
+    protected override IReadOnlyList<string> Patterns => ["global.json"];
+
+    protected override async Task<bool> UpgradeCoreAsync(
         UpgradeInfo upgrade,
+        IReadOnlyList<string> fileNames,
         CancellationToken cancellationToken)
     {
         Log.UpgradingDotNetSdk(logger);
 
-        console.WriteLine("Upgrading .NET SDK...");
+        Console.WriteLine("Upgrading .NET SDK...");
 
         bool filesChanged = false;
 
-        var files = Directory.GetFiles(
-            options.Value.ProjectPath,
-            "global.json",
-            SearchOption.AllDirectories);
-
-        foreach (var path in files)
+        foreach (var path in fileNames)
         {
             string json = await File.ReadAllTextAsync(path, cancellationToken);
 

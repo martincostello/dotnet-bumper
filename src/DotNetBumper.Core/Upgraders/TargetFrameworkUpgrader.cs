@@ -13,28 +13,23 @@ namespace MartinCostello.DotNetBumper.Upgrades;
 internal sealed partial class TargetFrameworkUpgrader(
     IAnsiConsole console,
     IOptions<UpgradeOptions> options,
-    ILogger<TargetFrameworkUpgrader> logger) : IUpgrader
+    ILogger<TargetFrameworkUpgrader> logger) : FileUpgrader(console, options, logger)
 {
-    public async Task<bool> UpgradeAsync(
+    protected override IReadOnlyList<string> Patterns => ["*.csproj", "*.fsproj"];
+
+    protected override async Task<bool> UpgradeCoreAsync(
         UpgradeInfo upgrade,
+        IReadOnlyList<string> fileNames,
         CancellationToken cancellationToken)
     {
         Log.UpgradingTargetFramework(logger);
 
-        console.WriteLine("Upgrading target frameworks...");
-
-        string projectPath = options.Value.ProjectPath;
+        Console.WriteLine("Upgrading target frameworks...");
 
         bool filesChanged = false;
         XmlWriterSettings? writerSettings = null;
 
-        string[] files =
-        [
-            ..Directory.GetFiles(projectPath, "*.csproj", SearchOption.AllDirectories),
-            ..Directory.GetFiles(projectPath, "*.fsproj", SearchOption.AllDirectories),
-        ];
-
-        foreach (var filePath in files)
+        foreach (var filePath in fileNames)
         {
             (var project, var encoding) = await LoadProjectAsync(filePath, cancellationToken);
 
