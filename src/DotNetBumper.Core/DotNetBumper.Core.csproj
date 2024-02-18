@@ -20,5 +20,6 @@
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 </Project>
