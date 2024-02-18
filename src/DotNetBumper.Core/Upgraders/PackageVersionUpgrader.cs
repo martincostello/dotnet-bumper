@@ -47,6 +47,7 @@ internal sealed partial class PackageVersionUpgrader(
             EnvironmentVariables =
             {
                 ["DOTNET_ROLL_FORWARD"] = "Major",
+                ["MSBuildSDKsPath"] = null,
             },
             RedirectStandardError = true,
             RedirectStandardOutput = true,
