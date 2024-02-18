@@ -80,21 +80,21 @@ internal sealed partial class GlobalJsonUpgrader(
     private static partial class Log
     {
         [LoggerMessage(
-           EventId = 1,
-           Level = LogLevel.Debug,
-           Message = "Upgrading .NET SDK version.")]
+            EventId = 1,
+            Level = LogLevel.Debug,
+            Message = "Upgrading .NET SDK version.")]
         public static partial void UpgradingDotNetSdk(ILogger logger);
 
         [LoggerMessage(
-           EventId = 2,
-           Level = LogLevel.Warning,
-           Message = "Unable to parse .NET SDK version from {FileName}.")]
+            EventId = 2,
+            Level = LogLevel.Warning,
+            Message = "Unable to parse .NET SDK version from {FileName}.")]
         public static partial void ParseSdkVersionFailed(ILogger logger, string fileName);
 
         [LoggerMessage(
-           EventId = 3,
-           Level = LogLevel.Debug,
-           Message = "Upgraded .NET SDK version in {FileName} from {PreviousVersion} to {UpgradedVersion}.")]
+            EventId = 3,
+            Level = LogLevel.Debug,
+            Message = "Upgraded .NET SDK version in {FileName} from {PreviousVersion} to {UpgradedVersion}.")]
         public static partial void UpgradedDotNetSdk(
             ILogger logger,
             string fileName,

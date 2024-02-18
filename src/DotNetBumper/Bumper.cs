@@ -128,9 +128,9 @@ internal partial class Bumper(ProjectUpgrader upgrader)
     private static partial class Log
     {
         [LoggerMessage(
-           EventId = 1,
-           Level = LogLevel.Error,
-           Message = "Failed to upgrade project.")]
+            EventId = 1,
+            Level = LogLevel.Error,
+            Message = "Failed to upgrade project.")]
         public static partial void UpgradeFailed(ILogger logger, Exception exception);
     }
 }

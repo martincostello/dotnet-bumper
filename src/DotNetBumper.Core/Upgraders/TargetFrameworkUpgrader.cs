@@ -101,9 +101,9 @@ internal sealed partial class TargetFrameworkUpgrader(
     private static partial class Log
     {
         [LoggerMessage(
-           EventId = 1,
-           Level = LogLevel.Debug,
-           Message = "Upgrading target framework moniker.")]
+            EventId = 1,
+            Level = LogLevel.Debug,
+            Message = "Upgrading target framework moniker.")]
         public static partial void UpgradingTargetFramework(ILogger logger);
     }
 }
