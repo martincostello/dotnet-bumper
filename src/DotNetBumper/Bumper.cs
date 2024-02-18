@@ -53,7 +53,11 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         ValueName = "TYPE")]
     public UpgradeType? UpgradeType { get; set; }
 
-    public static async Task<int> RunAsync(IAnsiConsole console, string[] args, CancellationToken cancellationToken)
+    public static async Task<int> RunAsync(
+        IAnsiConsole console,
+        string[] args,
+        Func<ILoggingBuilder, ILoggingBuilder> configureLogging,
+        CancellationToken cancellationToken)
     {
         var logLevel = GetLogLevel(args);
 
@@ -68,7 +72,7 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         using var serviceProvider = new ServiceCollection()
             .AddSingleton<IModelAccessor>(app)
             .AddSingleton<IPostConfigureOptions<UpgradeOptions>, UpgradePostConfigureOptions>()
-            .AddProjectUpgrader(configuration, console, (builder) => builder.AddConsole().SetMinimumLevel(logLevel))
+            .AddProjectUpgrader(configuration, console, (builder) => configureLogging(builder).SetMinimumLevel(logLevel))
             .BuildServiceProvider();
 
         app.Conventions

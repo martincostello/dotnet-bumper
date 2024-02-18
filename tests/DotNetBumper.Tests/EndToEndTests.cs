@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Xml.Linq;
+using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper;
@@ -34,7 +35,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         await fixture.Project.AddFileAsync("src/Project.csproj", projectXml);
 
         // Act
-        int status = await Program.Main([fixture.Project.DirectoryName, "--verbose", ..args]);
+        int status = await RunAsync(fixture, args);
 
         // Assert
         status.ShouldBe(0);
@@ -75,7 +76,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         await fixture.Project.AddFileAsync("src/Project.csproj", projectXml);
 
         // Act
-        int status = await Program.Main([fixture.Project.DirectoryName, "--verbose", .. args]);
+        int status = await RunAsync(fixture, args);
 
         // Assert
         status.ShouldBe(0);
@@ -107,10 +108,34 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         // Act
-        int actual = await Program.Main([fixture.Project.DirectoryName, "--channel=foo"]);
+        int actual = await RunAsync(fixture, "--channel=foo");
 
         // Assert
         actual.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData("--help")]
+    [InlineData("--version")]
+    public async Task Application_Successfully_Invokes_Command(params string[] args)
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        // Act
+        int actual = await Program.Main([fixture.Project.DirectoryName, .. args]);
+
+        // Assert
+        actual.ShouldBe(0);
+    }
+
+    private static async Task<int> RunAsync(UpgraderFixture fixture, params string[] args)
+    {
+        return await Bumper.RunAsync(
+            fixture.Console,
+            [fixture.Project.DirectoryName, "--verbose", ..args],
+            (builder) => builder.AddXUnit(fixture),
+            CancellationToken.None);
     }
 
     private static string CreateGlobalJson(string sdkVersion)
@@ -145,6 +170,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     {
         var json = await fixture.Project.GetFileAsync(fileName);
         using var document = JsonDocument.Parse(json);
+
         return document.RootElement
             .GetProperty("sdk")
             .GetProperty("version")
