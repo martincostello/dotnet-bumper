@@ -15,22 +15,29 @@ internal sealed partial class TargetFrameworkUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<TargetFrameworkUpgrader> logger) : FileUpgrader(console, options, logger)
 {
+    protected override string Action => "Upgrading target frameworks";
+
+    protected override string InitialStatus => "Update TFMs";
+
     protected override IReadOnlyList<string> Patterns => ["*.csproj", "*.fsproj"];
 
     protected override async Task<bool> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
+        StatusContext context,
         CancellationToken cancellationToken)
     {
         Log.UpgradingTargetFramework(logger);
-
-        Console.WriteLine("Upgrading target frameworks...");
 
         bool filesChanged = false;
         XmlWriterSettings? writerSettings = null;
 
         foreach (var filePath in fileNames)
         {
+            var name = RelativeName(filePath);
+
+            context.Status = StatusMessage($"Parsing {name}...");
+
             (var project, var encoding) = await LoadProjectAsync(filePath, cancellationToken);
 
             bool edited = false;
@@ -62,6 +69,8 @@ internal sealed partial class TargetFrameworkUpgrader(
 
             if (edited)
             {
+                context.Status = StatusMessage($"Updating {name}...");
+
                 // Ensure that the user's own formatting is preserved
                 string xml = project.ToString(SaveOptions.DisableFormatting);
 

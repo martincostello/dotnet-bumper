@@ -13,23 +13,37 @@ namespace MartinCostello.DotNetBumper.Upgrades;
 internal sealed partial class PackageVersionUpgrader(
     IAnsiConsole console,
     IOptions<UpgradeOptions> options,
-    ILogger<PackageVersionUpgrader> logger) : IUpgrader
+    ILogger<PackageVersionUpgrader> logger) : Upgrader(console, options, logger)
 {
-    public async Task<bool> UpgradeAsync(
+    protected override string Action => "Upgrading NuGet packages";
+
+    protected override string InitialStatus => "Upgrade NuGet packages";
+
+    protected override async Task<bool> UpgradeCoreAsync(
         UpgradeInfo upgrade,
+        StatusContext context,
         CancellationToken cancellationToken)
     {
         Log.UpgradingPackages(logger);
 
-        console.WriteLine("Upgrading NuGet packages...");
-
         bool filesChanged = false;
+
+        context.Status = StatusMessage("Finding projects...");
 
         foreach (string project in FindProjects())
         {
+            var name = RelativeName(project);
+
+            context.Status = StatusMessage($"Updating {name}...");
+
             using (TryHideGlobalJson(project))
             {
+                context.Status = StatusMessage($"Restore NuGet packages for {name}...");
+
                 await TryRestoreNuGetPackagesAsync(project, cancellationToken);
+
+                context.Status = StatusMessage($"Update NuGet packages for {name}...");
+
                 filesChanged |= await TryUpgradePackagesAsync(project, cancellationToken);
             }
         }
@@ -76,7 +90,7 @@ internal sealed partial class PackageVersionUpgrader(
 
     private List<string> FindProjects()
     {
-        string path = options.Value.ProjectPath;
+        string path = Options.ProjectPath;
         var searchOption = SearchOption.AllDirectories;
 
         List<string> projects =
@@ -120,7 +134,7 @@ internal sealed partial class PackageVersionUpgrader(
             "--upgrade",
         ];
 
-        if (options.Value.UpgradeType is UpgradeType.Preview)
+        if (Options.UpgradeType is UpgradeType.Preview)
         {
             arguments.Add("--pre-release:Always");
         }
