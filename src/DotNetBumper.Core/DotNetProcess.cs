@@ -42,10 +42,10 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
         var logger = loggerFactory.CreateLogger($"dotnet {command}");
 
         // See https://stackoverflow.com/a/16326426/1064169
-        var output = new StringBuilder();
+        var output = new StringBuilder(ushort.MaxValue);
         process.OutputDataReceived += (_, args) =>
         {
-            if (args.Data is { } message)
+            if (args.Data is { Length: > 0 } message)
             {
                 if (debug)
                 {
@@ -134,7 +134,8 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
         [LoggerMessage(
             EventId = 2,
             Level = LogLevel.Debug,
-            Message = "{Output}.")]
+            Message = "{Output}",
+            SkipEnabledCheck = true)]
         public static partial void CommandOutput(ILogger logger, string output);
 
         [LoggerMessage(
