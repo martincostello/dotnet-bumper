@@ -29,9 +29,6 @@ internal sealed partial class PackageVersionUpgrader(
         {
             using (TryHideGlobalJson(project))
             {
-                await RunDotNetCommandAsync(project, ["--info"], cancellationToken);
-                await RunDotNetCommandAsync(project, ["--version"], cancellationToken);
-
                 await TryRestoreNuGetPackagesAsync(project, cancellationToken);
                 filesChanged |= await TryUpgradePackagesAsync(project, cancellationToken);
             }
