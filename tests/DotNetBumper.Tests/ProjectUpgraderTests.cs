@@ -31,7 +31,7 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
 
         var options = Options.Create(upgradeOptions);
 
-        var dotnet = new DotNetProcess(outputHelper.ToLoggerFactory());
+        var dotnet = new DotNetProcess(outputHelper.ToLogger<DotNetProcess>());
         var finder = new DotNetUpgradeFinder(
             new HttpClient(),
             options,

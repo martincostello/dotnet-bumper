@@ -10,11 +10,9 @@ namespace MartinCostello.DotNetBumper;
 /// <summary>
 /// Runs a .NET process.
 /// </summary>
-/// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use.</param>
-public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
+/// <param name="logger">The <see cref="ILogger{DotNetProcess}"/> to use.</param>
+public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 {
-    private readonly ILogger _logger = loggerFactory.CreateLogger<DotNetProcess>();
-
     /// <summary>
     /// Runs the specified dotnet command.
     /// </summary>
@@ -62,7 +60,7 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
 
         if (!result.Success)
         {
-            Log.LogCommandFailed(_logger, process, result.StandardOutput, result.StandardError);
+            Log.LogCommandFailed(logger, process, result.StandardOutput, result.StandardError);
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -104,17 +102,14 @@ public sealed partial class DotNetProcess(ILoggerFactory loggerFactory)
 
             Log.CommandFailed(logger, command, process.ExitCode);
 
-            if (!logger.IsEnabled(LogLevel.Debug))
+            if (!string.IsNullOrEmpty(output))
             {
-                if (!string.IsNullOrEmpty(output))
-                {
-                    Log.CommandFailedOutput(logger, command, output);
-                }
+                Log.CommandFailedOutput(logger, command, output);
+            }
 
-                if (!string.IsNullOrEmpty(error))
-                {
-                    Log.CommandFailedError(logger, command, error);
-                }
+            if (!string.IsNullOrEmpty(error))
+            {
+                Log.CommandFailedError(logger, command, error);
             }
         }
 
