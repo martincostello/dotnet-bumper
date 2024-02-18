@@ -15,21 +15,28 @@ internal sealed partial class GlobalJsonUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<GlobalJsonUpgrader> logger) : FileUpgrader(console, options, logger)
 {
+    protected override string Action => "Upgrading .NET SDK";
+
+    protected override string InitialStatus => "Update SDK version";
+
     protected override IReadOnlyList<string> Patterns => ["global.json"];
 
     protected override async Task<bool> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
+        StatusContext context,
         CancellationToken cancellationToken)
     {
         Log.UpgradingDotNetSdk(logger);
-
-        Console.WriteLine("Upgrading .NET SDK...");
 
         bool filesChanged = false;
 
         foreach (var path in fileNames)
         {
+            var name = RelativeName(path);
+
+            context.Status = StatusMessage($"Parsing {name}...");
+
             string json = await File.ReadAllTextAsync(path, cancellationToken);
 
             if (!TryParseSdkVersion(json, out var currentVersion))
@@ -40,6 +47,8 @@ internal sealed partial class GlobalJsonUpgrader(
 
             if (currentVersion < upgrade.SdkVersion)
             {
+                context.Status = StatusMessage($"Updating {name}...");
+
                 json = json.Replace($@"""{currentVersion}""", $@"""{upgrade.SdkVersion}""", StringComparison.Ordinal);
 
                 await File.WriteAllTextAsync(path, json, cancellationToken);

@@ -96,7 +96,9 @@ internal partial class Bumper(ProjectUpgrader upgrader)
             await upgrader.UpgradeAsync(cancellationToken);
 
             stopwatch.Stop();
-            console.WriteLine($"Operation completed in {stopwatch.Elapsed}.");
+
+            console.WriteLine();
+            console.MarkupLine($"Duration: [green]{stopwatch.Elapsed}.[/]");
 
             return 0;
         }
@@ -107,7 +109,8 @@ internal partial class Bumper(ProjectUpgrader upgrader)
             if (ex is not OperationCanceledException oce ||
                 oce.CancellationToken != cancellationToken)
             {
-                console.WriteLine("Failed to upgrade project.");
+                console.WriteLine();
+                console.MarkupLine("[red]Failed to upgrade project.[/]");
                 console.WriteException(ex);
             }
 

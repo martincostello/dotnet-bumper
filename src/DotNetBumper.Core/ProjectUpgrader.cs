@@ -46,11 +46,15 @@ public partial class ProjectUpgrader(
 
         if (upgrade is null)
         {
-            console.WriteLine("No eligible .NET upgrade was found.");
+            console.MarkupLine("[yellow]No eligible .NET upgrade was found.[/]");
+            console.WriteLine();
             return;
         }
 
-        console.WriteLine($"Upgrading project to .NET {upgrade.Channel}...");
+        var name = Path.GetFileNameWithoutExtension(options.Value.ProjectPath);
+
+        console.MarkupLineInterpolated($"Upgrading project [aqua]{name}[/] to .NET [purple]{upgrade.Channel}[/]...");
+        console.WriteLine();
 
         Log.Upgrading(logger, options.Value.ProjectPath);
 
@@ -69,7 +73,8 @@ public partial class ProjectUpgrader(
                 upgrade.Channel.ToString(),
                 upgrade.SdkVersion.ToString());
 
-            console.WriteLine($"Project upgraded to .NET {upgrade.Channel}.");
+            console.WriteLine();
+            console.MarkupLine($"[aqua]{name}[/] upgraded to [white on purple].NET {upgrade.Channel}[/] :rocket:!");
 
             if (options.Value.OpenPullRequest)
             {
@@ -79,7 +84,10 @@ public partial class ProjectUpgrader(
         else
         {
             Log.NothingToUpgrade(logger, options.Value.ProjectPath);
-            console.WriteLine("The project upgrade did not result in any changes being made.");
+
+            console.WriteLine();
+            console.MarkupLine("[yellow]The project upgrade did not result in any changes being made.[/]");
+            console.MarkupLine("[yellow]Maybe the project has already been upgraded?[/]");
         }
     }
 

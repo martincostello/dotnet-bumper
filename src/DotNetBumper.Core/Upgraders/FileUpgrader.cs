@@ -10,20 +10,15 @@ namespace MartinCostello.DotNetBumper.Upgrades;
 internal abstract partial class FileUpgrader(
     IAnsiConsole console,
     IOptions<UpgradeOptions> options,
-    ILogger logger) : IUpgrader
+    ILogger logger) : Upgrader(console, options, logger)
 {
-    protected IAnsiConsole Console => console;
-
-    protected UpgradeOptions Options => options.Value;
-
-    protected ILogger Logger => logger;
-
     protected abstract IReadOnlyList<string> Patterns { get; }
 
     protected virtual SearchOption SearchOption => SearchOption.AllDirectories;
 
-    public async Task<bool> UpgradeAsync(
+    protected override async Task<bool> UpgradeCoreAsync(
         UpgradeInfo upgrade,
+        StatusContext context,
         CancellationToken cancellationToken)
     {
         List<string> fileNames = [];
@@ -38,11 +33,12 @@ internal abstract partial class FileUpgrader(
             return false;
         }
 
-        return await UpgradeCoreAsync(upgrade, fileNames, cancellationToken);
+        return await UpgradeCoreAsync(upgrade, fileNames, context, cancellationToken);
     }
 
     protected abstract Task<bool> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
+        StatusContext context,
         CancellationToken cancellationToken);
 }
