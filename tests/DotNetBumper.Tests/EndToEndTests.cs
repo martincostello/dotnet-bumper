@@ -9,32 +9,39 @@ namespace MartinCostello.DotNetBumper;
 
 public class EndToEndTests(ITestOutputHelper outputHelper)
 {
+    public static TheoryData<BumperTestCase> TestCases()
+    {
+        var testCases = new TheoryData<BumperTestCase>
+        {
+            new("6.0.100", ["net6.0"]),
+            new("7.0.100", ["net6.0", "net7.0"]),
+            new("6.0.100", ["net6.0"], args: ["--channel=7.0"]),
+            new("6.0.100", ["net6.0"], args: ["--channel=8.0"]),
+            new("6.0.100", ["net6.0"], args: ["--channel=9.0"]),
+            new("6.0.100", ["net6.0"], args: ["--upgrade-type=latest"]),
+            new("6.0.100", ["net6.0"], args: ["--upgrade-type=lts"]),
+            new("6.0.100", ["net6.0"], args: ["--upgrade-type=preview"]),
+        };
+
+        return testCases;
+    }
+
     [Theory]
-    [InlineData("6.0.100", new string[] { "net6.0", })]
-    [InlineData("7.0.100", new string[] { "net6.0", "net7.0" })]
-    [InlineData("6.0.100", new string[] { "net6.0", }, "--channel=7.0")]
-    [InlineData("6.0.100", new string[] { "net6.0", }, "--channel=8.0")]
-    [InlineData("6.0.100", new string[] { "net6.0", }, "--channel=9.0")]
-    [InlineData("6.0.100", new string[] { "net6.0", }, "--upgrade-type=latest")]
-    [InlineData("6.0.100", new string[] { "net6.0", }, "--upgrade-type=lts")]
-    [InlineData("6.0.100", new string[] { "net6.0", }, "--upgrade-type=preview")]
-    public async Task Application_Upgrades_Project(
-        string sdkVersion,
-        string[] targetFrameworks,
-        params string[] args)
+    [MemberData(nameof(TestCases))]
+    public async Task Application_Upgrades_Project(BumperTestCase testCase)
     {
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        var globalJson = CreateGlobalJson(sdkVersion);
-        var project = CreateProjectXml(targetFrameworks);
+        var globalJson = CreateGlobalJson(testCase.SdkVersion);
+        var project = CreateProjectXml(testCase.TargetFrameworks);
 
         fixture.Project.AddDirectory("src");
         await fixture.Project.AddFileAsync("global.json", globalJson);
         await fixture.Project.AddFileAsync("src/Project.csproj", project);
 
         // Act
-        int status = await RunAsync(fixture, args);
+        int status = await RunAsync(fixture, testCase.Arguments);
 
         // Assert
         status.ShouldBe(0);
@@ -42,8 +49,8 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         string? actualSdk = await GetSdkVersionAsync(fixture, "global.json");
         string? actualTfm = await GetTargetFrameworksAsync(fixture, "src/Project.csproj");
 
-        actualSdk.ShouldNotBe(sdkVersion);
-        actualTfm.ShouldNotBe(string.Join(';', targetFrameworks));
+        actualSdk.ShouldNotBe(testCase.SdkVersion);
+        actualTfm.ShouldNotBe(string.Join(';', testCase.TargetFrameworks));
     }
 
     [Theory]
@@ -65,7 +72,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         var globalJson = CreateGlobalJson(sdkVersion);
-        var project = CreateProjectXml(targetFramework);
+        var project = CreateProjectXml([targetFramework]);
 
         fixture.Project.AddDirectory("src");
         await fixture.Project.AddFileAsync("global.json", globalJson);
@@ -104,7 +111,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         // Act
-        int actual = await RunAsync(fixture, "--channel=foo");
+        int actual = await RunAsync(fixture, ["--channel=foo"]);
 
         // Assert
         actual.ShouldBe(1);
@@ -125,7 +132,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(0);
     }
 
-    private static async Task<int> RunAsync(UpgraderFixture fixture, params string[] args)
+    private static async Task<int> RunAsync(UpgraderFixture fixture, IList<string> args)
     {
         static bool LogFilter(string? category, LogLevel level)
         {
@@ -157,9 +164,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                  """;
     }
 
-    private static XDocument CreateProjectXml(params string[] targetFrameworks)
+    private static XDocument CreateProjectXml(IList<string> targetFrameworks)
     {
-        string tfms = targetFrameworks.Length == 1
+        string tfms = targetFrameworks.Count == 1
             ? $"<TargetFramework>{targetFrameworks[0]}</TargetFramework>"
             : $"<TargetFrameworks>{string.Join(";", targetFrameworks)}</TargetFrameworks>";
 
