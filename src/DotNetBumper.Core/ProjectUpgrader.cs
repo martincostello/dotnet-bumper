@@ -76,7 +76,7 @@ public partial class ProjectUpgrader(
                 var days = (eolUtc - utcNow).TotalDays;
 
                 console.MarkupLineInterpolated($"[yellow]:warning: Support for .NET {upgrade.Channel} ends in {days:N0} days on {eolUtc:D}.[/]");
-                console.MarkupLine("[yellow]:warning: See https://dotnet.microsoft.com/platform/support/policy/dotnet-core for more information.[/]");
+                console.MarkupLine("[yellow]:warning: See [link=https://dotnet.microsoft.com/platform/support/policy/dotnet-core].NET and .NET Core Support Policy[/] for more information.[/]");
                 console.WriteLine();
             }
         }
