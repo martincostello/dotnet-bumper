@@ -10,12 +10,13 @@ internal sealed class UpgradePostConfigureOptions(IModelAccessor accessor) : IPo
 {
     public void PostConfigure(string? name, UpgradeOptions options)
     {
-        var program = (Bumper)accessor.GetModel();
+        var command = (Bumper)accessor.GetModel();
 
-        options.DotNetChannel ??= program.DotNetChannel;
-        options.ProjectPath = program.ProjectPath ?? Environment.CurrentDirectory;
+        options.DotNetChannel ??= command.DotNetChannel;
+        options.ProjectPath = command.ProjectPath ?? Environment.CurrentDirectory;
+        options.TestUpgrade = command.TestUpgrade;
 
-        if (program.UpgradeType is { } upgradeType)
+        if (command.UpgradeType is { } upgradeType)
         {
             options.UpgradeType = upgradeType;
         }

@@ -39,10 +39,7 @@ internal abstract partial class Upgrader(
     }
 
     protected string RelativeName(string path)
-    {
-        var relative = Path.GetRelativePath(Options.ProjectPath, path);
-        return relative is "." ? Path.GetFileName(path) : relative;
-    }
+        => ProjectHelpers.RelativeName(Options.ProjectPath, path);
 
     protected string StatusMessage(string message)
         => $"[{StatusColor}]{message}[/]";

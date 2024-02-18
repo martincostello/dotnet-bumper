@@ -33,6 +33,11 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         ValueName = "TYPE")]
     public UpgradeType? UpgradeType { get; set; }
 
+    [Option(
+        "-test|--test",
+        Description = "Whether to test the upgrade by running dotnet test on completion. The default value is false.")]
+    public bool TestUpgrade { get; set; }
+
     public static async Task<int> RunAsync(
         IAnsiConsole console,
         string[] args,
@@ -73,14 +78,14 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         {
             var stopwatch = Stopwatch.StartNew();
 
-            await upgrader.UpgradeAsync(cancellationToken);
+            int status = await upgrader.UpgradeAsync(cancellationToken);
 
             stopwatch.Stop();
 
             console.WriteLine();
             console.MarkupLine($"Duration: [green]{stopwatch.Elapsed}.[/]");
 
-            return 0;
+            return status;
         }
         catch (Exception ex)
         {

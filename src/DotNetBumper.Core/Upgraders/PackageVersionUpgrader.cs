@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Diagnostics;
 using System.Text.Json;
-using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -11,6 +9,7 @@ using Spectre.Console;
 namespace MartinCostello.DotNetBumper.Upgrades;
 
 internal sealed partial class PackageVersionUpgrader(
+    DotNetProcess dotnet,
     IAnsiConsole console,
     IOptions<UpgradeOptions> options,
     ILogger<PackageVersionUpgrader> logger) : Upgrader(console, options, logger)
@@ -51,23 +50,6 @@ internal sealed partial class PackageVersionUpgrader(
         return filesChanged;
     }
 
-    private static Process StartDotNet(string workingDirectory, IReadOnlyList<string> arguments)
-    {
-        var startInfo = new ProcessStartInfo(DotNetExe.FullPathOrDefault(), arguments)
-        {
-            EnvironmentVariables =
-            {
-                ["DOTNET_ROLL_FORWARD"] = "Major",
-                ["MSBuildSDKsPath"] = null,
-            },
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            WorkingDirectory = workingDirectory,
-        };
-
-        return Process.Start(startInfo) ?? throw new InvalidOperationException($"Failed to start process for dotnet {arguments[0]}.");
-    }
-
     private static HiddenFile? TryHideGlobalJson(string path)
     {
         var directory = new DirectoryInfo(path);
@@ -89,30 +71,16 @@ internal sealed partial class PackageVersionUpgrader(
     }
 
     private List<string> FindProjects()
-    {
-        string path = Options.ProjectPath;
-        var searchOption = SearchOption.AllDirectories;
-
-        List<string> projects =
-        [
-            ..Directory.GetFiles(path, "*.sln", searchOption),
-        ];
-
-        if (projects.Count == 0)
-        {
-            projects.AddRange(Directory.GetFiles(path, "*.csproj", searchOption));
-            projects.AddRange(Directory.GetFiles(path, "*.fsproj", searchOption));
-        }
-
-        return projects
-            .Select(Path.GetDirectoryName)
-            .Cast<string>()
-            .ToList();
-    }
+        => ProjectHelpers.FindProjects(Options.ProjectPath, SearchOption.AllDirectories);
 
     private async Task TryRestoreNuGetPackagesAsync(string directory, CancellationToken cancellationToken)
     {
-        if (await RunDotNetCommandAsync(directory, ["restore"], cancellationToken))
+        var result = await dotnet.RunAsync(
+            directory,
+            ["restore", "--verbosity", "quiet"],
+            cancellationToken);
+
+        if (result.Success)
         {
             Log.RestoredPackages(logger, directory);
         }
@@ -153,7 +121,9 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.Add(package);
         }
 
-        if (!await RunDotNetCommandAsync(directory, ["outdated", ..arguments], cancellationToken))
+        var result = await dotnet.RunAsync(directory, ["outdated", ..arguments], cancellationToken);
+
+        if (!result.Success)
         {
             return false;
         }
@@ -184,45 +154,9 @@ internal sealed partial class PackageVersionUpgrader(
         return updatedDependencies > 0;
     }
 
-    private async Task<bool> RunDotNetCommandAsync(
-        string workingDirectory,
-        IReadOnlyList<string> arguments,
-        CancellationToken cancellationToken)
-    {
-        using var process = StartDotNet(workingDirectory, arguments);
-        await process.WaitForExitAsync(cancellationToken);
-
-        if (process.ExitCode != 0)
-        {
-            await Log.LogCommandFailedAsync(logger, process);
-            return false;
-        }
-
-        return true;
-    }
-
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private static partial class Log
     {
-        public static async Task LogCommandFailedAsync(ILogger logger, Process process)
-        {
-            string command = process.StartInfo.ArgumentList[0];
-            string output = await process.StandardOutput.ReadToEndAsync(CancellationToken.None);
-            string error = await process.StandardError.ReadToEndAsync(CancellationToken.None);
-
-            Log.CommandFailed(logger, command, process.ExitCode);
-
-            if (!string.IsNullOrEmpty(output))
-            {
-                Log.CommandFailedOutput(logger, command, output);
-            }
-
-            if (!string.IsNullOrEmpty(error))
-            {
-                Log.CommandFailedError(logger, command, error);
-            }
-        }
-
         [LoggerMessage(
             EventId = 1,
             Level = LogLevel.Debug,
@@ -246,25 +180,6 @@ internal sealed partial class PackageVersionUpgrader(
             Level = LogLevel.Warning,
             Message = "Unable to restore NuGet packages for {Directory}.")]
         public static partial void UnableToRestorePackages(ILogger logger, string directory);
-
-        [LoggerMessage(
-            EventId = 5,
-            Level = LogLevel.Warning,
-            Message = "Command \"dotnet {Command}\" failed with exit code {ExitCode}.")]
-        public static partial void CommandFailed(ILogger logger, string command, int exitCode);
-
-        [LoggerMessage(
-            EventId = 6,
-            Level = LogLevel.Warning,
-            Message = "Command \"dotnet {Command}\" standard output: {Output}",
-            SkipEnabledCheck = true)]
-        public static partial void CommandFailedOutput(ILogger logger, string command, string output);
-
-        [LoggerMessage(
-            EventId = 7,
-            Level = LogLevel.Warning,
-            Message = "Command \"dotnet {Command}\" standard error: {Error}")]
-        public static partial void CommandFailedError(ILogger logger, string command, string error);
     }
 
     private sealed class HiddenFile : IDisposable
