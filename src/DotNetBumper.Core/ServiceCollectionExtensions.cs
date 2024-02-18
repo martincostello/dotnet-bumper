@@ -6,8 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Octokit;
-using Octokit.Internal;
 using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper;
@@ -40,7 +38,6 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton(configuration)
                 .AddSingleton<IAnsiConsole>(console)
-                .AddSingleton<IPostConfigureOptions<UpgradeOptions>, UpgradePostConfigureOptions>()
                 .AddSingleton<IValidateOptions<UpgradeOptions>, UpgradeOptionsValidator>()
                 .AddSingleton<ProjectUpgrader>();
 
@@ -58,24 +55,6 @@ public static class ServiceCollectionExtensions
                 });
 
         services.AddHttpClient<DotNetUpgradeFinder>();
-
-        services.AddSingleton<ICredentialStore>((provider) =>
-        {
-            var options = provider.GetRequiredService<IOptions<UpgradeOptions>>().Value;
-            var credentials = new Credentials(options.GitHubToken);
-
-            return new InMemoryCredentialStore(credentials);
-        });
-
-        services.AddSingleton<IGitHubClient>((provider) =>
-        {
-            var options = provider.GetRequiredService<IOptions<UpgradeOptions>>().Value;
-            var credentialStore = provider.GetRequiredService<ICredentialStore>();
-
-            var productInformation = new ProductHeaderValue(UserAgent.Product, UserAgent.Version);
-
-            return new GitHubClient(productInformation, credentialStore, options.GitHubApiUri);
-        });
 
         return services;
     }

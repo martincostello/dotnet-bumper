@@ -28,26 +28,6 @@ internal partial class Bumper(ProjectUpgrader upgrader)
     public string? DotNetChannel { get; set; }
 
     [Option(
-        "-gh|--github-api-url <GITHUB_API_URL>",
-        Description = "The URL to use for the GitHub API. Defaults to the value of the GITHUB_API_URL environment variable or https://api.github.com.")]
-    public string? GitHubApiUrl { get; set; }
-
-    [Option(
-        "-repo|--github-repo <GITHUB_REPOSITORY>",
-        Description = "The full name of the GitHub repository for the project in the format \"owner/repo\". Defaults to the value of the GITHUB_REPOSITORY environment variable.")]
-    public string? GitHubRepository { get; set; }
-
-    [Option(
-        "-token|--github-token <GITHUB_TOKEN>",
-        Description = "The GitHub access token to use. Defaults to the value of the GITHUB_TOKEN environment variable.")]
-    public string? GitHubToken { get; set; }
-
-    [Option(
-        "-pr|--open-pull-request",
-        Description = "Whether to open a GitHub pull request after upgrading the project.")]
-    public bool OpenPullRequest { get; set; }
-
-    [Option(
         "-t|--upgrade-type <TYPE>",
         Description = "The type of upgrade to perform. Possible values for <TYPE> are LTS (default), Latest or Preview.",
         ValueName = "TYPE")]
