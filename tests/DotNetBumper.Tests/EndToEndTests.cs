@@ -37,6 +37,8 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         var testPackages = new Dictionary<string, string>()
         {
             ["Microsoft.NET.Test.Sdk"] = "17.9.0",
+            ["xunit"] = "2.7.0",
+            ["xunit.runner.visualstudio"] = "2.5.7",
         };
 
         using var fixture = new UpgraderFixture(outputHelper);
@@ -58,6 +60,26 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             "tests/Project.Tests/Project.Tests.csproj",
             testCase.TargetFrameworks,
             testPackages);
+
+        string unitTestClass =
+            """
+            using Xunit;
+
+            namespace MyProject.Tests;
+
+            public static class UnitTests
+            {
+                [Fact]
+                public static void Always_Passes_Test()
+                {
+                    Assert.True(true);
+                }
+            }
+            """;
+
+        await fixture.Project.AddFileAsync(
+            "tests/Project.Tests/UnitTests.cs",
+            unitTestClass);
 
         // Act
         int status = await RunAsync(fixture, [..testCase.Arguments, "--test"]);
