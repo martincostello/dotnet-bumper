@@ -59,7 +59,8 @@ public partial class DotNetUpgradeFinder(
                     out var channel,
                     out var sdkVersion,
                     out var releaseType,
-                    out var isEndOfLife)
+                    out var isEndOfLife,
+                    out var endOfLifeDate)
                 || isEndOfLife)
             {
                 if (!isEndOfLife)
@@ -73,6 +74,7 @@ public partial class DotNetUpgradeFinder(
             channels.Add(new()
             {
                 Channel = channel,
+                EndOfLife = endOfLifeDate,
                 ReleaseType = releaseType,
                 SdkVersion = sdkVersion,
             });
@@ -85,16 +87,32 @@ public partial class DotNetUpgradeFinder(
             [NotNullWhen(true)] out Version? channel,
             [NotNullWhen(true)] out NuGetVersion? sdkVersion,
             out DotNetReleaseType releaseType,
-            out bool isEndOfLife)
+            out bool isEndOfLife,
+            out DateOnly? endOfLife)
         {
             channel = null;
             sdkVersion = null;
             releaseType = default;
+            endOfLife = default;
 
             var channelString = GetString(element, "channel-version");
             var latestSdkVersion = GetString(element, "latest-sdk");
             var releaseTypeString = GetString(element, "release-type");
             var supportPhase = GetString(element, "support-phase");
+            var endOfLifeString = GetString(element, "eol-date");
+
+            if (endOfLifeString is { Length: > 0 })
+            {
+                if (DateOnly.TryParseExact(
+                        endOfLifeString,
+                        "yyyy-MM-dd",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out DateOnly eol))
+                {
+                    endOfLife = eol;
+                }
+            }
 
             isEndOfLife = supportPhase is "eol";
 

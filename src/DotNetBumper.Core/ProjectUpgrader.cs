@@ -15,15 +15,19 @@ namespace MartinCostello.DotNetBumper;
 /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
 /// <param name="upgradeFinder">The <see cref="DotNetUpgradeFinder"/> to use.</param>
 /// <param name="upgraders">The <see cref="IUpgrader"/> implementations to use.</param>
+/// <param name="timeProvider">The <see cref="TimeProvider"/> to use.</param>
 /// <param name="options">The <see cref="IOptions{UpgradeOptions}"/> to use.</param>
 /// <param name="logger">The <see cref="ILogger{ProjectUpgrader}"/> to use.</param>
 public partial class ProjectUpgrader(
     IAnsiConsole console,
     DotNetUpgradeFinder upgradeFinder,
     IEnumerable<IUpgrader> upgraders,
+    TimeProvider timeProvider,
     IOptions<UpgradeOptions> options,
     ILogger<ProjectUpgrader> logger)
 {
+    private const int EndOfLifeWarningDays = 100;
+
     /// <summary>
     /// Gets the version of the application.
     /// </summary>
@@ -46,7 +50,7 @@ public partial class ProjectUpgrader(
 
         if (upgrade is null)
         {
-            console.MarkupLine("[yellow]No eligible .NET upgrade was found.[/]");
+            console.MarkupLine("[yellow]:warning: No eligible .NET upgrade was found.[/]");
             console.WriteLine();
             return;
         }
@@ -55,6 +59,23 @@ public partial class ProjectUpgrader(
 
         console.MarkupLineInterpolated($"Upgrading project [aqua]{name}[/] to .NET [purple]{upgrade.Channel}[/]...");
         console.WriteLine();
+
+        if (upgrade.EndOfLife is { } value)
+        {
+            var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+            var today = DateOnly.FromDateTime(utcNow);
+            var warnFrom = value.AddDays(-EndOfLifeWarningDays);
+
+            if (today >= warnFrom)
+            {
+                var eolUtc = value.ToDateTime(TimeOnly.MinValue);
+                var days = (eolUtc - utcNow).TotalDays;
+
+                console.MarkupLineInterpolated($"[yellow]:warning: Support for .NET {upgrade.Channel} ends in {days:N0} days on {eolUtc:D}.[/]");
+                console.MarkupLine("[yellow]:warning: See https://dotnet.microsoft.com/platform/support/policy/dotnet-core for more information.[/]");
+                console.WriteLine();
+            }
+        }
 
         Log.Upgrading(logger, options.Value.ProjectPath);
 
@@ -81,8 +102,8 @@ public partial class ProjectUpgrader(
             Log.NothingToUpgrade(logger, options.Value.ProjectPath);
 
             console.WriteLine();
-            console.MarkupLine("[yellow]The project upgrade did not result in any changes being made.[/]");
-            console.MarkupLine("[yellow]Maybe the project has already been upgraded?[/]");
+            console.MarkupLine("[yellow]:warning: The project upgrade did not result in any changes being made.[/]");
+            console.MarkupLine("[yellow]:warning: Maybe the project has already been upgraded?[/]");
         }
     }
 

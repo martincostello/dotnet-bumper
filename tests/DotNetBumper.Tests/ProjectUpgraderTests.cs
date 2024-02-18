@@ -40,6 +40,7 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
             fixture.Console,
             finder,
             [Substitute.For<IUpgrader>()],
+            TimeProvider.System,
             options,
             outputHelper.ToLogger<ProjectUpgrader>());
     }

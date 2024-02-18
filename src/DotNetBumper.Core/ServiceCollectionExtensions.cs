@@ -4,6 +4,7 @@
 using MartinCostello.DotNetBumper.Upgrades;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -35,6 +36,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddLogging(configureLogging);
         services.AddOptions<UpgradeOptions>();
+
+        services.TryAddSingleton(TimeProvider.System);
 
         services.AddSingleton(configuration)
                 .AddSingleton<IAnsiConsole>(console)
