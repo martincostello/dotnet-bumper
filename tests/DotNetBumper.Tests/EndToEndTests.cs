@@ -113,14 +113,13 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        var project = CreateProjectXml([targetFramework]);
+        fixture.Project.AddDirectory("src")
+                       .AddDirectory("src/Project");
 
-        string projectFileName = "src/Project.csproj";
-        fixture.Project.AddDirectory("src");
-
-        string globalJsonName = await fixture.Project.AddGlobalJsonAsync(sdkVersion);
-
-        await fixture.Project.AddFileAsync(projectFileName, project);
+        string globalJson = await fixture.Project.AddGlobalJsonAsync(sdkVersion);
+        string projectFile = await fixture.Project.AddProjectAsync(
+            "src/Project/Project.csproj",
+            [targetFramework]);
 
         // Act
         int status = await RunAsync(fixture, [..args, "--test"]);
@@ -128,9 +127,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Assert
         status.ShouldBe(0);
 
-        var actualSdk = await GetSdkVersionAsync(fixture, globalJsonName);
-        var actualTfm = await GetTargetFrameworksAsync(fixture, projectFileName);
-        var actualPackages = await GetPackageReferencesAsync(fixture, projectFileName);
+        var actualSdk = await GetSdkVersionAsync(fixture, globalJson);
+        var actualTfm = await GetTargetFrameworksAsync(fixture, projectFile);
+        var actualPackages = await GetPackageReferencesAsync(fixture, projectFile);
 
         actualSdk.ShouldBe(sdkVersion);
         actualTfm.ShouldBe(targetFramework);
@@ -192,28 +191,12 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                      category.StartsWith("System", StringComparison.Ordinal));
         }
 
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(90));
         return await Bumper.RunAsync(
             fixture.Console,
             [fixture.Project.DirectoryName, "--verbose", ..args],
             (builder) => builder.AddXUnit(fixture).AddFilter(LogFilter),
-            CancellationToken.None);
-    }
-
-    private static XDocument CreateProjectXml(IList<string> targetFrameworks)
-    {
-        string tfms = targetFrameworks.Count == 1
-            ? $"<TargetFramework>{targetFrameworks[0]}</TargetFramework>"
-            : $"<TargetFrameworks>{string.Join(";", targetFrameworks)}</TargetFrameworks>";
-
-        string xml = $"""
-                      <Project Sdk="Microsoft.NET.Sdk">
-                        <PropertyGroup>
-                          {tfms}
-                        </PropertyGroup>
-                      </Project>
-                      """;
-
-        return XDocument.Parse(xml);
+            cts.Token);
     }
 
     private static async Task<string?> GetSdkVersionAsync(
