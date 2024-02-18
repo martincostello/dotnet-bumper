@@ -22,20 +22,64 @@ internal sealed partial class PackageVersionUpgrader(
 
         console.WriteLine("Upgrading NuGet packages...");
 
-        await TryRestoreNuGetPackagesAsync(cancellationToken);
+        bool filesChanged = false;
 
-        return await TryUpgradePackagesAsync(cancellationToken);
+        foreach (string project in FindProjects())
+        {
+            await TryRestoreNuGetPackagesAsync(project, cancellationToken);
+            filesChanged |= await TryUpgradePackagesAsync(project, cancellationToken);
+        }
+
+        return filesChanged;
     }
 
-    private async Task TryRestoreNuGetPackagesAsync(CancellationToken cancellationToken)
+    private static Process StartDotNet(string workingDirectory, IReadOnlyList<string> arguments)
     {
-        if (!await RunDotNetCommandAsync(["restore", options.Value.ProjectPath], cancellationToken))
+        var startInfo = new ProcessStartInfo("dotnet", arguments)
+        {
+            EnvironmentVariables =
+            {
+                ["DOTNET_ROLL_FORWARD"] = "Major",
+            },
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+            WorkingDirectory = workingDirectory,
+        };
+
+        return Process.Start(startInfo) ?? throw new InvalidOperationException($"Failed to start process for dotnet {arguments[0]}.");
+    }
+
+    private List<string> FindProjects()
+    {
+        string path = options.Value.ProjectPath;
+        var searchOption = SearchOption.AllDirectories;
+
+        List<string> projects =
+        [
+            ..Directory.GetFiles(path, "*.sln", searchOption),
+        ];
+
+        if (projects.Count == 0)
+        {
+            projects.AddRange(Directory.GetFiles(path, "*.csproj", searchOption));
+            projects.AddRange(Directory.GetFiles(path, "*.fsproj", searchOption));
+        }
+
+        return projects
+            .Select(Path.GetDirectoryName)
+            .Cast<string>()
+            .ToList();
+    }
+
+    private async Task TryRestoreNuGetPackagesAsync(string directory, CancellationToken cancellationToken)
+    {
+        if (!await RunDotNetCommandAsync(directory, ["restore"], cancellationToken))
         {
             Log.UnableToRestore(logger);
         }
     }
 
-    private async Task<bool> TryUpgradePackagesAsync(CancellationToken cancellationToken)
+    private async Task<bool> TryUpgradePackagesAsync(string directory, CancellationToken cancellationToken)
     {
         using var tempFile = new TemporaryFile();
 
@@ -66,7 +110,7 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.Add(package);
         }
 
-        if (!await RunDotNetCommandAsync(["outdated", .. arguments], cancellationToken))
+        if (!await RunDotNetCommandAsync(directory, ["outdated", ..arguments], cancellationToken))
         {
             return false;
         }
@@ -97,9 +141,12 @@ internal sealed partial class PackageVersionUpgrader(
         return updatedDependencies > 0;
     }
 
-    private async Task<bool> RunDotNetCommandAsync(IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    private async Task<bool> RunDotNetCommandAsync(
+        string workingDirectory,
+        IReadOnlyList<string> arguments,
+        CancellationToken cancellationToken)
     {
-        using var process = StartDotNet(arguments);
+        using var process = StartDotNet(workingDirectory, arguments);
         await process.WaitForExitAsync(cancellationToken);
 
         if (process.ExitCode != 0)
@@ -109,22 +156,6 @@ internal sealed partial class PackageVersionUpgrader(
         }
 
         return true;
-    }
-
-    private Process StartDotNet(IReadOnlyList<string> arguments)
-    {
-        var startInfo = new ProcessStartInfo("dotnet", arguments)
-        {
-            EnvironmentVariables =
-            {
-                ["DOTNET_ROLL_FORWARD"] = "Major",
-            },
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            WorkingDirectory = options.Value.ProjectPath,
-        };
-
-        return Process.Start(startInfo) ?? throw new InvalidOperationException($"Failed to start process for dotnet {arguments[0]}.");
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
