@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
+using System.Text;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
@@ -29,16 +30,13 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
     {
         using var process = StartDotNet(workingDirectory, arguments);
 
-        string error = string.Empty;
-        string output = string.Empty;
+        // See https://stackoverflow.com/a/16326426/1064169 and
+        // https://learn.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.redirectstandardoutput.
+        using var outputTokenSource = new CancellationTokenSource();
+        var readOutput = ReadOutputAsync(process, outputTokenSource.Token);
 
         try
         {
-            // See https://stackoverflow.com/a/16326426/1064169 and
-            // https://learn.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.redirectstandardoutput.
-            error = await process.StandardError.ReadToEndAsync(cancellationToken);
-            output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
-
             await process.WaitForExitAsync(cancellationToken);
         }
         catch (OperationCanceledException)
@@ -52,11 +50,17 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
                 // Ignore
             }
         }
+        finally
+        {
+            await outputTokenSource.CancelAsync();
+        }
+
+        (string error, string output) = await readOutput;
 
         var result = new DotNetResult(
             process.ExitCode == 0,
-            output.ToString(),
-            error.ToString());
+            output,
+            error);
 
         if (!result.Success)
         {
@@ -66,6 +70,59 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         cancellationToken.ThrowIfCancellationRequested();
 
         return result;
+
+        static async Task<(string Error, string Output)> ReadOutputAsync(
+            Process process,
+            CancellationToken cancellationToken)
+        {
+            var processErrors = ConsumeStreamAsync(process.StandardError, cancellationToken);
+            var processOutput = ConsumeStreamAsync(process.StandardOutput, cancellationToken);
+
+            await Task.WhenAll([processErrors, processOutput]);
+
+            string error = string.Empty;
+            string output = string.Empty;
+
+            if (processErrors.Status == TaskStatus.RanToCompletion)
+            {
+                error = (await processErrors).ToString();
+            }
+
+            if (processOutput.Status == TaskStatus.RanToCompletion)
+            {
+                output = (await processOutput).ToString();
+            }
+
+            return (error, output);
+        }
+
+        static Task<StringBuilder> ConsumeStreamAsync(
+            StreamReader reader,
+            CancellationToken cancellationToken)
+        {
+            return Task.Run<StringBuilder>(() => ProcessStream(reader, cancellationToken), cancellationToken);
+
+            static async Task<StringBuilder> ProcessStream(
+                StreamReader reader,
+                CancellationToken cancellationToken)
+            {
+                var builder = new StringBuilder();
+
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        builder.Append(await reader.ReadToEndAsync(cancellationToken));
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                }
+
+                return builder;
+            }
+        }
     }
 
     private static Process StartDotNet(string workingDirectory, IReadOnlyList<string> arguments)
