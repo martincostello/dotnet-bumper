@@ -43,12 +43,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        fixture.Project.AddDirectory(".vscode")
-                       .AddDirectory("src")
-                       .AddDirectory("src/Project")
-                       .AddDirectory("tests")
-                       .AddDirectory("tests/Project.Tests");
-
         await fixture.Project.AddSolutionAsync("Project.sln");
 
         string globalJson = await fixture.Project.AddGlobalJsonAsync(testCase.SdkVersion);
@@ -161,9 +155,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     {
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
-
-        fixture.Project.AddDirectory("src")
-                       .AddDirectory("src/Project");
 
         string globalJson = await fixture.Project.AddGlobalJsonAsync(sdkVersion);
         string projectFile = await fixture.Project.AddProjectAsync(
