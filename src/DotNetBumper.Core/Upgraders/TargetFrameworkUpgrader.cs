@@ -108,7 +108,7 @@ internal sealed partial class TargetFrameworkUpgrader(
 
         foreach (var tfm in tfms)
         {
-            var version = tfm.ToVersion();
+            var version = tfm.ToVersionFromTargetFramework();
 
             if (version is not null && version > candidate)
             {

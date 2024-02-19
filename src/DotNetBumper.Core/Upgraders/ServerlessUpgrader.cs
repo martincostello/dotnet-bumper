@@ -16,7 +16,7 @@ internal sealed partial class ServerlessUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<ServerlessUpgrader> logger) : FileUpgrader(console, options, logger)
 {
-    private const string ManagedRuntimePrefix = "dotnet";
+    private static readonly Version MinimumVersion = new(6, 0);
 
     protected override string Action => "Upgrading Serverless";
 
@@ -54,7 +54,7 @@ internal sealed partial class ServerlessUpgrader(
                 continue;
             }
 
-            var finder = new RuntimeFinder(upgrade.Channel.Major);
+            var finder = new RuntimeFinder(upgrade.Channel);
             yaml.Accept(finder);
 
             if (finder.LineIndexes.Count > 0)
@@ -72,7 +72,7 @@ internal sealed partial class ServerlessUpgrader(
 
     private static string? GetManagedRuntime(Version channel, DotNetReleaseType type)
     {
-        if (channel.Major < 6)
+        if (channel < MinimumVersion)
         {
             return null;
         }
@@ -183,7 +183,7 @@ internal sealed partial class ServerlessUpgrader(
             string runtime);
     }
 
-    private sealed class RuntimeFinder(int upgradeVersion) : YamlVisitorBase
+    private sealed class RuntimeFinder(Version channel) : YamlVisitorBase
     {
         public IList<int> LineIndexes { get; } = [];
 
@@ -191,12 +191,9 @@ internal sealed partial class ServerlessUpgrader(
         {
             if (key is YamlScalarNode { Value: "runtime" } &&
                 value is YamlScalarNode { Value.Length: > 0 } node &&
-                node.Value.StartsWith(ManagedRuntimePrefix, StringComparison.Ordinal))
+                node.Value.ToVersionFromLambdaRuntime() is { } version)
             {
-                string suffix = node.Value[ManagedRuntimePrefix.Length..];
-
-                if (int.TryParse(suffix, NumberStyles.Integer, CultureInfo.InvariantCulture, out int current) &&
-                    current < upgradeVersion)
+                if (version >= MinimumVersion && version < channel)
                 {
                     LineIndexes.Add(node.Start.Line - 1);
                 }
