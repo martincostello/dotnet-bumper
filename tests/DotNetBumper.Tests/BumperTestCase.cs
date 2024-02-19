@@ -11,6 +11,8 @@ public sealed class BumperTestCase(
     IList<string>? args = null,
     IDictionary<string, string>? packageReferences = null)
 {
+    private Version? _channel;
+
     public string SdkVersion { get; } = sdkVersion;
 
     public IList<string> TargetFrameworks { get; } = targetFrameworks ?? [];
@@ -18,6 +20,20 @@ public sealed class BumperTestCase(
     public IDictionary<string, string> PackageReferences { get; } = packageReferences ?? new Dictionary<string, string>(0);
 
     public IList<string> Arguments { get; } = args ?? [];
+
+    public Version Channel
+    {
+        get
+        {
+            if (_channel is null)
+            {
+                var sdkVersion = Version.Parse(SdkVersion);
+                _channel = new(sdkVersion.Major, sdkVersion.Minor);
+            }
+
+            return _channel;
+        }
+    }
 
     public override string ToString()
     {
