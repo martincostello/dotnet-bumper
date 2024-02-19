@@ -30,4 +30,9 @@ public sealed class UpgradeOptions
     /// Gets or sets a value indicating whether to test the upgrade by running <c>dotnet test</c> on completion.
     /// </summary>
     public bool TestUpgrade { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to treat warnings as errors.
+    /// </summary>
+    public bool TreatWarningsAsErrors { get; set; }
 }

@@ -15,6 +15,7 @@ internal sealed class UpgradePostConfigureOptions(IModelAccessor accessor) : IPo
         options.DotNetChannel ??= command.DotNetChannel;
         options.ProjectPath = command.ProjectPath ?? Environment.CurrentDirectory;
         options.TestUpgrade = command.TestUpgrade;
+        options.TreatWarningsAsErrors = command.WarningsAsErrors;
 
         if (command.UpgradeType is { } upgradeType)
         {
