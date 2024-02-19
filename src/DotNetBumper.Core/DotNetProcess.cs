@@ -33,8 +33,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         // See https://stackoverflow.com/a/16326426/1064169 and
         // https://learn.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.redirectstandardoutput.
         using var outputTokenSource = new CancellationTokenSource();
-        var processErrors = ConsumeStreamAsync(process.StandardError, outputTokenSource.Token);
-        var processOutput = ConsumeStreamAsync(process.StandardOutput, outputTokenSource.Token);
+        var readOutput = ReadOutputAsync(process, outputTokenSource.Token);
 
         try
         {
@@ -56,20 +55,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             await outputTokenSource.CancelAsync();
         }
 
-        await Task.WhenAll([processErrors, processOutput]);
-
-        string error = string.Empty;
-        string output = string.Empty;
-
-        if (processErrors.Status == TaskStatus.RanToCompletion)
-        {
-            error = (await processErrors).ToString();
-        }
-
-        if (processOutput.Status == TaskStatus.RanToCompletion)
-        {
-            output = (await processOutput).ToString();
-        }
+        (string error, string output) = await readOutput;
 
         var result = new DotNetResult(
             process.ExitCode == 0,
@@ -84,6 +70,31 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         cancellationToken.ThrowIfCancellationRequested();
 
         return result;
+
+        static async Task<(string Error, string Output)> ReadOutputAsync(
+            Process process,
+            CancellationToken cancellationToken)
+        {
+            var processErrors = ConsumeStreamAsync(process.StandardError, cancellationToken);
+            var processOutput = ConsumeStreamAsync(process.StandardOutput, cancellationToken);
+
+            await Task.WhenAll([processErrors, processOutput]);
+
+            string error = string.Empty;
+            string output = string.Empty;
+
+            if (processErrors.Status == TaskStatus.RanToCompletion)
+            {
+                error = (await processErrors).ToString();
+            }
+
+            if (processOutput.Status == TaskStatus.RanToCompletion)
+            {
+                output = (await processOutput).ToString();
+            }
+
+            return (error, output);
+        }
 
         static Task<StringBuilder> ConsumeStreamAsync(
             StreamReader reader,
