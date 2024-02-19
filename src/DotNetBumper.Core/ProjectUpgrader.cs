@@ -227,7 +227,7 @@ public partial class ProjectUpgrader(
             }
         }
 
-        return new(true, string.Empty, string.Empty);
+        return new(true, 0, string.Empty, string.Empty);
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
