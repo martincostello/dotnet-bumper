@@ -147,6 +147,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
+    [InlineData(5, DotNetReleaseType.Sts)]
     [InlineData(7, DotNetReleaseType.Sts)]
     [InlineData(9, DotNetReleaseType.Preview)]
     [InlineData(9, DotNetReleaseType.Sts)]
