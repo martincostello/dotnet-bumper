@@ -83,7 +83,7 @@ internal sealed partial class ServerlessUpgrader(
             return null;
         }
 
-        return $"{ManagedRuntimePrefix}{channel.Major}";
+        return channel.ToLambdaRuntime();
     }
 
     private bool TryParseServerless(

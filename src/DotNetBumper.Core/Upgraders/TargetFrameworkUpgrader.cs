@@ -47,7 +47,7 @@ internal sealed partial class TargetFrameworkUpgrader(
             }
 
             bool edited = false;
-            string newTfm = $"net{upgrade.Channel}";
+            string newTfm = upgrade.Channel.ToTargetFramework();
 
             var property = project
                 .Root?
@@ -108,12 +108,11 @@ internal sealed partial class TargetFrameworkUpgrader(
 
         foreach (var tfm in tfms)
         {
-            if (Version.TryParse(tfm[3..], out var version) && version >= candidate)
+            var version = tfm.ToVersion();
+
+            if (version is not null && version > candidate)
             {
-                if (version > candidate)
-                {
-                    return false;
-                }
+                return false;
             }
         }
 

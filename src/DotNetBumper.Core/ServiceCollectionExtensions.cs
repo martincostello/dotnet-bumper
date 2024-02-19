@@ -45,12 +45,6 @@ public static class ServiceCollectionExtensions
                 .AddSingleton<IValidateOptions<UpgradeOptions>, UpgradeOptionsValidator>()
                 .AddSingleton<ProjectUpgrader>();
 
-        services.AddSingleton<IUpgrader, GlobalJsonUpgrader>();
-        services.AddSingleton<IUpgrader, PackageVersionUpgrader>();
-        services.AddSingleton<IUpgrader, ServerlessUpgrader>();
-        services.AddSingleton<IUpgrader, TargetFrameworkUpgrader>();
-        services.AddSingleton<IUpgrader, VisualStudioComponentUpgrader>();
-
         services.AddHttpClient()
                 .ConfigureHttpClientDefaults((options) =>
                 {
@@ -59,6 +53,20 @@ public static class ServiceCollectionExtensions
                 });
 
         services.AddHttpClient<DotNetUpgradeFinder>();
+
+        services.AddUpgraders();
+
+        return services;
+    }
+
+    private static IServiceCollection AddUpgraders(this IServiceCollection services)
+    {
+        services.AddSingleton<IUpgrader, GlobalJsonUpgrader>();
+        services.AddSingleton<IUpgrader, PackageVersionUpgrader>();
+        services.AddSingleton<IUpgrader, ServerlessUpgrader>();
+        services.AddSingleton<IUpgrader, TargetFrameworkUpgrader>();
+        services.AddSingleton<IUpgrader, VisualStudioCodeUpgrader>();
+        services.AddSingleton<IUpgrader, VisualStudioComponentUpgrader>();
 
         return services;
     }

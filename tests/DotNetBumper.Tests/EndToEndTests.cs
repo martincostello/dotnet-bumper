@@ -43,7 +43,8 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        fixture.Project.AddDirectory("src")
+        fixture.Project.AddDirectory(".vscode")
+                       .AddDirectory("src")
                        .AddDirectory("src/Project")
                        .AddDirectory("tests")
                        .AddDirectory("tests/Project.Tests");
@@ -51,6 +52,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         await fixture.Project.AddSolutionAsync("Project.sln");
 
         string globalJson = await fixture.Project.AddGlobalJsonAsync(testCase.SdkVersion);
+        string vscode = await fixture.Project.AddVisualStudioCodeLaunchConfigurationsAsync();
         string vsconfig = await fixture.Project.AddVisualStudioConfigurationAsync();
 
         string appProject = await fixture.Project.AddProjectAsync(
@@ -127,6 +129,19 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         var components = property.EnumerateArray().Select((p) => p.GetString()).ToArray();
         components.ShouldNotContain($"Microsoft.NetCore.Component.Runtime.{testCase.Channel}");
         components.Where((p) => p?.StartsWith("Microsoft.NetCore.Component.Runtime.", StringComparison.Ordinal) is true).Any().ShouldBeTrue();
+
+        var actualVscode = await File.ReadAllTextAsync(vscode);
+
+        config = JsonDocument.Parse(actualVscode).RootElement;
+        config.TryGetProperty("configurations", out property).ShouldBeTrue();
+        property.ValueKind.ShouldBe(JsonValueKind.Array);
+
+        var configurations = property.EnumerateArray();
+        configurations.Count().ShouldBe(1);
+        configurations.First().TryGetProperty("program", out property).ShouldBeTrue();
+        property.ValueKind.ShouldBe(JsonValueKind.String);
+        property.GetString().ShouldStartWith($"${{workspaceFolder}}/src/Project/bin/Debug/net");
+        property.GetString().ShouldNotBe($"${{workspaceFolder}}/src/Project/bin/Debug/net{testCase.Channel}/Project.dll");
     }
 
     [Theory]
