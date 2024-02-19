@@ -59,6 +59,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 
         var result = new DotNetResult(
             process.ExitCode == 0,
+            process.ExitCode,
             output,
             error);
 
