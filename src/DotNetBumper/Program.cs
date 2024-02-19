@@ -9,6 +9,8 @@ internal static class Program
 {
     public static async Task<int> Main(string[] args)
     {
+        using var progress = TerminalProgress.Create();
+
         using var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (_, args) =>
         {
@@ -21,5 +23,19 @@ internal static class Program
             args,
             (builder) => builder.AddConsole(),
             cts.Token);
+    }
+
+    private sealed class TerminalProgress : IDisposable
+    {
+        //// See https://learn.microsoft.com/windows/terminal/tutorials/progress-bar-sequences
+
+        private TerminalProgress()
+            => Console.Write($"\x1b]9;4;3;0\x07");
+
+        public static TerminalProgress? Create()
+            => OperatingSystem.IsWindows() ? new TerminalProgress() : null;
+
+        public void Dispose()
+            => Console.Write("\x1b]9;4;0;0\x07");
     }
 }
