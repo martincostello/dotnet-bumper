@@ -142,7 +142,6 @@ public partial class ProjectUpgrader(
                             $"[teal]Running tests...[/]",
                             async (context) => await RunTestsAsync(projects, context, cancellationToken));
 
-                    // TODO Use Error if --warnings-as-errors
                     result = result.Max(testResult.Success ? UpgradeResult.Success : UpgradeResult.Warning);
 
                     console.WriteLine();
@@ -196,12 +195,14 @@ public partial class ProjectUpgrader(
             console.MarkupLine($"[aqua]{name}[/] upgrade to [purple].NET {upgrade.Channel}[/] [{color}]{description}[/]! {emoji}");
         }
 
-        // TODO Implement a --warnings-as-errors switch
+        const int Success = 0;
+        const int Error = 1;
+
         return result switch
         {
-            UpgradeResult.None or UpgradeResult.Success => 0,
-            UpgradeResult.Warning => 0,
-            _ => 1,
+            UpgradeResult.None or UpgradeResult.Success => Success,
+            UpgradeResult.Warning => options.Value.TreatWarningsAsErrors ? Error : Success,
+            _ => Error,
         };
     }
 

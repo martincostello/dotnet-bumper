@@ -38,6 +38,11 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         Description = "Test the upgrade by running dotnet test on completion.")]
     public bool TestUpgrade { get; set; }
 
+    [Option(
+        "-e|--warnings-as-errors",
+        Description = "Treat any warnings encountered during the upgrade as errors.")]
+    public bool WarningsAsErrors { get; set; }
+
     public static async Task<int> RunAsync(
         IAnsiConsole console,
         string[] args,
