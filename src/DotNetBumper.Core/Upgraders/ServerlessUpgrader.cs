@@ -1,7 +1,9 @@
-// Copyright (c) Martin Costello, 2024. All rights reserved.
+﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -14,24 +16,26 @@ internal sealed partial class ServerlessUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<ServerlessUpgrader> logger) : FileUpgrader(console, options, logger)
 {
+    private const string ManagedRuntimePrefix = "dotnet";
+
     protected override string Action => "Upgrading Serverless";
 
     protected override string InitialStatus => "Update Serverless runtimes";
 
     protected override IReadOnlyList<string> Patterns => ["serverless.yml", "serverless.yaml"];
 
-    protected override Task<bool> UpgradeCoreAsync(
+    protected override async Task<bool> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,
         CancellationToken cancellationToken)
     {
-        var runtime = GetManagedRuntime(upgrade.Channel);
+        var runtime = GetManagedRuntime(upgrade.Channel, upgrade.ReleaseType);
 
         if (runtime is null)
         {
             Log.LambdaRuntimeNotSupported(Logger, upgrade.Channel);
-            return Task.FromResult(false);
+            return false;
         }
 
         Log.UpgradingServerlessRuntimes(logger);
@@ -49,34 +53,36 @@ internal sealed partial class ServerlessUpgrader(
                 continue;
             }
 
-            var visitor = new RuntimeUpdater(runtime);
-            yaml.Accept(visitor);
+            var finder = new RuntimeFinder(upgrade.Channel.Major);
+            yaml.Accept(finder);
 
-            if (visitor.Edited)
+            if (finder.LineIndexes.Count > 0)
             {
                 context.Status = StatusMessage($"Updating {name}...");
 
-                using var stream = File.Open(path, FileMode.Open);
-                using var writer = new StreamWriter(stream);
+                await UpdateRuntimesAsync(path, runtime, finder.LineIndexes, cancellationToken);
 
-                yaml.Save(writer, assignAnchors: false);
                 filesChanged = true;
-
-                Log.UpgradedManagedRuntimes(logger, path, runtime);
             }
         }
 
-        return Task.FromResult(filesChanged);
+        return filesChanged;
     }
 
-    private static string? GetManagedRuntime(Version channel)
+    private static string? GetManagedRuntime(Version channel, DotNetReleaseType type)
     {
-        return channel.Major switch
+        if (channel.Major < 6)
         {
-            6 => "dotnet6",
-            8 => "dotnet8",
-            _ => null,
-        };
+            return null;
+        }
+
+        if (type != DotNetReleaseType.Lts)
+        {
+            // AWS Lambda only supports stable LTS releases of .NET
+            return null;
+        }
+
+        return $"{ManagedRuntimePrefix}{channel.Major}";
     }
 
     private bool TryParseServerless(
@@ -101,6 +107,45 @@ internal sealed partial class ServerlessUpgrader(
 
         serverless = null;
         return false;
+    }
+
+    private async Task UpdateRuntimesAsync(
+        string path,
+        string runtime,
+        IList<int> indexes,
+        CancellationToken cancellationToken)
+    {
+        var lines = await File.ReadAllLinesAsync(path, cancellationToken);
+
+        for (int i = 0; i < indexes.Count; i++)
+        {
+            string original = lines[indexes[i]];
+
+            var updated = new StringBuilder(original.Length);
+
+            int index = original.IndexOf(':', StringComparison.Ordinal);
+
+            Debug.Assert(index != -1, "The runtime line should contain a colon.");
+
+            updated.Append(original[..(index + 1)]);
+            updated.Append(' ');
+            updated.Append(runtime);
+
+            // Preserve any comments
+            index = original.IndexOf('#', StringComparison.Ordinal);
+
+            if (index != -1)
+            {
+                updated.Append(' ');
+                updated.Append(original[index..]);
+            }
+
+            lines[indexes[i]] = updated.ToString();
+        }
+
+        await File.WriteAllLinesAsync(path, lines, cancellationToken);
+
+        Log.UpgradedManagedRuntimes(logger, path, runtime);
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -137,18 +182,23 @@ internal sealed partial class ServerlessUpgrader(
             string runtime);
     }
 
-    private sealed class RuntimeUpdater(string runtime) : YamlVisitorBase
+    private sealed class RuntimeFinder(int upgradeVersion) : YamlVisitorBase
     {
-        public bool Edited { get; private set; }
+        public IList<int> LineIndexes { get; } = [];
 
         protected override void VisitPair(YamlNode key, YamlNode value)
         {
             if (key is YamlScalarNode { Value: "runtime" } &&
-                value is YamlScalarNode runtimeValue &&
-                runtimeValue.Value?.StartsWith("dotnet", StringComparison.Ordinal) is true)
+                value is YamlScalarNode { Value.Length: > 0 } node &&
+                node.Value.StartsWith(ManagedRuntimePrefix, StringComparison.Ordinal))
             {
-                runtimeValue.Value = runtime;
-                Edited = true;
+                string suffix = node.Value[ManagedRuntimePrefix.Length..];
+
+                if (int.TryParse(suffix, NumberStyles.Integer, CultureInfo.InvariantCulture, out int current) &&
+                    current < upgradeVersion)
+                {
+                    LineIndexes.Add(node.Start.Line - 1);
+                }
             }
 
             base.VisitPair(key, value);
