@@ -57,6 +57,42 @@ internal sealed class Project : IDisposable
         return await AddFileAsync(path, solution);
     }
 
+    public async Task<string> AddVisualStudioCodeLaunchConfigurationsAsync(
+        string channel = "6.0",
+        string path = ".vscode/launch.json")
+    {
+        var configuration =
+            $$"""
+              {
+                "version": "0.2.0",
+                "configurations": [
+                  {
+                    "name": "Launch app",
+                    "type": "coreclr",
+                    "request": "launch",
+                    "program": "${workspaceFolder}/src/Project/bin/Debug/net{{channel}}/Project.dll",
+                    "args": [],
+                    "cwd": "${workspaceFolder}/src/Project",
+                    "stopAtEntry": false,
+                    "internalConsoleOptions": "openOnSessionStart",
+                    "serverReadyAction": {
+                      "action": "openExternally",
+                      "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+                    },
+                    "env": {
+                      "ASPNETCORE_ENVIRONMENT": "Development"
+                    },
+                    "sourceFileMap": {
+                      "/Views": "${workspaceFolder}/src/Project/Views"
+                    }
+                  }
+                ]
+              }
+              """;
+
+        return await AddFileAsync(path, configuration);
+    }
+
     public async Task<string> AddVisualStudioConfigurationAsync(string channel = "6.0", string path = ".vsconfig")
     {
         var configuration =

@@ -16,10 +16,7 @@ internal abstract partial class FileUpgrader(
 
     protected virtual SearchOption SearchOption => SearchOption.AllDirectories;
 
-    protected override async Task<UpgradeResult> UpgradeCoreAsync(
-        UpgradeInfo upgrade,
-        StatusContext context,
-        CancellationToken cancellationToken)
+    protected virtual IReadOnlyList<string> FindFiles()
     {
         List<string> fileNames = [];
 
@@ -27,6 +24,16 @@ internal abstract partial class FileUpgrader(
         {
             fileNames.AddRange(Directory.GetFiles(Options.ProjectPath, pattern, SearchOption));
         }
+
+        return fileNames;
+    }
+
+    protected override async Task<UpgradeResult> UpgradeCoreAsync(
+        UpgradeInfo upgrade,
+        StatusContext context,
+        CancellationToken cancellationToken)
+    {
+        var fileNames = FindFiles();
 
         if (fileNames.Count == 0)
         {
