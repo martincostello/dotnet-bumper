@@ -43,7 +43,7 @@ The repository is hosted in [GitHub][repo]: <https://github.com/martincostello/d
 
 This project is licensed under the [Apache 2.0][license] license.
 
-[build-badge]: https://github.com/martincostello/dotnet-bumper/workflows/build/badge.svg?branch=main&event=push
+[build-badge]: https://github.com/martincostello/dotnet-bumper/actions/workflows/build.yml/badge.svg?branch=main&event=push
 [build-status]: https://github.com/martincostello/dotnet-bumper/actions?query=workflow%3Abuild+branch%3Amain+event%3Apush "Continuous Integration for this project"
 [coverage-badge]: https://codecov.io/gh/martincostello/dotnet-bumper/branch/main/graph/badge.svg
 [coverage-report]: https://codecov.io/gh/martincostello/dotnet-bumper "Code coverage report for this project"
