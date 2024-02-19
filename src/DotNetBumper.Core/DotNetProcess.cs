@@ -30,14 +30,11 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
     {
         using var process = StartDotNet(workingDirectory, arguments);
 
-        var error = new StringBuilder();
-        var output = new StringBuilder();
-
         // See https://stackoverflow.com/a/16326426/1064169 and
         // https://learn.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.redirectstandardoutput.
         using var outputTokenSource = new CancellationTokenSource();
-        var processOutput = ConsumeStreamAsync(process.StandardError, error, outputTokenSource.Token);
-        var processErrors = ConsumeStreamAsync(process.StandardOutput, output, outputTokenSource.Token);
+        var processErrors = ConsumeStreamAsync(process.StandardError, outputTokenSource.Token);
+        var processOutput = ConsumeStreamAsync(process.StandardOutput, outputTokenSource.Token);
 
         try
         {
@@ -59,12 +56,25 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             await outputTokenSource.CancelAsync();
         }
 
-        await Task.WhenAll([processOutput, processErrors]);
+        await Task.WhenAll([processErrors, processOutput]);
+
+        string error = string.Empty;
+        string output = string.Empty;
+
+        if (processErrors.Status == TaskStatus.RanToCompletion)
+        {
+            error = (await processErrors).ToString();
+        }
+
+        if (processOutput.Status == TaskStatus.RanToCompletion)
+        {
+            output = (await processOutput).ToString();
+        }
 
         var result = new DotNetResult(
             process.ExitCode == 0,
-            output.ToString(),
-            error.ToString());
+            output,
+            error);
 
         if (!result.Success)
         {
@@ -75,33 +85,31 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 
         return result;
 
-        static Task ConsumeStreamAsync(
+        static Task<StringBuilder> ConsumeStreamAsync(
             StreamReader reader,
-            StringBuilder output,
             CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(
-                () => ProcessStream(reader, output, cancellationToken),
-                cancellationToken,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+            return Task.Run<StringBuilder>(() => ProcessStream(reader, cancellationToken), cancellationToken);
 
-            static async Task ProcessStream(
+            static async Task<StringBuilder> ProcessStream(
                 StreamReader reader,
-                StringBuilder output,
                 CancellationToken cancellationToken)
             {
+                var builder = new StringBuilder();
+
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
-                        output.Append(await reader.ReadToEndAsync(cancellationToken));
+                        builder.Append(await reader.ReadToEndAsync(cancellationToken));
                     }
                     catch (OperationCanceledException)
                     {
                         break;
                     }
                 }
+
+                return builder;
             }
         }
     }
