@@ -57,22 +57,22 @@ internal sealed class Project : IDisposable
         return await AddFileAsync(path, solution);
     }
 
-    public async Task<string> AddVisualStudioConfigurationAsync(string path = ".vsconfig")
+    public async Task<string> AddVisualStudioConfigurationAsync(string channel = "6.0", string path = ".vsconfig")
     {
         var configuration =
-            """
-            {
-              "version": "1.0",
-              "components": [
-                "Component.GitHub.VisualStudio",
-                "Microsoft.NetCore.Component.Runtime.6.0",
-                "Microsoft.NetCore.Component.SDK",
-                "Microsoft.VisualStudio.Component.CoreEditor",
-                "Microsoft.VisualStudio.Component.Git",
-                "Microsoft.VisualStudio.Workload.CoreEditor"
-              ]
-            }
-            """;
+            $$"""
+              {
+                "version": "1.0",
+                "components": [
+                  "Component.GitHub.VisualStudio",
+                  "Microsoft.NetCore.Component.Runtime.{{channel}}",
+                  "Microsoft.NetCore.Component.SDK",
+                  "Microsoft.VisualStudio.Component.CoreEditor",
+                  "Microsoft.VisualStudio.Component.Git",
+                  "Microsoft.VisualStudio.Workload.CoreEditor"
+                ]
+              }
+              """;
 
         return await AddFileAsync(path, configuration);
     }
