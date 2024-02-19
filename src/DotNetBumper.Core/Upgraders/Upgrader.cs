@@ -12,6 +12,8 @@ internal abstract partial class Upgrader(
     IOptions<UpgradeOptions> options,
     ILogger logger) : IUpgrader
 {
+    public virtual int Priority => 0;
+
     protected IAnsiConsole Console => console;
 
     protected UpgradeOptions Options => options.Value;
