@@ -29,13 +29,13 @@ internal partial class Bumper(ProjectUpgrader upgrader)
 
     [Option(
         "-t|--upgrade-type <TYPE>",
-        Description = "The type of upgrade to perform. Possible values for <TYPE> are LTS (default), Latest or Preview.",
+        Description = "The type of upgrade to perform.",
         ValueName = "TYPE")]
     public UpgradeType? UpgradeType { get; set; }
 
     [Option(
         "-test|--test",
-        Description = "Whether to test the upgrade by running dotnet test on completion. The default value is false.")]
+        Description = "Test the upgrade by running dotnet test on completion.")]
     public bool TestUpgrade { get; set; }
 
     public static async Task<int> RunAsync(
