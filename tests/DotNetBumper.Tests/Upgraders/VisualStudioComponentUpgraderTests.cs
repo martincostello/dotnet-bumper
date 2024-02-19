@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using MartinCostello.DotNetBumper.Upgrades;
 using Microsoft.Extensions.Options;
 using Spectre.Console.Testing;
 
@@ -33,10 +32,10 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
         var target = new VisualStudioComponentUpgrader(fixture.Console, options, logger);
 
         // Act
-        bool actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBeTrue();
+        actualUpdated.ShouldBe(UpgradeResult.Success);
 
         string actualContent = await File.ReadAllTextAsync(serverlessFile);
         actualContent.ShouldContain($"\"Microsoft.NetCore.Component.Runtime.{channel}\"");
@@ -45,7 +44,7 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBeFalse();
+        actualUpdated.ShouldBe(UpgradeResult.None);
     }
 
     [Fact]
@@ -102,10 +101,10 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
         var target = new VisualStudioComponentUpgrader(fixture.Console, options, logger);
 
         // Act
-        bool actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBeTrue();
+        actualUpdated.ShouldBe(UpgradeResult.Success);
 
         string actualContent = await File.ReadAllTextAsync(vsconfig);
         actualContent.NormalizeLineEndings().TrimEnd().ShouldBe(expectedContent.NormalizeLineEndings().TrimEnd());
@@ -114,7 +113,7 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBeFalse();
+        actualUpdated.ShouldBe(UpgradeResult.None);
     }
 
     [Theory]
@@ -145,9 +144,9 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
         var target = new VisualStudioComponentUpgrader(fixture.Console, options, logger);
 
         // Act
-        bool actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actual.ShouldBeFalse();
+        actual.ShouldBe(UpgradeResult.None);
     }
 }

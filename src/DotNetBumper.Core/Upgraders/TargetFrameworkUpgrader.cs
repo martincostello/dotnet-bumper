@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
 
-namespace MartinCostello.DotNetBumper.Upgrades;
+namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class TargetFrameworkUpgrader(
     IAnsiConsole console,
@@ -21,7 +21,7 @@ internal sealed partial class TargetFrameworkUpgrader(
 
     protected override IReadOnlyList<string> Patterns => ["*.csproj", "*.fsproj"];
 
-    protected override async Task<bool> UpgradeCoreAsync(
+    protected override async Task<UpgradeResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,
@@ -29,7 +29,7 @@ internal sealed partial class TargetFrameworkUpgrader(
     {
         Log.UpgradingTargetFramework(logger);
 
-        bool filesChanged = false;
+        UpgradeResult result = UpgradeResult.None;
         XmlWriterSettings? writerSettings = null;
 
         foreach (var filePath in fileNames)
@@ -39,6 +39,12 @@ internal sealed partial class TargetFrameworkUpgrader(
             context.Status = StatusMessage($"Parsing {name}...");
 
             (var project, var encoding) = await LoadProjectAsync(filePath, cancellationToken);
+
+            if (project is null)
+            {
+                result = result.Max(UpgradeResult.Warning);
+                continue;
+            }
 
             bool edited = false;
             string newTfm = $"net{upgrade.Channel}";
@@ -86,14 +92,14 @@ internal sealed partial class TargetFrameworkUpgrader(
                 await File.WriteAllTextAsync(
                     filePath,
                     xml,
-                    encoding,
+                    encoding ?? Encoding.UTF8,
                     cancellationToken);
 
-                filesChanged = true;
+                result = result.Max(UpgradeResult.Success);
             }
         }
 
-        return filesChanged;
+        return result;
     }
 
     private static bool CanUpgrade(string targetFrameworks, Version candidate)
@@ -114,16 +120,23 @@ internal sealed partial class TargetFrameworkUpgrader(
         return true;
     }
 
-    private static async Task<(XDocument Project, Encoding Encoding)> LoadProjectAsync(
+    private async Task<(XDocument? Project, Encoding? Encoding)> LoadProjectAsync(
         string filePath,
         CancellationToken cancellationToken)
     {
         using var stream = File.OpenRead(filePath);
         using var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
 
-        var project = await XDocument.LoadAsync(reader, LoadOptions.PreserveWhitespace, cancellationToken);
-
-        return (project, reader.CurrentEncoding);
+        try
+        {
+            var project = await XDocument.LoadAsync(reader, LoadOptions.PreserveWhitespace, cancellationToken);
+            return (project, reader.CurrentEncoding);
+        }
+        catch (Exception ex)
+        {
+            Log.FailedToLoadProject(logger, filePath, ex);
+            return default;
+        }
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -134,5 +147,11 @@ internal sealed partial class TargetFrameworkUpgrader(
             Level = LogLevel.Debug,
             Message = "Upgrading target framework moniker.")]
         public static partial void UpgradingTargetFramework(ILogger logger);
+
+        [LoggerMessage(
+            EventId = 2,
+            Level = LogLevel.Warning,
+            Message = "Failed to parse project file {FileName}.")]
+        public static partial void FailedToLoadProject(ILogger logger, string fileName, Exception exception);
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 using NuGet.Versioning;
 using Spectre.Console;
 
-namespace MartinCostello.DotNetBumper.Upgrades;
+namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class GlobalJsonUpgrader(
     IAnsiConsole console,
@@ -21,7 +21,7 @@ internal sealed partial class GlobalJsonUpgrader(
 
     protected override IReadOnlyList<string> Patterns => ["global.json"];
 
-    protected override async Task<bool> UpgradeCoreAsync(
+    protected override async Task<UpgradeResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,
@@ -29,7 +29,7 @@ internal sealed partial class GlobalJsonUpgrader(
     {
         Log.UpgradingDotNetSdk(logger);
 
-        bool filesChanged = false;
+        UpgradeResult result = UpgradeResult.None;
 
         foreach (var path in fileNames)
         {
@@ -42,6 +42,8 @@ internal sealed partial class GlobalJsonUpgrader(
             if (!TryParseSdkVersion(json, out var currentVersion))
             {
                 Log.ParseSdkVersionFailed(logger, path);
+
+                result = result.Max(UpgradeResult.Warning);
                 continue;
             }
 
@@ -59,11 +61,11 @@ internal sealed partial class GlobalJsonUpgrader(
                     currentVersion.ToString(),
                     upgrade.SdkVersion.ToString());
 
-                filesChanged = true;
+                result = result.Max(UpgradeResult.Success);
             }
         }
 
-        return filesChanged;
+        return result;
     }
 
     private static bool TryParseSdkVersion(

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
 
-namespace MartinCostello.DotNetBumper.Upgrades;
+namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal abstract partial class Upgrader(
     IAnsiConsole console,
@@ -28,7 +28,7 @@ internal abstract partial class Upgrader(
 
     protected virtual string StatusColor => "silver";
 
-    public virtual async Task<bool> UpgradeAsync(
+    public virtual async Task<UpgradeResult> UpgradeAsync(
         UpgradeInfo upgrade,
         CancellationToken cancellationToken)
     {
@@ -46,7 +46,7 @@ internal abstract partial class Upgrader(
     protected string StatusMessage(string message)
         => $"[{StatusColor}]{message}[/]";
 
-    protected abstract Task<bool> UpgradeCoreAsync(
+    protected abstract Task<UpgradeResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         StatusContext context,
         CancellationToken cancellationToken);

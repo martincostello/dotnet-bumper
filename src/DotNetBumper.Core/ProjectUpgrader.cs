@@ -2,7 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Reflection;
-using MartinCostello.DotNetBumper.Upgrades;
+using MartinCostello.DotNetBumper.Upgraders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -83,22 +83,41 @@ public partial class ProjectUpgrader(
 
         Log.Upgrading(logger, ProjectPath);
 
-        bool hasChanges = false;
+        UpgradeResult result = UpgradeResult.None;
 
         foreach (var upgrader in upgraders.OrderBy((p) => p.Priority))
         {
-            hasChanges |= await upgrader.UpgradeAsync(upgrade, cancellationToken);
+            UpgradeResult stepResult;
+
+            try
+            {
+                stepResult = await upgrader.UpgradeAsync(upgrade, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                stepResult = UpgradeResult.Error;
+
+                console.WriteLine();
+                console.MarkupLine($"[red]:cross_mark: An error occurred while performing upgrade step {upgrader.GetType().Name}.[/]");
+                console.WriteException(ex);
+            }
+
+            result = result.Max(stepResult);
         }
 
-        if (hasChanges)
+        if (result is UpgradeResult.Warning)
+        {
+            console.WriteLine();
+            console.MarkupLine("[yellow]:warning: One or more upgrade steps produced a warning.[/]");
+        }
+
+        if (result is UpgradeResult.Success or UpgradeResult.Warning)
         {
             Log.Upgraded(
                 logger,
                 ProjectPath,
                 upgrade.Channel.ToString(),
                 upgrade.SdkVersion.ToString());
-
-            bool success = true;
 
             if (options.Value.TestUpgrade)
             {
@@ -108,12 +127,14 @@ public partial class ProjectUpgrader(
 
                 if (projects.Count is 0)
                 {
+                    result = result.Max(UpgradeResult.Warning);
+
                     console.MarkupLine("[yellow]:warning: Could not find any test projects.[/]");
                     console.MarkupLine("[yellow]:warning: The project may not be in a working state.[/]");
                 }
                 else
                 {
-                    var result = await console
+                    var testResult = await console
                         .Status()
                         .Spinner(Spinner.Known.Dots)
                         .SpinnerStyle(Style.Parse("green"))
@@ -121,11 +142,12 @@ public partial class ProjectUpgrader(
                             $"[teal]Running tests...[/]",
                             async (context) => await RunTestsAsync(projects, context, cancellationToken));
 
-                    success = result.Success;
+                    // TODO Use Error if --warnings-as-errors
+                    result = result.Max(testResult.Success ? UpgradeResult.Success : UpgradeResult.Warning);
 
                     console.WriteLine();
 
-                    if (result.Success)
+                    if (testResult.Success)
                     {
                         console.MarkupLine("[green]:check_mark_button: Upgrade successfully tested.[/]");
                     }
@@ -134,44 +156,53 @@ public partial class ProjectUpgrader(
                         console.MarkupLine("[yellow]:warning: The project upgrade did not result in a successful test run.[/]");
                         console.MarkupLine("[yellow]:warning: The project may not be in a working state.[/]");
 
-                        if (!string.IsNullOrWhiteSpace(result.StandardError))
+                        if (!string.IsNullOrWhiteSpace(testResult.StandardError))
                         {
                             console.WriteLine();
-                            console.MarkupLineInterpolated($"[grey]{result.StandardError}[/]");
+                            console.MarkupLineInterpolated($"[grey]{testResult.StandardError}[/]");
                         }
 
-                        if (!string.IsNullOrWhiteSpace(result.StandardOutput))
+                        if (!string.IsNullOrWhiteSpace(testResult.StandardOutput))
                         {
                             console.WriteLine();
-                            console.MarkupLineInterpolated($"[grey]{result.StandardOutput}[/]");
+                            console.MarkupLineInterpolated($"[grey]{testResult.StandardOutput}[/]");
                         }
                     }
                 }
             }
-
-            console.WriteLine();
-
-            if (success)
-            {
-                console.MarkupLine($"[aqua]{name}[/] upgrade to [white on purple].NET {upgrade.Channel}[/] [green]successful[/]! :rocket:");
-                return 0;
-            }
-            else
-            {
-                console.MarkupLine($"[aqua]{name}[/] upgrade to [purple].NET {upgrade.Channel}[/] [red]failed[/]! :cross_mark:");
-                return 1;
-            }
         }
-        else
+
+        console.WriteLine();
+
+        if (result is UpgradeResult.Success)
+        {
+            console.MarkupLine($"[aqua]{name}[/] upgrade to [white on purple].NET {upgrade.Channel}[/] [green]successful[/]! :rocket:");
+        }
+        else if (result is UpgradeResult.None)
         {
             Log.NothingToUpgrade(logger, ProjectPath);
 
-            console.WriteLine();
             console.MarkupLine("[yellow]:warning: The project upgrade did not result in any changes being made.[/]");
             console.MarkupLine("[yellow]:warning: Maybe the project has already been upgraded?[/]");
-
-            return 0;
         }
+        else
+        {
+            (string emoji, string color, string description) = result switch
+            {
+                UpgradeResult.Warning => (":warning:", "yellow", "succeeded with warnings"),
+                _ => (":cross_mark:", "red", "failed"),
+            };
+
+            console.MarkupLine($"[aqua]{name}[/] upgrade to [purple].NET {upgrade.Channel}[/] [{color}]{description}[/]! {emoji}");
+        }
+
+        // TODO Implement a --warnings-as-errors switch
+        return result switch
+        {
+            UpgradeResult.None or UpgradeResult.Success => 0,
+            UpgradeResult.Warning => 0,
+            _ => 1,
+        };
     }
 
     private async Task<DotNetResult> RunTestsAsync(

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using Spectre.Console;
 using YamlDotNet.RepresentationModel;
 
-namespace MartinCostello.DotNetBumper.Upgrades;
+namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class ServerlessUpgrader(
     IAnsiConsole console,
@@ -24,7 +24,7 @@ internal sealed partial class ServerlessUpgrader(
 
     protected override IReadOnlyList<string> Patterns => ["serverless.yml", "serverless.yaml"];
 
-    protected override async Task<bool> UpgradeCoreAsync(
+    protected override async Task<UpgradeResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,
@@ -35,12 +35,12 @@ internal sealed partial class ServerlessUpgrader(
         if (runtime is null)
         {
             Log.LambdaRuntimeNotSupported(Logger, upgrade.Channel);
-            return false;
+            return UpgradeResult.None;
         }
 
         Log.UpgradingServerlessRuntimes(logger);
 
-        bool filesChanged = false;
+        UpgradeResult result = UpgradeResult.None;
 
         foreach (var path in fileNames)
         {
@@ -50,6 +50,7 @@ internal sealed partial class ServerlessUpgrader(
 
             if (!TryParseServerless(path, out var yaml))
             {
+                result = result.Max(UpgradeResult.Warning);
                 continue;
             }
 
@@ -62,11 +63,11 @@ internal sealed partial class ServerlessUpgrader(
 
                 await UpdateRuntimesAsync(path, runtime, finder.LineIndexes, cancellationToken);
 
-                filesChanged = true;
+                result = result.Max(UpgradeResult.Success);
             }
         }
 
-        return filesChanged;
+        return result;
     }
 
     private static string? GetManagedRuntime(Version channel, DotNetReleaseType type)
