@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
 
-namespace MartinCostello.DotNetBumper.Upgrades;
+namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class PackageVersionUpgrader(
     DotNetProcess dotnet,
@@ -20,14 +20,14 @@ internal sealed partial class PackageVersionUpgrader(
 
     protected override string InitialStatus => "Upgrade NuGet packages";
 
-    protected override async Task<bool> UpgradeCoreAsync(
+    protected override async Task<UpgradeResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         StatusContext context,
         CancellationToken cancellationToken)
     {
         Log.UpgradingPackages(logger);
 
-        bool filesChanged = false;
+        UpgradeResult result = UpgradeResult.None;
 
         context.Status = StatusMessage("Finding projects...");
 
@@ -45,11 +45,11 @@ internal sealed partial class PackageVersionUpgrader(
 
                 context.Status = StatusMessage($"Update NuGet packages for {name}...");
 
-                filesChanged |= await TryUpgradePackagesAsync(project, cancellationToken);
+                result = result.Max(await TryUpgradePackagesAsync(project, cancellationToken));
             }
         }
 
-        return filesChanged;
+        return result;
     }
 
     private static HiddenFile? TryHideGlobalJson(string path)
@@ -92,7 +92,7 @@ internal sealed partial class PackageVersionUpgrader(
         }
     }
 
-    private async Task<bool> TryUpgradePackagesAsync(string directory, CancellationToken cancellationToken)
+    private async Task<UpgradeResult> TryUpgradePackagesAsync(string directory, CancellationToken cancellationToken)
     {
         using var tempFile = new TemporaryFile();
 
@@ -127,7 +127,7 @@ internal sealed partial class PackageVersionUpgrader(
 
         if (!result.Success)
         {
-            return false;
+            return UpgradeResult.Warning;
         }
 
         int updatedDependencies = 0;
@@ -153,7 +153,7 @@ internal sealed partial class PackageVersionUpgrader(
 
         Log.UpgradedPackages(logger, updatedDependencies);
 
-        return updatedDependencies > 0;
+        return updatedDependencies > 0 ? UpgradeResult.Success : UpgradeResult.None;
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

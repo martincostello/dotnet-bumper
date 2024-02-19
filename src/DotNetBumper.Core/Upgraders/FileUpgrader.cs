@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
 
-namespace MartinCostello.DotNetBumper.Upgrades;
+namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal abstract partial class FileUpgrader(
     IAnsiConsole console,
@@ -16,7 +16,7 @@ internal abstract partial class FileUpgrader(
 
     protected virtual SearchOption SearchOption => SearchOption.AllDirectories;
 
-    protected override async Task<bool> UpgradeCoreAsync(
+    protected override async Task<UpgradeResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         StatusContext context,
         CancellationToken cancellationToken)
@@ -30,13 +30,13 @@ internal abstract partial class FileUpgrader(
 
         if (fileNames.Count == 0)
         {
-            return false;
+            return UpgradeResult.None;
         }
 
         return await UpgradeCoreAsync(upgrade, fileNames, context, cancellationToken);
     }
 
-    protected abstract Task<bool> UpgradeCoreAsync(
+    protected abstract Task<UpgradeResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,

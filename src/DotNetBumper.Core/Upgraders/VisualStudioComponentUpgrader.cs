@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
 
-namespace MartinCostello.DotNetBumper.Upgrades;
+namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class VisualStudioComponentUpgrader(
     IAnsiConsole console,
@@ -22,7 +22,7 @@ internal sealed partial class VisualStudioComponentUpgrader(
 
     protected override IReadOnlyList<string> Patterns => [".vsconfig"];
 
-    protected override async Task<bool> UpgradeCoreAsync(
+    protected override async Task<UpgradeResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,
@@ -30,7 +30,7 @@ internal sealed partial class VisualStudioComponentUpgrader(
     {
         Log.UpgradingComponentConfiguration(logger);
 
-        bool filesChanged = false;
+        UpgradeResult result = UpgradeResult.None;
 
         foreach (var path in fileNames)
         {
@@ -47,10 +47,10 @@ internal sealed partial class VisualStudioComponentUpgrader(
 
             await UpdateConfigurationAsync(path, configuration, cancellationToken);
 
-            filesChanged = true;
+            result = UpgradeResult.Success;
         }
 
-        return filesChanged;
+        return result;
     }
 
     private static async Task UpdateConfigurationAsync(string path, JsonObject configuration, CancellationToken cancellationToken)

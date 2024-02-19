@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Versioning;
 
-namespace MartinCostello.DotNetBumper.Upgrades;
+namespace MartinCostello.DotNetBumper.Upgraders;
 
 /// <summary>
 /// A class that finds the latest version of .NET available to upgrade to.

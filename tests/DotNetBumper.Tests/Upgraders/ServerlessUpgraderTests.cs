@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using MartinCostello.DotNetBumper.Upgrades;
 using Microsoft.Extensions.Options;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
@@ -60,10 +59,10 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = new ServerlessUpgrader(fixture.Console, options, logger);
 
         // Act
-        bool actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBeTrue();
+        actualUpdated.ShouldBe(UpgradeResult.Success);
 
         string expectedContent = string.Join(
             Environment.NewLine,
@@ -101,7 +100,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBeFalse();
+        actualUpdated.ShouldBe(UpgradeResult.None);
     }
 
     [Theory]
@@ -140,10 +139,10 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = new ServerlessUpgrader(fixture.Console, options, logger);
 
         // Act
-        bool actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actual.ShouldBeFalse();
+        actual.ShouldBe(UpgradeResult.None);
     }
 
     [Theory]
@@ -182,10 +181,10 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = new ServerlessUpgrader(fixture.Console, options, logger);
 
         // Act
-        bool actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actual.ShouldBeFalse();
+        actual.ShouldBe(UpgradeResult.None);
     }
 
     [Fact]
@@ -215,9 +214,9 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = new ServerlessUpgrader(fixture.Console, options, logger);
 
         // Act
-        bool actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actual.ShouldBeFalse();
+        actual.ShouldBe(UpgradeResult.Warning);
     }
 }
