@@ -1,7 +1,10 @@
 {
   "profiles": {
     "DotNetBumper": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "",
+      "environmentVariables": {
+      }
     }
   }
 }
