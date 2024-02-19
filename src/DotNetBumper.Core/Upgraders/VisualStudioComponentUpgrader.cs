@@ -91,6 +91,7 @@ internal sealed partial class VisualStudioComponentUpgrader(
         }
 
         const string ComponentPrefix = "Microsoft.NetCore.Component.Runtime.";
+        string component = $"{ComponentPrefix}{channel.ToString(2)}";
 
         List<int> indexes = [];
 
@@ -106,6 +107,11 @@ internal sealed partial class VisualStudioComponentUpgrader(
 
             string id = value.GetValue<string>();
 
+            if (string.Equals(id, component, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
             if (id.StartsWith(ComponentPrefix, StringComparison.Ordinal) &&
                 Version.TryParse(id[ComponentPrefix.Length..], out var version) &&
                 version < channel)
@@ -115,7 +121,6 @@ internal sealed partial class VisualStudioComponentUpgrader(
         }
 
         bool updated = false;
-        string component = $"{ComponentPrefix}{channel.ToString(2)}";
 
         if (indexes.Count is 1)
         {
