@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
@@ -45,23 +44,12 @@ internal sealed partial class VisualStudioComponentUpgrader(
 
             context.Status = StatusMessage($"Updating {name}...");
 
-            await UpdateConfigurationAsync(path, configuration, cancellationToken);
+            await configuration.SaveAsync(path, cancellationToken);
 
             result = UpgradeResult.Success;
         }
 
         return result;
-    }
-
-    private static async Task UpdateConfigurationAsync(string path, JsonObject configuration, CancellationToken cancellationToken)
-    {
-        using var stream = File.OpenWrite(path);
-        using var writer = new Utf8JsonWriter(stream, new() { Indented = true });
-
-        configuration.WriteTo(writer);
-        await writer.FlushAsync(cancellationToken);
-
-        await stream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine), cancellationToken);
     }
 
     private bool TryEditConfiguration(string path, Version channel, [NotNullWhen(true)] out JsonObject? configuration)
@@ -70,10 +58,7 @@ internal sealed partial class VisualStudioComponentUpgrader(
 
         try
         {
-            using var stream = File.OpenRead(path);
-            configuration = JsonNode.Parse(stream) as JsonObject;
-
-            if (configuration is null)
+            if (!JsonHelpers.TryLoadObject(path, out configuration))
             {
                 return false;
             }
