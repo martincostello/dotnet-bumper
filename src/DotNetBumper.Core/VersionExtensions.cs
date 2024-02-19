@@ -16,7 +16,33 @@ internal static class VersionExtensions
     public static string ToTargetFramework(this NuGetVersion version)
         => $"net{version.Major}.{version.Minor}";
 
-    public static Version? ToVersion(this string targetFramework)
+    public static Version? ToVersionFromLambdaRuntime(this string runtime)
+    {
+        if (runtime.StartsWith("dotnet", StringComparison.OrdinalIgnoreCase))
+        {
+            var span = runtime.AsSpan();
+            int digit = span.IndexOfAnyInRange('1', '9');
+
+            if (digit is not -1)
+            {
+                var number = span[digit..];
+
+                if (number.IndexOf('.') is -1)
+                {
+                    number = $"{number}.0";
+                }
+
+                if (Version.TryParse(number, out var version))
+                {
+                    return version;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static Version? ToVersionFromTargetFramework(this string targetFramework)
     {
         if (targetFramework.StartsWith("net", StringComparison.OrdinalIgnoreCase))
         {

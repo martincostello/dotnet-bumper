@@ -141,7 +141,7 @@ internal sealed partial class VisualStudioCodeUpgrader(
 
                     if (TargetFrameworkMoniker().IsMatch(segment))
                     {
-                        if (segment.ToVersion() is { } version && version < channel)
+                        if (segment.ToVersionFromTargetFramework() is { } version && version < channel)
                         {
                             segment = channel.ToTargetFramework();
                             updated = true;
