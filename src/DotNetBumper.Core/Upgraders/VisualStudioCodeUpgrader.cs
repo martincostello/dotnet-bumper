@@ -83,13 +83,7 @@ internal sealed partial class VisualStudioCodeUpgrader(
             Indented = true,
         };
 
-        using var stream = File.OpenWrite(path);
-        using var writer = new Utf8JsonWriter(stream, options);
-
-        configuration.WriteTo(writer);
-        await writer.FlushAsync(cancellationToken);
-
-        await stream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine), cancellationToken);
+        await configuration.SaveAsync(path, options, cancellationToken);
     }
 
     private bool TryUpdateTargetFrameworks(string path, Version channel, [NotNullWhen(true)] out JsonObject? configuration)
@@ -98,10 +92,7 @@ internal sealed partial class VisualStudioCodeUpgrader(
 
         try
         {
-            using var stream = File.OpenRead(path);
-            configuration = JsonNode.Parse(stream) as JsonObject;
-
-            if (configuration is null)
+            if (!JsonHelpers.TryLoadObject(path, out configuration))
             {
                 return false;
             }

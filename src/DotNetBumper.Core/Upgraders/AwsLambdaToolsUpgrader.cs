@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
@@ -45,23 +44,12 @@ internal sealed partial class AwsLambdaToolsUpgrader(
 
             context.Status = StatusMessage($"Updating {name}...");
 
-            await UpdateConfigurationAsync(path, configuration, cancellationToken);
+            await configuration.SaveAsync(path, cancellationToken);
 
             result = UpgradeResult.Success;
         }
 
         return result;
-    }
-
-    private static async Task UpdateConfigurationAsync(string path, JsonObject defaults, CancellationToken cancellationToken)
-    {
-        using var stream = File.OpenWrite(path);
-        using var writer = new Utf8JsonWriter(stream, new() { Indented = true });
-
-        defaults.WriteTo(writer);
-        await writer.FlushAsync(cancellationToken);
-
-        await stream.WriteAsync(Encoding.UTF8.GetBytes(Environment.NewLine), cancellationToken);
     }
 
     private bool TryEditDefaults(string path, Version channel, [NotNullWhen(true)] out JsonObject? configuration)
@@ -70,10 +58,7 @@ internal sealed partial class AwsLambdaToolsUpgrader(
 
         try
         {
-            using var stream = File.OpenRead(path);
-            configuration = JsonNode.Parse(stream) as JsonObject;
-
-            if (configuration is null)
+            if (!JsonHelpers.TryLoadObject(path, out configuration))
             {
                 return false;
             }
@@ -86,28 +71,24 @@ internal sealed partial class AwsLambdaToolsUpgrader(
 
         bool updated = false;
 
-        if (configuration.TryGetPropertyValue("framework", out var framework) &&
-            framework?.GetValueKind() is JsonValueKind.String)
+        if (configuration.TryGetStringProperty("framework", out var node, out var framework))
         {
-            string value = framework.GetValue<string>();
-            var version = value.ToVersionFromTargetFramework();
+            var version = framework.ToVersionFromTargetFramework();
 
             if (version is { } && version < channel)
             {
-                framework.ReplaceWith(JsonValue.Create(channel.ToTargetFramework()));
+                node.ReplaceWith(JsonValue.Create(channel.ToTargetFramework()));
                 updated = true;
             }
         }
 
-        if (configuration.TryGetPropertyValue("function-runtime", out var runtime) &&
-            runtime?.GetValueKind() is JsonValueKind.String)
+        if (configuration.TryGetStringProperty("function-runtime", out node, out var runtime))
         {
-            string value = runtime.GetValue<string>();
-            var runtimeVersion = value.ToVersionFromLambdaRuntime();
+            var version = runtime.ToVersionFromLambdaRuntime();
 
-            if (runtimeVersion is { } && runtimeVersion < channel)
+            if (version is { } && version < channel)
             {
-                runtime.ReplaceWith(JsonValue.Create(channel.ToLambdaRuntime()));
+                node.ReplaceWith(JsonValue.Create(channel.ToLambdaRuntime()));
                 updated = true;
             }
         }
