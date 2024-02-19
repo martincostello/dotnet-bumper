@@ -46,6 +46,7 @@ public static class ServiceCollectionExtensions
                 .AddSingleton<ProjectUpgrader>();
 
         services.AddSingleton<IUpgrader, GlobalJsonUpgrader>();
+        services.AddSingleton<IUpgrader, ServerlessUpgrader>();
         services.AddSingleton<IUpgrader, TargetFrameworkUpgrader>();
 
         // Packages need to be updated after the TFM so the packages relate to the update
