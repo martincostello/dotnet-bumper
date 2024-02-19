@@ -13,7 +13,11 @@
 
 ## Introduction
 
-A .NET Global Tool and GitHub Action re-usable workflow to upgrade projects to a newer version of .NET.
+A .NET Global Tool to upgrade projects to a newer version of .NET.
+
+> [!NOTE]
+> Upgrades are made on a best-effort basis. You should always review the
+> changes made by the tool and test any changes made to validate the upgrade.
 
 ## Building and Testing
 
