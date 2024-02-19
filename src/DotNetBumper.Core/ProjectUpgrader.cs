@@ -85,7 +85,7 @@ public partial class ProjectUpgrader(
 
         bool hasChanges = false;
 
-        foreach (var upgrader in upgraders)
+        foreach (var upgrader in upgraders.OrderBy((p) => p.Priority))
         {
             hasChanges |= await upgrader.UpgradeAsync(upgrade, cancellationToken);
         }

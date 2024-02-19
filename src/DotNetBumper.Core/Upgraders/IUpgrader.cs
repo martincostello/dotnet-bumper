@@ -9,6 +9,11 @@ namespace MartinCostello.DotNetBumper.Upgrades;
 public interface IUpgrader
 {
     /// <summary>
+    /// Gets the global priority of the upgrader.
+    /// </summary>
+    int Priority { get; }
+
+    /// <summary>
     /// Attempts to apply an upgrade to the project.
     /// </summary>
     /// <param name="upgrade">The version of .NET to upgrade to.</param>
