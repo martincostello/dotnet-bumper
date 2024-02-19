@@ -11,12 +11,6 @@ internal sealed class Project : IDisposable
 
     public string DirectoryName => _directory.FullName;
 
-    public Project AddDirectory(string path)
-    {
-        Directory.CreateDirectory(GetFilePath(path));
-        return this;
-    }
-
     public async Task<string> AddFileAsync(string path, XDocument content)
     {
         var xml = content.ToString(SaveOptions.DisableFormatting);
@@ -25,6 +19,8 @@ internal sealed class Project : IDisposable
 
     public async Task<string> AddFileAsync(string path, string content)
     {
+        EnsureDirectoryTree(path);
+
         var fullPath = GetFilePath(path);
         await File.WriteAllTextAsync(fullPath, content);
 
@@ -213,5 +209,33 @@ internal sealed class Project : IDisposable
             EndGlobal
             """";
 #pragma warning restore SA1027
+    }
+
+    private void EnsureDirectoryTree(string path)
+    {
+        string fullPath = GetFilePath(path);
+        string directory = Path.GetDirectoryName(fullPath)!;
+
+        if (Directory.Exists(directory))
+        {
+            return;
+        }
+
+        var stack = new Stack<string>();
+
+        while (directory != DirectoryName)
+        {
+            if (!Directory.Exists(directory))
+            {
+                stack.Push(directory);
+            }
+
+            directory = Path.GetDirectoryName(directory)!;
+        }
+
+        while (stack.TryPop(out string? target))
+        {
+            Directory.CreateDirectory(target);
+        }
     }
 }
