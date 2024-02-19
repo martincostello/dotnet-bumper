@@ -1,4 +1,4 @@
-﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
+// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics.CodeAnalysis;
@@ -73,8 +73,8 @@ internal sealed partial class ServerlessUpgrader(
     {
         return channel.Major switch
         {
-            6 => "net6.0",
-            8 => "net8.0",
+            6 => "dotnet6",
+            8 => "dotnet8",
             _ => null,
         };
     }
