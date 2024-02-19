@@ -36,10 +36,10 @@ internal sealed class Project : IDisposable
     public async Task<string> GetFileAsync(string path)
         => await File.ReadAllTextAsync(GetFilePath(path));
 
-    public async Task<string> AddGlobalJsonAsync(string sdkVersion)
+    public async Task<string> AddGlobalJsonAsync(string sdkVersion, string path = "global.json")
     {
         var globalJson = CreateGlobalJson(sdkVersion);
-        return await AddFileAsync("global.json", globalJson);
+        return await AddFileAsync(path, globalJson);
     }
 
     public async Task<string> AddProjectAsync(
@@ -55,6 +55,26 @@ internal sealed class Project : IDisposable
     {
         var solution = CreateSolution();
         return await AddFileAsync(path, solution);
+    }
+
+    public async Task<string> AddVisualStudioConfigurationAsync(string path = ".vsconfig")
+    {
+        var configuration =
+            """
+            {
+              "version": "1.0",
+              "components": [
+                "Component.GitHub.VisualStudio",
+                "Microsoft.NetCore.Component.Runtime.6.0",
+                "Microsoft.NetCore.Component.SDK",
+                "Microsoft.VisualStudio.Component.CoreEditor",
+                "Microsoft.VisualStudio.Component.Git",
+                "Microsoft.VisualStudio.Workload.CoreEditor"
+              ]
+            }
+            """;
+
+        return await AddFileAsync(path, configuration);
     }
 
     public void Dispose()

@@ -49,7 +49,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                        .AddDirectory("tests/Project.Tests");
 
         await fixture.Project.AddSolutionAsync("Project.sln");
+
         string globalJson = await fixture.Project.AddGlobalJsonAsync(testCase.SdkVersion);
+        string vsconfig = await fixture.Project.AddVisualStudioConfigurationAsync();
 
         string appProject = await fixture.Project.AddProjectAsync(
             "src/Project/Project.csproj",
@@ -115,6 +117,16 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actualPackages = await GetPackageReferencesAsync(fixture, testProject);
 
         actualPackages.ShouldBe(testPackages);
+
+        var actualConfig = await File.ReadAllTextAsync(vsconfig);
+
+        var config = JsonDocument.Parse(actualConfig).RootElement;
+        config.TryGetProperty("components", out var property).ShouldBeTrue();
+        property.ValueKind.ShouldBe(JsonValueKind.Array);
+
+        var components = property.EnumerateArray().Select((p) => p.GetString()).ToArray();
+        components.ShouldNotContain($"Microsoft.NetCore.Component.Runtime.{testCase.Channel}");
+        components.Where((p) => p?.StartsWith("Microsoft.NetCore.Component.Runtime.", StringComparison.Ordinal) is true).Any().ShouldBeTrue();
     }
 
     [Theory]

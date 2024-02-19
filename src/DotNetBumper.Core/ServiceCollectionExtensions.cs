@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUpgrader, PackageVersionUpgrader>();
         services.AddSingleton<IUpgrader, ServerlessUpgrader>();
         services.AddSingleton<IUpgrader, TargetFrameworkUpgrader>();
+        services.AddSingleton<IUpgrader, VisualStudioComponentUpgrader>();
 
         services.AddHttpClient()
                 .ConfigureHttpClientDefaults((options) =>
