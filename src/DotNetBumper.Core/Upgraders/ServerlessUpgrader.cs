@@ -30,15 +30,10 @@ internal sealed partial class ServerlessUpgrader(
         StatusContext context,
         CancellationToken cancellationToken)
     {
-        var runtime = GetManagedRuntime(upgrade);
-
-        if (runtime is null)
-        {
-            Log.LambdaRuntimeNotSupported(Logger, upgrade.Channel);
-            return UpgradeResult.None;
-        }
-
         Log.UpgradingServerlessRuntimes(logger);
+
+        bool warningEmitted = false;
+        var runtime = GetManagedRuntime(upgrade);
 
         UpgradeResult result = UpgradeResult.None;
 
@@ -59,6 +54,20 @@ internal sealed partial class ServerlessUpgrader(
 
             if (finder.LineIndexes.Count > 0)
             {
+                if (runtime is null)
+                {
+                    if (!warningEmitted)
+                    {
+                        string qualifier = upgrade.ReleaseType is DotNetReleaseType.Lts ? "yet " : string.Empty;
+                        Console.MarkupLine($"[yellow]:warning: .NET {upgrade.Channel} is {qualifier}supported by AWS Lambda.[/]");
+                        Log.LambdaRuntimeNotSupported(Logger, upgrade.Channel);
+                        warningEmitted = true;
+                    }
+
+                    result = result.Max(UpgradeResult.Warning);
+                    continue;
+                }
+
                 context.Status = StatusMessage($"Updating {name}...");
 
                 await UpdateRuntimesAsync(path, runtime, finder.LineIndexes, cancellationToken);

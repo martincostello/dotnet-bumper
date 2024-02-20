@@ -105,12 +105,44 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
+    [InlineData("foo")]
     [InlineData("dotnetcore1.0")]
     [InlineData("dotnetcore2.0")]
     [InlineData("dotnetcore2.1")]
     [InlineData("dotnetcore3.1")]
     [InlineData("dotnet5.0")]
-    public async Task UpgradeAsync_Does_Not_Upgrade_Unsupported_Runtimes(string runtime)
+    [InlineData("go1.x")]
+    [InlineData("java8")]
+    [InlineData("java8.al2")]
+    [InlineData("java11")]
+    [InlineData("java17")]
+    [InlineData("java21")]
+    [InlineData("nodejs")]
+    [InlineData("nodejs4.3")]
+    [InlineData("nodejs4.3-edge")]
+    [InlineData("nodejs6.10")]
+    [InlineData("nodejs8.10")]
+    [InlineData("nodejs10.x")]
+    [InlineData("nodejs12.x")]
+    [InlineData("nodejs14.x")]
+    [InlineData("nodejs16.x")]
+    [InlineData("nodejs18.x")]
+    [InlineData("nodejs20.x")]
+    [InlineData("provided")]
+    [InlineData("provided.al2")]
+    [InlineData("provided.al2023")]
+    [InlineData("python2.7")]
+    [InlineData("python3.6")]
+    [InlineData("python3.7")]
+    [InlineData("python3.8")]
+    [InlineData("python3.9")]
+    [InlineData("python3.10")]
+    [InlineData("python3.11")]
+    [InlineData("python3.12")]
+    [InlineData("ruby2.5")]
+    [InlineData("ruby2.7")]
+    [InlineData("ruby3.2")]
+    public async Task UpgradeAsync_Does_Not_Upgrade_From_Unsupported_Runtimes(string runtime)
     {
         // Arrange
         string serverless =
@@ -148,16 +180,17 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData(5, DotNetReleaseType.Sts, DotNetSupportPhase.Eol)]
-    [InlineData(7, DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
-    [InlineData(9, DotNetReleaseType.Sts, DotNetSupportPhase.Preview)]
-    [InlineData(9, DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
-    [InlineData(10, DotNetReleaseType.Lts, DotNetSupportPhase.Preview)]
-    [InlineData(10, DotNetReleaseType.Lts, DotNetSupportPhase.GoLive)]
-    public async Task UpgradeAsync_Does_Not_Upgrade_Non_Lts_Runtimes(
+    [InlineData(5, DotNetReleaseType.Sts, DotNetSupportPhase.Eol, UpgradeResult.None)]
+    [InlineData(7, DotNetReleaseType.Sts, DotNetSupportPhase.Active, UpgradeResult.Warning)]
+    [InlineData(9, DotNetReleaseType.Sts, DotNetSupportPhase.Preview, UpgradeResult.Warning)]
+    [InlineData(9, DotNetReleaseType.Sts, DotNetSupportPhase.Active, UpgradeResult.Warning)]
+    [InlineData(10, DotNetReleaseType.Lts, DotNetSupportPhase.Preview, UpgradeResult.Warning)]
+    [InlineData(10, DotNetReleaseType.Lts, DotNetSupportPhase.GoLive, UpgradeResult.Warning)]
+    public async Task UpgradeAsync_Does_Not_Upgrade_To_Unsupported_Runtimes(
         int version,
         DotNetReleaseType releaseType,
-        DotNetSupportPhase supportPhase)
+        DotNetSupportPhase supportPhase,
+        UpgradeResult expected)
     {
         // Arrange
         string serverless =
@@ -191,7 +224,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actual.ShouldBe(UpgradeResult.None);
+        actual.ShouldBe(expected);
     }
 
     [Fact]
