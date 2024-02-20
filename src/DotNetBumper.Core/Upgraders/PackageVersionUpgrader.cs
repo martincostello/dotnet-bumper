@@ -79,11 +79,16 @@ internal sealed partial class PackageVersionUpgrader(
 
         do
         {
-            var toolManifest = Directory.EnumerateFiles(Path.Combine(directory.FullName, ".config"), "dotnet-tools.json").FirstOrDefault();
+            var configPath = Path.Combine(directory.FullName, ".config");
 
-            if (toolManifest != null)
+            if (Directory.Exists(configPath))
             {
-                return new HiddenFile(toolManifest);
+                var toolManifest = Directory.EnumerateFiles(configPath, "dotnet-tools.json").FirstOrDefault();
+
+                if (toolManifest != null)
+                {
+                    return new HiddenFile(toolManifest);
+                }
             }
 
             directory = directory.Parent;
