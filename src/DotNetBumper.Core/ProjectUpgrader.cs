@@ -92,6 +92,10 @@ public partial class ProjectUpgrader(
             {
                 stepResult = await upgrader.UpgradeAsync(upgrade, cancellationToken);
             }
+            catch (OperationCanceledException ex) when (ex.CancellationToken == cancellationToken)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 stepResult = UpgradeResult.Error;
