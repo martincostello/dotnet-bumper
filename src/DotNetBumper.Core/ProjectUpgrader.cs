@@ -54,7 +54,7 @@ public partial class ProjectUpgrader(
 
         if (upgrade is null)
         {
-            console.MarkupLine("[yellow]:warning: No eligible .NET upgrade was found.[/]");
+            console.WriteWarningLine("No eligible .NET upgrade was found.");
             console.WriteLine();
             return 0;
         }
@@ -75,8 +75,7 @@ public partial class ProjectUpgrader(
                 var eolUtc = value.ToDateTime(TimeOnly.MinValue);
                 var days = (eolUtc - utcNow).TotalDays;
 
-                console.MarkupLineInterpolated($"[yellow]:warning: Support for .NET {upgrade.Channel} ends in {days:N0} days on {eolUtc:D}.[/]");
-                console.MarkupLine("[yellow]:warning: See [link=https://dotnet.microsoft.com/platform/support/policy/dotnet-core].NET and .NET Core Support Policy[/] for more information.[/]");
+                console.WriteRuntimeNearingEndOfSupportWarning(upgrade, days);
                 console.WriteLine();
             }
         }
@@ -98,8 +97,7 @@ public partial class ProjectUpgrader(
                 stepResult = UpgradeResult.Error;
 
                 console.WriteLine();
-                console.MarkupLine($"[red]:cross_mark: An error occurred while performing upgrade step {upgrader.GetType().Name}.[/]");
-                console.WriteException(ex);
+                console.WriteExceptionLine($"An error occurred while performing upgrade step {upgrader.GetType().Name}.", ex);
             }
 
             result = result.Max(stepResult);
@@ -108,7 +106,7 @@ public partial class ProjectUpgrader(
         if (result is UpgradeResult.Warning)
         {
             console.WriteLine();
-            console.MarkupLine("[yellow]:warning: One or more upgrade steps produced a warning.[/]");
+            console.WriteWarningLine("One or more upgrade steps produced a warning.");
         }
 
         if (result is UpgradeResult.Success or UpgradeResult.Warning)
@@ -121,7 +119,7 @@ public partial class ProjectUpgrader(
 
             if (options.Value.TestUpgrade)
             {
-                console.MarkupLine("[grey]Verifying upgrade...[/]");
+                console.WriteProgressLine("Verifying upgrade...");
 
                 var projects = ProjectHelpers.FindProjects(ProjectPath);
 
@@ -129,8 +127,8 @@ public partial class ProjectUpgrader(
                 {
                     result = result.Max(UpgradeResult.Warning);
 
-                    console.MarkupLine("[yellow]:warning: Could not find any test projects.[/]");
-                    console.MarkupLine("[yellow]:warning: The project may not be in a working state.[/]");
+                    console.WriteWarningLine("Could not find any test projects.");
+                    console.WriteWarningLine("The project may not be in a working state.");
                 }
                 else
                 {
@@ -148,23 +146,23 @@ public partial class ProjectUpgrader(
 
                     if (testResult.Success)
                     {
-                        console.MarkupLine("[green]:check_mark_button: Upgrade successfully tested.[/]");
+                        console.WriteSuccessLine("Upgrade successfully tested.");
                     }
                     else
                     {
-                        console.MarkupLine("[yellow]:warning: The project upgrade did not result in a successful test run.[/]");
-                        console.MarkupLine("[yellow]:warning: The project may not be in a working state.[/]");
+                        console.WriteWarningLine("The project upgrade did not result in a successful test run.");
+                        console.WriteWarningLine("The project may not be in a working state.");
 
                         if (!string.IsNullOrWhiteSpace(testResult.StandardError))
                         {
                             console.WriteLine();
-                            console.MarkupLineInterpolated($"[grey]{testResult.StandardError}[/]");
+                            console.WriteProgressLine(testResult.StandardError);
                         }
 
                         if (!string.IsNullOrWhiteSpace(testResult.StandardOutput))
                         {
                             console.WriteLine();
-                            console.MarkupLineInterpolated($"[grey]{testResult.StandardOutput}[/]");
+                            console.WriteProgressLine(testResult.StandardOutput);
                         }
                     }
                 }
@@ -181,8 +179,8 @@ public partial class ProjectUpgrader(
         {
             Log.NothingToUpgrade(logger, ProjectPath);
 
-            console.MarkupLine("[yellow]:warning: The project upgrade did not result in any changes being made.[/]");
-            console.MarkupLine("[yellow]:warning: Maybe the project has already been upgraded?[/]");
+            console.WriteWarningLine("The project upgrade did not result in any changes being made.");
+            console.WriteWarningLine("Maybe the project has already been upgraded?");
         }
         else
         {

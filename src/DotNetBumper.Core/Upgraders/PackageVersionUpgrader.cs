@@ -128,8 +128,8 @@ internal sealed partial class PackageVersionUpgrader(
         if (!result.Success)
         {
             Console.WriteLine();
-            Console.MarkupLineInterpolated($"[yellow]:warning: Failed to upgrade NuGet packages for {RelativeName(directory)}.[/]");
-            Console.MarkupLineInterpolated($"[yellow]:warning: dotnet outdated exited with code {result.ExitCode}.[/]");
+            Console.WriteWarningLine($"Failed to upgrade NuGet packages for {RelativeName(directory)}.");
+            Console.WriteWarningLine($"dotnet outdated exited with code {result.ExitCode}.");
 
             return UpgradeResult.Warning;
         }
