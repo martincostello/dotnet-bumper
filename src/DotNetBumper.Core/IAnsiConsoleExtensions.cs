@@ -73,7 +73,7 @@ public static class IAnsiConsoleExtensions
     public static void WriteUnsupportedLambdaRuntimeWarning(this IAnsiConsole console, UpgradeInfo upgrade)
     {
         string qualifier = upgrade.ReleaseType is DotNetReleaseType.Lts ? "yet " : string.Empty;
-        console.WriteWarningLine($".NET {upgrade.Channel} is not {qualifier}supported by AWS Lambda.[/]");
+        console.WriteWarningLine($".NET {upgrade.Channel} is not {qualifier}supported by AWS Lambda.");
     }
 
     /// <summary>
