@@ -19,7 +19,7 @@ internal sealed partial class TargetFrameworkUpgrader(
 
     protected override string InitialStatus => "Update TFMs";
 
-    protected override IReadOnlyList<string> Patterns => ["*.csproj", "*.fsproj"];
+    protected override IReadOnlyList<string> Patterns => ["Directory.Build.props", "*.csproj", "*.fsproj"];
 
     protected override async Task<UpgradeResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
@@ -40,7 +40,7 @@ internal sealed partial class TargetFrameworkUpgrader(
 
             (var project, var encoding) = await LoadProjectAsync(filePath, cancellationToken);
 
-            if (project is null)
+            if (project is null || project.Root is null)
             {
                 result = result.Max(UpgradeResult.Warning);
                 continue;
@@ -49,30 +49,20 @@ internal sealed partial class TargetFrameworkUpgrader(
             bool edited = false;
             string newTfm = upgrade.Channel.ToTargetFramework();
 
-            var property = project
-                .Root?
-                .Element("PropertyGroup")?
-                .Element("TargetFramework");
-
-            if (property is not null &&
-                !string.Equals(property.Value, newTfm, StringComparison.Ordinal) &&
-                CanUpgrade(property.Value, upgrade.Channel))
+            foreach (var property in project.Root.Elements("PropertyGroup").Elements())
             {
-                property.SetValue(newTfm);
-                edited = true;
-            }
+                string current = property.Value;
 
-            property = project
-                .Root?
-                .Element("PropertyGroup")?
-                .Element("TargetFrameworks");
+                if (CanUpgradeTargetFramework(current, upgrade.Channel, out var append))
+                {
+                    string updated = append ? $"{current};{newTfm}" : newTfm;
 
-            if (property is not null &&
-                !property.Value.Contains(newTfm, StringComparison.Ordinal) &&
-                CanUpgrade(property.Value, upgrade.Channel))
-            {
-                property.SetValue($"{property.Value};{newTfm}");
-                edited = true;
+                    if (!string.Equals(current, updated, StringComparison.Ordinal))
+                    {
+                        property.SetValue(updated);
+                        edited = true;
+                    }
+                }
             }
 
             if (edited)
@@ -102,21 +92,47 @@ internal sealed partial class TargetFrameworkUpgrader(
         return result;
     }
 
-    private static bool CanUpgrade(string targetFrameworks, Version candidate)
+    private static bool CanUpgradeTargetFramework(ReadOnlySpan<char> property, Version channel, out bool append)
     {
-        var tfms = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        append = false;
 
-        foreach (var tfm in tfms)
+        const char Delimiter = ';';
+        var remaining = property;
+
+        int validTfms = 0;
+
+        while (!remaining.IsEmpty)
         {
-            var version = tfm.ToVersionFromTargetFramework();
+            int index = remaining.IndexOf(Delimiter);
+            var part = index is -1 ? remaining : remaining[..index];
 
-            if (version is not null && version > candidate)
+            if (!part.IsEmpty)
             {
-                return false;
+                if (!part.IsTargetFrameworkMoniker())
+                {
+                    return false;
+                }
+
+                var version = part.ToVersionFromTargetFramework();
+
+                if (version is null || version >= channel)
+                {
+                    return false;
+                }
+
+                validTfms++;
+            }
+
+            remaining = remaining[(index + 1)..];
+
+            if (index is -1)
+            {
+                break;
             }
         }
 
-        return true;
+        append = validTfms > 1;
+        return validTfms > 0;
     }
 
     private async Task<(XDocument? Project, Encoding? Encoding)> LoadProjectAsync(

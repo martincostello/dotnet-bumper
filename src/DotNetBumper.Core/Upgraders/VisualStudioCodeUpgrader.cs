@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -72,9 +71,6 @@ internal sealed partial class VisualStudioCodeUpgrader(
         return result;
     }
 
-    [GeneratedRegex("^net(coreapp)?[1-9]+\\.[0-9]{1}$")]
-    private static partial Regex TargetFrameworkMoniker();
-
     private static async Task UpdateConfigurationAsync(string path, JsonObject configuration, CancellationToken cancellationToken)
     {
         var options = new JsonWriterOptions()
@@ -111,7 +107,7 @@ internal sealed partial class VisualStudioCodeUpgrader(
 
             string value = node.GetValue<string>();
 
-            if (value.Split(PathSeparators).Any((p) => TargetFrameworkMoniker().IsMatch(p)))
+            if (value.Split(PathSeparators).Any((p) => p.IsTargetFrameworkMoniker()))
             {
                 var builder = new StringBuilder();
                 var remaining = value.AsSpan();
@@ -128,9 +124,9 @@ internal sealed partial class VisualStudioCodeUpgrader(
                         break;
                     }
 
-                    string segment = new(remaining[0..index]);
+                    string segment = new(remaining[..index]);
 
-                    if (TargetFrameworkMoniker().IsMatch(segment))
+                    if (segment.IsTargetFrameworkMoniker())
                     {
                         if (segment.ToVersionFromTargetFramework() is { } version && version < channel)
                         {
