@@ -17,10 +17,10 @@ _.NET Bumper_ is a .NET Global Tool to upgrade projects to a newer version of .N
 
 ![.NET Bumper in action][demo]
 
-.NET Bumper helps you upgrade your .NET projects to a newer version by taking
-care of some of the steps required to move from one version to another. .NET
-Bumper supports upgrading to both _Long Term Support_ (LTS) and _Standard Term Support_
-(STS) versions of .NET, _and_ the latest preview versions of .NET.
+Bumper helps you upgrade your .NET projects to a newer version by taking
+care of some of the steps required to move from one version to another. Bumper supports
+upgrading to both _Long Term Support_ (LTS) and _Standard Term Support_ (STS) versions
+of .NET, _and_ the latest preview versions of .NET. 🚀
 
 Steps the tool can perform on your behalf include:
 
@@ -52,7 +52,7 @@ An example of the output is shown below.
 
 ### Examples
 
-> Upgrade a project to the current LTS version of .NET.
+> Upgrade a project to the current LTS version of .NET
 
 ```console
 dotnet bumper ~/projects/awesome-project
@@ -73,10 +73,11 @@ dotnet bumper ~/projects/awesome-project --upgrade-type Preview
 > Upgrade a project to a specific version of .NET
 
 ```console
-dotnet bumper ~/projects/awesome-project --channel 7.0
+dotnet bumper ~/projects/awesome-project --channel 8.0
 ```
 
-> Run `dotnet test` after upgrading the project
+> Upgrade a project to the current LTS version of .NET and
+> then run `dotnet test` after the upgrade has completed
 
 ```console
 dotnet bumper ~/projects/awesome-project --test
@@ -107,16 +108,16 @@ Options:
 
 ## Pre-requisites
 
-- .NET 8 must be installed to use the tool.
-  - The .NET SDK version to upgrade to must also be installed if this is different.
-- The [dotnet-outdated][dotnet-outdated] .NET Global tool must also be installed.
-- Any project being upgraded must already target at least .NET 6.
+- .NET 8 must be installed to use the tool
+  - The .NET SDK version to upgrade to must also be installed if this is different
+- The [dotnet-outdated][dotnet-outdated] .NET Global tool must also be installed
+- Any project being upgraded must already target at least .NET 6
 
 ## Building and Testing
 
 Compiling the application yourself requires Git and the [.NET SDK][dotnet-sdk] to be installed.
 
-To build and test the application locally from a terminal/command-line, run the following set of commands:
+To build and test the application locally from a terminal, run the following set of commands:
 
 ```powershell
 git clone https://github.com/martincostello/dotnet-bumper.git
