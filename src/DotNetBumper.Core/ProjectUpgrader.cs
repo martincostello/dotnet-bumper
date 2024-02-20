@@ -190,7 +190,7 @@ public partial class ProjectUpgrader(
         {
             (string emoji, string color, string description) = result switch
             {
-                UpgradeResult.Warning => (":warning:", "yellow", "succeeded with warnings"),
+                UpgradeResult.Warning => (":warning:", "yellow", "completed with warnings"),
                 _ => (":cross_mark:", "red", "failed"),
             };
 
