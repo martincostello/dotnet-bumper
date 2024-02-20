@@ -178,6 +178,65 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actualPackages.ShouldBe([]);
     }
 
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(true, 1)]
+    public async Task Application_Warns_If_Tests_Fail(bool treatWarningsAsErrors, int expected)
+    {
+        // Arrange
+        string sdkVersion = "6.0.100";
+        string[] targetFrameworks = ["net6.0"];
+
+        var testPackages = new Dictionary<string, string>()
+        {
+            ["Microsoft.NET.Test.Sdk"] = "17.9.0",
+            ["xunit"] = "2.7.0",
+            ["xunit.runner.visualstudio"] = "2.5.7",
+        };
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        await fixture.Project.AddSolutionAsync("Project.sln");
+        await fixture.Project.AddGlobalJsonAsync(sdkVersion);
+        await fixture.Project.AddProjectAsync("src/Project/Project.csproj", targetFrameworks);
+        await fixture.Project.AddProjectAsync("tests/Project.Tests/Project.Tests.csproj", targetFrameworks, testPackages);
+
+        string unitTestClass =
+            """
+            using Xunit;
+
+            namespace MyProject.Tests;
+
+            public static class UnitTests
+            {
+                [Fact]
+                public static void Always_Fails_Test()
+                {
+                    Assert.True(false);
+                }
+            }
+            """;
+
+        await fixture.Project.AddFileAsync("tests/Project.Tests/UnitTests.cs", unitTestClass);
+
+        List<string> args = ["--test"];
+
+        if (treatWarningsAsErrors)
+        {
+            args.Add("--warnings-as-errors");
+        }
+
+        // Act
+        int status = await Bumper.RunAsync(
+            fixture.Console,
+            [fixture.Project.DirectoryName, "--verbose", ..args],
+            (builder) => builder.AddXUnit(fixture),
+            CancellationToken.None);
+
+        // Assert
+        status.ShouldBe(expected);
+    }
+
     [Fact]
     public async Task Application_Validates_Project_Exists()
     {
@@ -273,7 +332,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                      category.StartsWith("System", StringComparison.Ordinal));
         }
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
 
         return await Bumper.RunAsync(
             fixture.Console,
