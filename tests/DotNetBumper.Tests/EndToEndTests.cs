@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
+using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper;
 
@@ -238,6 +239,23 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         // Assert
         actual.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Application_Validates_Project_Is_Specified()
+    {
+        // Arrange
+        using var console = new TestConsole();
+
+        // Act
+        int actual = await Bumper.RunAsync(
+            console,
+            [],
+            (builder) => builder.AddXUnit(outputHelper),
+            CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(1);
     }
 
     private static async Task<int> RunAsync(UpgraderFixture fixture, IList<string> args)
