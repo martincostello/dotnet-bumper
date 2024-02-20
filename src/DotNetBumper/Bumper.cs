@@ -96,8 +96,12 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         {
             Log.UpgradeFailed(logger, ex);
 
-            if (ex is not OperationCanceledException oce ||
-                oce.CancellationToken != cancellationToken)
+            if (ex is OperationCanceledException oce && oce.CancellationToken != cancellationToken)
+            {
+                console.WriteLine();
+                console.WriteWarningLine("Upgrade cancelled by user.");
+            }
+            else
             {
                 console.WriteLine();
                 console.WriteExceptionLine("Failed to upgrade project.", ex);
