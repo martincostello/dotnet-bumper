@@ -1,12 +1,19 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Text.RegularExpressions;
 using NuGet.Versioning;
 
 namespace MartinCostello.DotNetBumper;
 
-internal static class VersionExtensions
+internal static partial class VersionExtensions
 {
+    public static bool IsTargetFrameworkMoniker(this string value)
+        => TargetFrameworkMoniker().IsMatch(value);
+
+    public static bool IsTargetFrameworkMoniker(this ReadOnlySpan<char> value)
+        => TargetFrameworkMoniker().IsMatch(value);
+
     public static string ToLambdaRuntime(this Version version)
         => $"dotnet{version.ToString(1)}";
 
@@ -17,15 +24,17 @@ internal static class VersionExtensions
         => $"net{version.Major}.{version.Minor}";
 
     public static Version? ToVersionFromLambdaRuntime(this string runtime)
+        => runtime.AsSpan().ToVersionFromLambdaRuntime();
+
+    public static Version? ToVersionFromLambdaRuntime(this ReadOnlySpan<char> runtime)
     {
         if (runtime.StartsWith("dotnet", StringComparison.OrdinalIgnoreCase))
         {
-            var span = runtime.AsSpan();
-            int digit = span.IndexOfAnyInRange('1', '9');
+            int digit = runtime.IndexOfAnyInRange('1', '9');
 
             if (digit is not -1)
             {
-                var number = span[digit..];
+                var number = runtime[digit..];
 
                 if (number.IndexOf('.') is -1)
                 {
@@ -43,10 +52,13 @@ internal static class VersionExtensions
     }
 
     public static Version? ToVersionFromTargetFramework(this string targetFramework)
+        => targetFramework.AsSpan().ToVersionFromTargetFramework();
+
+    public static Version? ToVersionFromTargetFramework(this ReadOnlySpan<char> targetFramework)
     {
         if (targetFramework.StartsWith("net", StringComparison.OrdinalIgnoreCase))
         {
-            int digit = targetFramework.AsSpan().IndexOfAnyInRange('1', '9');
+            int digit = targetFramework.IndexOfAnyInRange('1', '9');
 
             if (digit is not -1 && Version.TryParse(targetFramework[digit..], out var version))
             {
@@ -56,4 +68,7 @@ internal static class VersionExtensions
 
         return null;
     }
+
+    [GeneratedRegex("^net(coreapp)?[1-9]+\\.[0-9]{1}$")]
+    private static partial Regex TargetFrameworkMoniker();
 }

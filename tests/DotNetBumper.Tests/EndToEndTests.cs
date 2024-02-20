@@ -236,7 +236,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         return await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, "--verbose", ..args],
+            [fixture.Project.DirectoryName, "--verbose", "--warnings-as-errors", ..args],
             (builder) => builder.AddXUnit(fixture).AddFilter(LogFilter),
             cts.Token);
     }
