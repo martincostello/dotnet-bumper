@@ -218,6 +218,28 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(0);
     }
 
+    [Fact]
+    public async Task Application_Returns_Two_If_Cancelled_By_User()
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+        using var cts = new CancellationTokenSource();
+
+        // Act
+        int actual = await Bumper.RunAsync(
+            fixture.Console,
+            [fixture.Project.DirectoryName, "--verbose"],
+            (builder) =>
+            {
+                cts.Cancel();
+                return builder.AddXUnit(fixture);
+            },
+            cts.Token);
+
+        // Assert
+        actual.ShouldBe(2);
+    }
+
     private static async Task<int> RunAsync(UpgraderFixture fixture, IList<string> args)
     {
         static bool LogFilter(string? category, LogLevel level)
