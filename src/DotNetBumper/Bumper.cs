@@ -100,8 +100,7 @@ internal partial class Bumper(ProjectUpgrader upgrader)
                 oce.CancellationToken != cancellationToken)
             {
                 console.WriteLine();
-                console.MarkupLine("[red]Failed to upgrade project.[/]");
-                console.WriteException(ex);
+                console.WriteExceptionLine("Failed to upgrade project.", ex);
             }
 
             return 1;

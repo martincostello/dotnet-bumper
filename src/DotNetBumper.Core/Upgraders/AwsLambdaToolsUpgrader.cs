@@ -93,8 +93,7 @@ internal sealed partial class AwsLambdaToolsUpgrader(
                 if (upgrade.SupportPhase < DotNetSupportPhase.Active ||
                     upgrade.ReleaseType != DotNetReleaseType.Lts)
                 {
-                    string qualifier = upgrade.ReleaseType is DotNetReleaseType.Lts ? "yet " : string.Empty;
-                    Console.MarkupLine($"[yellow]:warning: .NET {upgrade.Channel} is {qualifier}supported by AWS Lambda.[/]");
+                    Console.WriteUnsupportedLambdaRuntimeWarning(upgrade);
                     result = result.Max(UpgradeResult.Warning);
                 }
                 else
