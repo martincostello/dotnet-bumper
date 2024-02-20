@@ -27,7 +27,7 @@ internal sealed partial class DockerfileUpgrader(
     internal static bool TryUpdateImage(
         string current,
         Version channel,
-        DotNetReleaseType releaseType,
+        DotNetSupportPhase supportPhase,
         [NotNullWhen(true)] out string? updated)
     {
         updated = null;
@@ -56,7 +56,7 @@ internal sealed partial class DockerfileUpgrader(
             {
                 builder.Append(':');
 
-                if (AppendTag(builder, tag, channel, releaseType))
+                if (AppendTag(builder, tag, channel, supportPhase))
                 {
                     edited = true;
                 }
@@ -132,7 +132,7 @@ internal sealed partial class DockerfileUpgrader(
             StringBuilder builder,
             ReadOnlySpan<char> tag,
             Version channel,
-            DotNetReleaseType releaseType)
+            DotNetSupportPhase supportPhase)
         {
             var maybeVersion = tag;
             var suffix = ReadOnlySpan<char>.Empty;
@@ -152,8 +152,7 @@ internal sealed partial class DockerfileUpgrader(
 
                 if (!suffix.IsEmpty)
                 {
-                    // TODO Handle release candidates being prerelease but not preview
-                    if (releaseType == DotNetReleaseType.Preview)
+                    if (supportPhase == DotNetSupportPhase.Preview)
                     {
                         if (!suffix.StartsWith(PreviewSuffix, StringComparison.Ordinal))
                         {
@@ -167,7 +166,7 @@ internal sealed partial class DockerfileUpgrader(
 
                     builder.Append(suffix);
                 }
-                else if (releaseType == DotNetReleaseType.Preview)
+                else if (supportPhase == DotNetSupportPhase.Preview)
                 {
                     builder.Append(PreviewSuffix);
                 }
@@ -229,7 +228,7 @@ internal sealed partial class DockerfileUpgrader(
             // See https://docs.docker.com/engine/reference/builder/#from for the syntax
             var current = dockerfile[i];
 
-            if (TryUpdateImage(current, upgrade.Channel, upgrade.ReleaseType, out var updated))
+            if (TryUpdateImage(current, upgrade.Channel, upgrade.SupportPhase, out var updated))
             {
                 dockerfile[i] = updated;
                 edited = true;
