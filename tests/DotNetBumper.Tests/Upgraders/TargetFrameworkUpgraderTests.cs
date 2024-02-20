@@ -97,6 +97,8 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("<Project><PropertyGroup></PropertyGroup></Project>", UpgradeResult.None)]
     [InlineData("<Project><PropertyGroup><SomeProperty></SomeProperty></PropertyGroup></Project>", UpgradeResult.None)]
     [InlineData("<Project><PropertyGroup><SomeProperty>;;</SomeProperty></PropertyGroup></Project>", UpgradeResult.None)]
+    [InlineData("<Project><PropertyGroup><SomeProperty>8.0</SomeProperty></PropertyGroup></Project>", UpgradeResult.None)]
+    [InlineData("<Project><PropertyGroup><SomeProperty>SomeValue</SomeProperty></PropertyGroup></Project>", UpgradeResult.None)]
     public async Task UpgradeAsync_Handles_Invalid_Xml(string content, UpgradeResult expected)
     {
         // Arrange
