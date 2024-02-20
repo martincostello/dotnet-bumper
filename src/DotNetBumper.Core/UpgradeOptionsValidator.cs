@@ -15,6 +15,11 @@ internal sealed class UpgradeOptionsValidator : IValidateOptions<UpgradeOptions>
             return ValidateOptionsResult.Fail($"The specified .NET channel \"{version}\" is invalid.");
         }
 
+        if (string.IsNullOrWhiteSpace(options.ProjectPath))
+        {
+            return ValidateOptionsResult.Fail("No path to a directory containing a .NET project/solution to upgrade specified.");
+        }
+
         if (!Directory.Exists(options.ProjectPath))
         {
             return ValidateOptionsResult.Fail($"The project path '{options.ProjectPath}' could not be found.");
