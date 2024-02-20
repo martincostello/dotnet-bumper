@@ -100,6 +100,7 @@ internal partial class Bumper(ProjectUpgrader upgrader)
             {
                 console.WriteLine();
                 console.WriteWarningLine("Upgrade cancelled by user.");
+                return 2;
             }
             else if (ex is OptionsValidationException)
             {
