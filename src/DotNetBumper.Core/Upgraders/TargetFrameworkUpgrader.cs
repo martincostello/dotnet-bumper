@@ -51,11 +51,17 @@ internal sealed partial class TargetFrameworkUpgrader(
 
             foreach (var property in project.Root.Elements("PropertyGroup").Elements())
             {
-                if (!string.Equals(property.Value, newTfm, StringComparison.Ordinal) &&
-                    CanUpgradeTargetFramework(property.Value, upgrade.Channel))
+                string current = property.Value;
+
+                if (CanUpgradeTargetFramework(current, upgrade.Channel, out var append))
                 {
-                    property.SetValue(newTfm);
-                    edited = true;
+                    string updated = append ? $"{current};{newTfm}" : newTfm;
+
+                    if (!string.Equals(current, updated, StringComparison.Ordinal))
+                    {
+                        property.SetValue(updated);
+                        edited = true;
+                    }
                 }
             }
 
@@ -86,32 +92,37 @@ internal sealed partial class TargetFrameworkUpgrader(
         return result;
     }
 
-    private static bool CanUpgradeTargetFramework(ReadOnlySpan<char> property, Version channel)
+    private static bool CanUpgradeTargetFramework(ReadOnlySpan<char> property, Version channel, out bool append)
     {
+        append = false;
+
         const char Delimiter = ';';
         var remaining = property;
 
-        bool allValidTfms = false;
+        int validTfms = 0;
 
-        // Test for ";;;" and "net6.0;;net7.0"
         while (!remaining.IsEmpty)
         {
             int index = remaining.IndexOf(Delimiter);
             var part = index is -1 ? remaining : remaining[..index];
 
-            if (!part.IsTargetFrameworkMoniker())
+            if (!part.IsEmpty)
             {
-                return false;
+                if (!part.IsTargetFrameworkMoniker())
+                {
+                    return false;
+                }
+
+                var version = part.ToVersionFromTargetFramework();
+
+                if (version is null || version >= channel)
+                {
+                    return false;
+                }
+
+                validTfms++;
             }
 
-            var version = part.ToVersionFromTargetFramework();
-
-            if (version is null || version > channel)
-            {
-                return false;
-            }
-
-            allValidTfms = true;
             remaining = remaining[(index + 1)..];
 
             if (index is -1)
@@ -120,7 +131,8 @@ internal sealed partial class TargetFrameworkUpgrader(
             }
         }
 
-        return allValidTfms;
+        append = validTfms > 1;
+        return validTfms > 0;
     }
 
     private async Task<(XDocument? Project, Encoding? Encoding)> LoadProjectAsync(
