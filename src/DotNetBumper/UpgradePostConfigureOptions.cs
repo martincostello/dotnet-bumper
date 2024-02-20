@@ -13,7 +13,7 @@ internal sealed class UpgradePostConfigureOptions(IModelAccessor accessor) : IPo
         var command = (Bumper)accessor.GetModel();
 
         options.DotNetChannel ??= command.DotNetChannel;
-        options.ProjectPath = command.ProjectPath ?? Environment.CurrentDirectory;
+        options.ProjectPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(command.ProjectPath ?? Environment.CurrentDirectory));
         options.TestUpgrade = command.TestUpgrade;
         options.TreatWarningsAsErrors = command.WarningsAsErrors;
 
