@@ -199,16 +199,14 @@ internal sealed partial class DockerfileUpgrader(
 
             (bool edited, var dockerfile) = await TryEditDockerfile(path, upgrade, cancellationToken);
 
-            if (!edited)
+            if (edited)
             {
-                continue;
+                context.Status = StatusMessage($"Updating {name}...");
+
+                await File.WriteAllLinesAsync(path, dockerfile, cancellationToken);
+
+                result = UpgradeResult.Success;
             }
-
-            context.Status = StatusMessage($"Updating {name}...");
-
-            await File.WriteAllLinesAsync(path, dockerfile, cancellationToken);
-
-            result = UpgradeResult.Success;
         }
 
         return result;
@@ -225,13 +223,10 @@ internal sealed partial class DockerfileUpgrader(
 
         for (int i = 0; i < dockerfile.Length; i++)
         {
-            // See https://docs.docker.com/engine/reference/builder/#from for the syntax
-            var current = dockerfile[i];
-
-            if (TryUpdateImage(current, upgrade.Channel, upgrade.SupportPhase, out var updated))
+            if (TryUpdateImage(dockerfile[i], upgrade.Channel, upgrade.SupportPhase, out var updated))
             {
                 dockerfile[i] = updated;
-                edited = true;
+                edited |= true;
             }
         }
 
