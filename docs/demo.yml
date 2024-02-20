@@ -1,12 +1,12 @@
 config:
 
   command: pwsh.exe -NoLogo -NoProfile
-  
+
   cwd: C:\Coding\martincostello\MyApplication
-  
+
   env:
     recording: true
-  
+
   cols: 120
   rows: 30
   repeat: 0
@@ -16,10 +16,10 @@ config:
 
   frameBox:
     type: floating
-    title: Terminalizer
+    title: dotnet bumper
     style:
       border: 0px black solid
-  
+
   watermark:
     imagePath: null
     style:
@@ -28,13 +28,13 @@ config:
       bottom: 15px
       width: 100px
       opacity: 0.9
-  
+
   cursorStyle: block
   fontFamily: "Monaco, Lucida Console, Ubuntu Mono, Monospace"
   fontSize: 12
   lineHeight: 1
   letterSpacing: 0
-  
+
   theme:
     background: "transparent"
     foreground: "#afafaf"
@@ -55,7 +55,7 @@ config:
     brightMagenta: "#ae89fe"
     brightCyan: "#b1c6ca"
     brightWhite: "#f9f9f4"
-  
+
 records:
   - delay: 0
     content: "\e[?25l\e[2J\e[m\e[HPS C:\\Coding\\martincostello\\MyApplication>\e[1C\e]0;C:\\Program Files\\PowerShell\\7\\pwsh.exe\a\e[?25h"
