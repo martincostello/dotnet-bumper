@@ -80,24 +80,27 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         actual.Groups["name"].Value.ShouldBe(expectedName);
     }
 
-    public static TheoryData<string, Version, DotNetReleaseType, bool, string?> DockerImages()
+    public static TheoryData<string, Version, DotNetSupportPhase, bool, string?> DockerImages()
     {
-        (string Channel, DotNetReleaseType Type)[] channels =
+        (string Channel, DotNetSupportPhase Type)[] channels =
         [
-            ("7.0", DotNetReleaseType.Sts),
-            ("8.0", DotNetReleaseType.Lts),
-            ("9.0", DotNetReleaseType.Preview),
-            ("9.0", DotNetReleaseType.Sts),
-            ("10.0", DotNetReleaseType.Lts),
+            ("7.0", DotNetSupportPhase.Active),
+            ("8.0", DotNetSupportPhase.Active),
+            ("9.0", DotNetSupportPhase.Active),
+            ("9.0", DotNetSupportPhase.Preview),
+            ("9.0", DotNetSupportPhase.GoLive),
+            ("10.0", DotNetSupportPhase.Active),
+            ("10.0", DotNetSupportPhase.Preview),
+            ("10.0", DotNetSupportPhase.GoLive),
         ];
 
-        var testCases = new TheoryData<string, Version, DotNetReleaseType, bool, string?>()
+        var testCases = new TheoryData<string, Version, DotNetSupportPhase, bool, string?>()
         {
             // Invalid/unsupported images
-            { string.Empty, new(0, 0), DotNetReleaseType.Lts, false, null },
-            { " ", new(0, 0), DotNetReleaseType.Lts, false, null },
-            { "foo", new(0, 0), DotNetReleaseType.Lts, false, null },
-            { "FROM mcr.microsoft.com/vscode/devcontainers/dotnet:latest@sha256:6e5d9440418393a00b05d306bf45bbab97d4bb9771f2b5d52f5f2304e393cc2f", new(8, 0), DotNetReleaseType.Lts, false, null },
+            { string.Empty, new(0, 0), DotNetSupportPhase.Active, false, null },
+            { " ", new(0, 0), DotNetSupportPhase.Active, false, null },
+            { "foo", new(0, 0), DotNetSupportPhase.Active, false, null },
+            { "FROM mcr.microsoft.com/vscode/devcontainers/dotnet:latest@sha256:6e5d9440418393a00b05d306bf45bbab97d4bb9771f2b5d52f5f2304e393cc2f", new(8, 0), DotNetSupportPhase.Active, false, null },
         };
 
         // Already up-to-date images
@@ -134,7 +137,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         foreach ((var channel, var type) in channels)
         {
             var version = Version.Parse(channel);
-            var suffix = type is DotNetReleaseType.Preview ? "-preview" : string.Empty;
+            var suffix = type is DotNetSupportPhase.Preview ? "-preview" : string.Empty;
 
             testCases.Add("FROM mcr.microsoft.com/dotnet/aspnet:6.0", version, type, true, $"FROM mcr.microsoft.com/dotnet/aspnet:{channel}{suffix}");
             testCases.Add("FROM mcr.microsoft.com/dotnet/aspnet:6.0-preview", version, type, true, $"FROM mcr.microsoft.com/dotnet/aspnet:{channel}{suffix}");
@@ -170,12 +173,12 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
     public static void TryUpdateImage_Returns_Expected_Values(
         string value,
         Version channel,
-        DotNetReleaseType releaseType,
+        DotNetSupportPhase supportPhase,
         bool expectedResult,
         string? expectedImage)
     {
         // Act
-        var actualResult = DockerfileUpgrader.TryUpdateImage(value, channel, releaseType, out var actualImage);
+        var actualResult = DockerfileUpgrader.TryUpdateImage(value, channel, supportPhase, out var actualImage);
 
         // Assert
         actualResult.ShouldBe(expectedResult);
@@ -229,6 +232,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
             SdkVersion = new($"{channel}.100"),
+            SupportPhase = DotNetSupportPhase.Active,
         };
 
         var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
@@ -271,6 +275,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
             SdkVersion = new("8.0.201"),
+            SupportPhase = DotNetSupportPhase.Active,
         };
 
         var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });

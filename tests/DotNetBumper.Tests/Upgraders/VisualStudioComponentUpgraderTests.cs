@@ -25,6 +25,7 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
             SdkVersion = new($"{channel}.100"),
+            SupportPhase = DotNetSupportPhase.Active,
         };
 
         var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
@@ -94,6 +95,7 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
             SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
         };
 
         var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
@@ -137,6 +139,7 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
             SdkVersion = new("8.0.201"),
+            SupportPhase = DotNetSupportPhase.Active,
         };
 
         var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });

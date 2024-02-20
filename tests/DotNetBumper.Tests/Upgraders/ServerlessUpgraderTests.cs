@@ -52,6 +52,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
             SdkVersion = new("8.0.201"),
+            SupportPhase = DotNetSupportPhase.Active,
         };
 
         var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
@@ -132,6 +133,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
             SdkVersion = new("8.0.201"),
+            SupportPhase = DotNetSupportPhase.Active,
         };
 
         var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
@@ -146,12 +148,16 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData(5, DotNetReleaseType.Sts)]
-    [InlineData(7, DotNetReleaseType.Sts)]
-    [InlineData(9, DotNetReleaseType.Preview)]
-    [InlineData(9, DotNetReleaseType.Sts)]
-    [InlineData(10, DotNetReleaseType.Preview)]
-    public async Task UpgradeAsync_Does_Not_Upgrade_Non_Lts_Runtimes(int version, DotNetReleaseType releaseType)
+    [InlineData(5, DotNetReleaseType.Sts, DotNetSupportPhase.Eol)]
+    [InlineData(7, DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
+    [InlineData(9, DotNetReleaseType.Sts, DotNetSupportPhase.Preview)]
+    [InlineData(9, DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
+    [InlineData(10, DotNetReleaseType.Lts, DotNetSupportPhase.Preview)]
+    [InlineData(10, DotNetReleaseType.Lts, DotNetSupportPhase.GoLive)]
+    public async Task UpgradeAsync_Does_Not_Upgrade_Non_Lts_Runtimes(
+        int version,
+        DotNetReleaseType releaseType,
+        DotNetSupportPhase supportPhase)
     {
         // Arrange
         string serverless =
@@ -174,6 +180,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = releaseType,
             SdkVersion = new($"{version}.0.100"),
+            SupportPhase = supportPhase,
         };
 
         var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
@@ -207,6 +214,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
             SdkVersion = new("8.0.201"),
+            SupportPhase = DotNetSupportPhase.Active,
         };
 
         var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });

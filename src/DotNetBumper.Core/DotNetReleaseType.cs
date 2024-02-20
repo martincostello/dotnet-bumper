@@ -17,9 +17,4 @@ public enum DotNetReleaseType
     /// A standard-term support (STS) release.
     /// </summary>
     Sts,
-
-    /// <summary>
-    /// A preview release.
-    /// </summary>
-    Preview,
 }

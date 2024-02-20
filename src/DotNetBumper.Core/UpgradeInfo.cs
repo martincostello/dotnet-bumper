@@ -26,6 +26,11 @@ public sealed class UpgradeInfo
     public required DotNetReleaseType ReleaseType { get; init; }
 
     /// <summary>
+    /// Gets the support phase of the .NET release.
+    /// </summary>
+    public required DotNetSupportPhase SupportPhase { get; init; }
+
+    /// <summary>
     /// Gets the end-of-time date of the .NET release channel, if known.
     /// </summary>
     public required DateOnly? EndOfLife { get; init; }

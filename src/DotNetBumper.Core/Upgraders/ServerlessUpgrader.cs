@@ -30,7 +30,7 @@ internal sealed partial class ServerlessUpgrader(
         StatusContext context,
         CancellationToken cancellationToken)
     {
-        var runtime = GetManagedRuntime(upgrade.Channel, upgrade.ReleaseType);
+        var runtime = GetManagedRuntime(upgrade);
 
         if (runtime is null)
         {
@@ -70,20 +70,21 @@ internal sealed partial class ServerlessUpgrader(
         return result;
     }
 
-    private static string? GetManagedRuntime(Version channel, DotNetReleaseType type)
+    private static string? GetManagedRuntime(UpgradeInfo upgrade)
     {
-        if (channel < MinimumVersion)
+        if (upgrade.Channel < MinimumVersion)
         {
             return null;
         }
 
-        if (type != DotNetReleaseType.Lts)
+        if (upgrade.ReleaseType is not DotNetReleaseType.Lts ||
+            upgrade.SupportPhase < DotNetSupportPhase.Active)
         {
             // AWS Lambda only supports stable LTS releases of .NET
             return null;
         }
 
-        return channel.ToLambdaRuntime();
+        return upgrade.Channel.ToLambdaRuntime();
     }
 
     private bool TryParseServerless(

@@ -59,15 +59,14 @@ public partial class DotNetUpgradeFinder(
                     out var channel,
                     out var sdkVersion,
                     out var releaseType,
-                    out var isEndOfLife,
-                    out var endOfLifeDate)
-                || isEndOfLife)
+                    out var supportPhase,
+                    out var endOfLifeDate))
             {
-                if (!isEndOfLife)
-                {
-                    Log.UnableToParseRelease(logger, release);
-                }
-
+                Log.UnableToParseRelease(logger, release);
+                continue;
+            }
+            else if (supportPhase is DotNetSupportPhase.Eol)
+            {
                 continue;
             }
 
@@ -77,6 +76,7 @@ public partial class DotNetUpgradeFinder(
                 EndOfLife = endOfLifeDate,
                 ReleaseType = releaseType,
                 SdkVersion = sdkVersion,
+                SupportPhase = supportPhase,
             });
         }
 
@@ -87,18 +87,19 @@ public partial class DotNetUpgradeFinder(
             [NotNullWhen(true)] out Version? channel,
             [NotNullWhen(true)] out NuGetVersion? sdkVersion,
             out DotNetReleaseType releaseType,
-            out bool isEndOfLife,
+            out DotNetSupportPhase supportPhase,
             out DateOnly? endOfLife)
         {
             channel = null;
             sdkVersion = null;
             releaseType = default;
+            supportPhase = default;
             endOfLife = default;
 
             var channelString = GetString(element, "channel-version");
             var latestSdkVersion = GetString(element, "latest-sdk");
             var releaseTypeString = GetString(element, "release-type");
-            var supportPhase = GetString(element, "support-phase");
+            var supportPhaseString = GetString(element, "support-phase");
             var endOfLifeString = GetString(element, "eol-date");
 
             if (endOfLifeString is { Length: > 0 })
@@ -114,12 +115,11 @@ public partial class DotNetUpgradeFinder(
                 }
             }
 
-            isEndOfLife = supportPhase is "eol";
-
             return
                 Version.TryParse(channelString, out channel) &&
                 NuGetVersion.TryParse(latestSdkVersion, out sdkVersion) &&
-                Enum.TryParse<DotNetReleaseType>(releaseTypeString, ignoreCase: true, out releaseType);
+                Enum.TryParse<DotNetReleaseType>(releaseTypeString, ignoreCase: true, out releaseType) &&
+                Enum.TryParse<DotNetSupportPhase>(supportPhaseString.Replace("-", string.Empty, StringComparison.Ordinal), ignoreCase: true, out supportPhase);
 
             static string GetString(JsonElement element, string name)
             {
