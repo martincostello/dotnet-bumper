@@ -53,6 +53,27 @@ internal sealed class Project : IDisposable
         return await AddFileAsync(path, solution);
     }
 
+    public async Task<string> AddToolManifestAsync(string path = ".config/dotnet-tools.json")
+    {
+        var manifest =
+            """
+            {
+              "version": 1,
+              "isRoot": true,
+              "tools": {
+                "dotnet-outdated-tool": {
+                  "version": "4.6.0",
+                  "commands": [
+                    "dotnet-outdated"
+                  ]
+                }
+              }
+            }
+            """;
+
+        return await AddFileAsync(path, manifest);
+    }
+
     public async Task<string> AddVisualStudioCodeLaunchConfigurationsAsync(
         string channel = "6.0",
         string path = ".vscode/launch.json")
