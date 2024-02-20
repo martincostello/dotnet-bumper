@@ -37,22 +37,24 @@ internal sealed partial class AwsLambdaToolsUpgrader(
 
             context.Status = StatusMessage($"Parsing {name}...");
 
-            if (!TryEditDefaults(path, upgrade.Channel, out var configuration))
+            var editResult = TryEditDefaults(path, upgrade, out var configuration);
+
+            if (editResult is UpgradeResult.Success && configuration is { })
             {
-                continue;
+                context.Status = StatusMessage($"Updating {name}...");
+
+                await configuration.SaveAsync(path, cancellationToken);
+
+                result = result.Max(editResult);
             }
 
-            context.Status = StatusMessage($"Updating {name}...");
-
-            await configuration.SaveAsync(path, cancellationToken);
-
-            result = UpgradeResult.Success;
+            result = result.Max(editResult);
         }
 
         return result;
     }
 
-    private bool TryEditDefaults(string path, Version channel, [NotNullWhen(true)] out JsonObject? configuration)
+    private UpgradeResult TryEditDefaults(string path, UpgradeInfo upgrade, [NotNullWhen(true)] out JsonObject? configuration)
     {
         configuration = null;
 
@@ -60,25 +62,25 @@ internal sealed partial class AwsLambdaToolsUpgrader(
         {
             if (!JsonHelpers.TryLoadObject(path, out configuration))
             {
-                return false;
+                return UpgradeResult.Warning;
             }
         }
         catch (JsonException ex)
         {
             Log.ParseConfigurationFailed(logger, path, ex);
-            return false;
+            return UpgradeResult.Warning;
         }
 
-        bool updated = false;
+        UpgradeResult result = UpgradeResult.None;
 
         if (configuration.TryGetStringProperty("framework", out var node, out var framework))
         {
             var version = framework.ToVersionFromTargetFramework();
 
-            if (version is { } && version < channel)
+            if (version is { } && version < upgrade.Channel)
             {
-                node.ReplaceWith(JsonValue.Create(channel.ToTargetFramework()));
-                updated = true;
+                node.ReplaceWith(JsonValue.Create(upgrade.Channel.ToTargetFramework()));
+                result = result.Max(UpgradeResult.Success);
             }
         }
 
@@ -86,14 +88,24 @@ internal sealed partial class AwsLambdaToolsUpgrader(
         {
             var version = runtime.ToVersionFromLambdaRuntime();
 
-            if (version is { } && version < channel)
+            if (version is { } && version < upgrade.Channel)
             {
-                node.ReplaceWith(JsonValue.Create(channel.ToLambdaRuntime()));
-                updated = true;
+                if (upgrade.SupportPhase < DotNetSupportPhase.Active ||
+                    upgrade.ReleaseType != DotNetReleaseType.Lts)
+                {
+                    string qualifier = upgrade.ReleaseType is DotNetReleaseType.Lts ? "yet " : string.Empty;
+                    Console.MarkupLine($"[yellow]:warning: .NET {upgrade.Channel} is {qualifier}supported by AWS Lambda.[/]");
+                    result = result.Max(UpgradeResult.Warning);
+                }
+                else
+                {
+                    node.ReplaceWith(JsonValue.Create(upgrade.Channel.ToLambdaRuntime()));
+                    result = result.Max(UpgradeResult.Success);
+                }
             }
         }
 
-        return updated;
+        return result;
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

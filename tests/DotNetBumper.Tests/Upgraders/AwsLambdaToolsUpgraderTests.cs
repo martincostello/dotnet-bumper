@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
@@ -74,22 +75,80 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData("Not JSON")]
-    [InlineData("[]")]
-    [InlineData("[]]")]
-    [InlineData("\"value\"")]
-    [InlineData("{}")]
-    [InlineData("{\"framework\":1}")]
-    [InlineData("{\"framework\":true}")]
-    [InlineData("{\"framework\":\"bar\"}")]
-    [InlineData("{\"framework\":{}}")]
-    [InlineData("{\"framework\":[]}")]
-    [InlineData("{\"function-runtime\":1}")]
-    [InlineData("{\"function-runtime\":true}")]
-    [InlineData("{\"function-runtime\":\"bar\"}")]
-    [InlineData("{\"function-runtime\":{}}")]
-    [InlineData("{\"function-runtime\":[]}")]
-    public async Task UpgradeAsync_Handles_Invalid_Json(string content)
+    [InlineData("7.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
+    [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Preview)]
+    [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.GoLive)]
+    [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
+    [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.Preview)]
+    [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.GoLive)]
+    public async Task UpgradeAsync_Warns_If_Channel_Unsupported(
+        string channel,
+        DotNetReleaseType releaseType,
+        DotNetSupportPhase supportPhase)
+    {
+        // Arrange
+        string fileContents =
+            """
+            {
+              "profile": "alexa-london-travel",
+              "region": "eu-west-1",
+              "configuration": "Release",
+              "framework": "net6.0",
+              "function-architecture": "arm64",
+              "function-handler": "MyApplication",
+              "function-memory-size": 192,
+              "function-runtime": "dotnet6",
+              "function-timeout": 10
+            }
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string lambdaDefaultsFile = await fixture.Project.AddFileAsync("aws-lambda-tools-defaults.json", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse(channel),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = releaseType,
+            SdkVersion = new($"{channel}.100"),
+            SupportPhase = supportPhase,
+        };
+
+        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
+        var logger = outputHelper.ToLogger<AwsLambdaToolsUpgrader>();
+        var target = new AwsLambdaToolsUpgrader(fixture.Console, options, logger);
+
+        // Act
+        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(UpgradeResult.Warning);
+
+        string actualContent = await File.ReadAllTextAsync(lambdaDefaultsFile);
+        actualContent.NormalizeLineEndings().Trim().ShouldBe(fileContents.NormalizeLineEndings().Trim());
+    }
+
+    [Theory]
+    [InlineData("Not JSON", UpgradeResult.Warning)]
+    [InlineData("[]", UpgradeResult.Warning)]
+    [InlineData("[]]", UpgradeResult.Warning)]
+    [InlineData("\"value\"", UpgradeResult.Warning)]
+    [InlineData("{}", UpgradeResult.None)]
+    [InlineData("{\"framework\":1}", UpgradeResult.None)]
+    [InlineData("{\"framework\":true}", UpgradeResult.None)]
+    [InlineData("{\"framework\":\"bar\"}", UpgradeResult.None)]
+    [InlineData("{\"framework\":{}}", UpgradeResult.None)]
+    [InlineData("{\"framework\":[]}", UpgradeResult.None)]
+    [InlineData("{\"function-runtime\":1}", UpgradeResult.None)]
+    [InlineData("{\"function-runtime\":true}", UpgradeResult.None)]
+    [InlineData("{\"function-runtime\":\"bar\"}", UpgradeResult.None)]
+    [InlineData("{\"function-runtime\":{}}", UpgradeResult.None)]
+    [InlineData("{\"function-runtime\":[]}", UpgradeResult.None)]
+    public async Task UpgradeAsync_Handles_Invalid_Json(string content, UpgradeResult expected)
     {
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
@@ -113,6 +172,6 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actual.ShouldBe(UpgradeResult.None);
+        actual.ShouldBe(expected);
     }
 }
