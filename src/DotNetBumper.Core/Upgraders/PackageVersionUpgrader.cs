@@ -38,6 +38,7 @@ internal sealed partial class PackageVersionUpgrader(
             context.Status = StatusMessage($"Updating {name}...");
 
             using (TryHideGlobalJson(project))
+            using (TryDotNetToolManifest(project))
             {
                 context.Status = StatusMessage($"Restore NuGet packages for {name}...");
 
@@ -62,7 +63,27 @@ internal sealed partial class PackageVersionUpgrader(
 
             if (globalJson != null)
             {
-                return new HiddenFile(Path.GetFullPath(Path.Combine(directory.FullName, globalJson)));
+                return new HiddenFile(globalJson);
+            }
+
+            directory = directory.Parent;
+        }
+        while (directory is not null);
+
+        return null;
+    }
+
+    private static HiddenFile? TryDotNetToolManifest(string path)
+    {
+        var directory = new DirectoryInfo(path);
+
+        do
+        {
+            var toolManifest = Directory.EnumerateFiles(Path.Combine(directory.FullName, ".config"), "dotnet-tools.json").FirstOrDefault();
+
+            if (toolManifest != null)
+            {
+                return new HiddenFile(toolManifest);
             }
 
             directory = directory.Parent;

@@ -44,6 +44,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         await fixture.Project.AddSolutionAsync("Project.sln");
+        await fixture.Project.AddToolManifestAsync();
 
         string globalJson = await fixture.Project.AddGlobalJsonAsync(testCase.SdkVersion);
         string vscode = await fixture.Project.AddVisualStudioCodeLaunchConfigurationsAsync();
