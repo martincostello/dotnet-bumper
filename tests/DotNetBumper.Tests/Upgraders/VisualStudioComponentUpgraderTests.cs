@@ -33,10 +33,10 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
         var target = new VisualStudioComponentUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.Success);
+        actualUpdated.ShouldBe(ProcessingResult.Success);
 
         string actualContent = await File.ReadAllTextAsync(serverlessFile);
         actualContent.ShouldContain($"\"Microsoft.NetCore.Component.Runtime.{channel}\"");
@@ -45,7 +45,7 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.None);
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
     [Fact]
@@ -103,10 +103,10 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
         var target = new VisualStudioComponentUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.Success);
+        actualUpdated.ShouldBe(ProcessingResult.Success);
 
         string actualContent = await File.ReadAllTextAsync(vsconfig);
         actualContent.NormalizeLineEndings().TrimEnd().ShouldBe(expectedContent.NormalizeLineEndings().TrimEnd());
@@ -115,7 +115,7 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.None);
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
     [Theory]
@@ -147,9 +147,9 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
         var target = new VisualStudioComponentUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actual.ShouldBe(UpgradeResult.None);
+        actual.ShouldBe(ProcessingResult.None);
     }
 }

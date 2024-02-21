@@ -83,11 +83,11 @@ public partial class ProjectUpgrader(
 
         Log.Upgrading(logger, ProjectPath);
 
-        var upgradeResult = UpgradeResult.None;
+        var result = ProcessingResult.None;
 
         foreach (var upgrader in upgraders.OrderBy((p) => p.Order))
         {
-            UpgradeResult stepResult;
+            ProcessingResult stepResult;
 
             try
             {
@@ -99,30 +99,28 @@ public partial class ProjectUpgrader(
             }
             catch (Exception ex)
             {
-                stepResult = UpgradeResult.Error;
+                stepResult = ProcessingResult.Error;
 
                 console.WriteLine();
                 console.WriteExceptionLine($"An error occurred while performing upgrade step {upgrader.GetType().Name}.", ex);
             }
 
-            upgradeResult = upgradeResult.Max(stepResult);
+            result = result.Max(stepResult);
         }
 
-        if (upgradeResult is UpgradeResult.Warning)
+        if (result is ProcessingResult.Warning)
         {
             console.WriteLine();
             console.WriteWarningLine("One or more upgrade steps produced a warning.");
         }
 
-        if (upgradeResult is UpgradeResult.Success or UpgradeResult.Warning)
+        if (result is ProcessingResult.Success or ProcessingResult.Warning)
         {
             Log.Upgraded(
                 logger,
                 ProjectPath,
                 upgrade.Channel.ToString(),
                 upgrade.SdkVersion.ToString());
-
-            var processingResult = ProcessingResult.None;
 
             foreach (var processor in postProcessors.OrderBy((p) => p.Order))
             {
@@ -144,20 +142,17 @@ public partial class ProjectUpgrader(
                     console.WriteExceptionLine($"An error occurred while performing post-processing step {processor.GetType().Name}.", ex);
                 }
 
-                processingResult = processingResult.Max(stepResult);
+                result = result.Max(stepResult);
             }
-
-            // TODO Have upgrades use the same result type as post-processors
-            upgradeResult = upgradeResult.Max((UpgradeResult)processingResult);
         }
 
         console.WriteLine();
 
-        if (upgradeResult is UpgradeResult.Success)
+        if (result is ProcessingResult.Success)
         {
             console.MarkupLine($"[aqua]{name}[/] upgrade to [white on purple].NET {upgrade.Channel}[/] [green]successful[/]! :rocket:");
         }
-        else if (upgradeResult is UpgradeResult.None)
+        else if (result is ProcessingResult.None)
         {
             Log.NothingToUpgrade(logger, ProjectPath);
 
@@ -166,9 +161,9 @@ public partial class ProjectUpgrader(
         }
         else
         {
-            (string emoji, string color, string description) = upgradeResult switch
+            (string emoji, string color, string description) = result switch
             {
-                UpgradeResult.Warning => (":warning:", "yellow", "completed with warnings"),
+                ProcessingResult.Warning => (":warning:", "yellow", "completed with warnings"),
                 _ => (":cross_mark:", "red", "failed"),
             };
 
@@ -178,10 +173,10 @@ public partial class ProjectUpgrader(
         const int Success = 0;
         const int Error = 1;
 
-        return upgradeResult switch
+        return result switch
         {
-            UpgradeResult.None or UpgradeResult.Success => Success,
-            UpgradeResult.Warning => options.Value.TreatWarningsAsErrors ? Error : Success,
+            ProcessingResult.None or ProcessingResult.Success => Success,
+            ProcessingResult.Warning => options.Value.TreatWarningsAsErrors ? Error : Success,
             _ => Error,
         };
     }

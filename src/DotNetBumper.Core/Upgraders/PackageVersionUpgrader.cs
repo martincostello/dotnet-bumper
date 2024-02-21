@@ -20,14 +20,14 @@ internal sealed partial class PackageVersionUpgrader(
 
     protected override string InitialStatus => "Upgrade NuGet packages";
 
-    protected override async Task<UpgradeResult> UpgradeCoreAsync(
+    protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         StatusContext context,
         CancellationToken cancellationToken)
     {
         Log.UpgradingPackages(logger);
 
-        UpgradeResult result = UpgradeResult.None;
+        var result = ProcessingResult.None;
 
         context.Status = StatusMessage("Finding projects...");
 
@@ -118,7 +118,7 @@ internal sealed partial class PackageVersionUpgrader(
         }
     }
 
-    private async Task<UpgradeResult> TryUpgradePackagesAsync(string directory, CancellationToken cancellationToken)
+    private async Task<ProcessingResult> TryUpgradePackagesAsync(string directory, CancellationToken cancellationToken)
     {
         using var tempFile = new TemporaryFile();
 
@@ -157,7 +157,7 @@ internal sealed partial class PackageVersionUpgrader(
             Console.WriteWarningLine($"Failed to upgrade NuGet packages for {RelativeName(directory)}.");
             Console.WriteWarningLine($"dotnet outdated exited with code {result.ExitCode}.");
 
-            return UpgradeResult.Warning;
+            return ProcessingResult.Warning;
         }
 
         int updatedDependencies = 0;
@@ -183,7 +183,7 @@ internal sealed partial class PackageVersionUpgrader(
 
         Log.UpgradedPackages(logger, updatedDependencies);
 
-        return updatedDependencies > 0 ? UpgradeResult.Success : UpgradeResult.None;
+        return updatedDependencies > 0 ? ProcessingResult.Success : ProcessingResult.None;
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

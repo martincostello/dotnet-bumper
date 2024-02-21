@@ -28,7 +28,7 @@ internal abstract class FileUpgrader(
         return fileNames;
     }
 
-    protected override async Task<UpgradeResult> UpgradeCoreAsync(
+    protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         StatusContext context,
         CancellationToken cancellationToken)
@@ -37,13 +37,13 @@ internal abstract class FileUpgrader(
 
         if (fileNames.Count == 0)
         {
-            return UpgradeResult.None;
+            return ProcessingResult.None;
         }
 
         return await UpgradeCoreAsync(upgrade, fileNames, context, cancellationToken);
     }
 
-    protected abstract Task<UpgradeResult> UpgradeCoreAsync(
+    protected abstract Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,

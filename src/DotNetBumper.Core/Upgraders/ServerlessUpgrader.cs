@@ -24,7 +24,7 @@ internal sealed partial class ServerlessUpgrader(
 
     protected override IReadOnlyList<string> Patterns => ["serverless.yml", "serverless.yaml"];
 
-    protected override async Task<UpgradeResult> UpgradeCoreAsync(
+    protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,
@@ -35,7 +35,7 @@ internal sealed partial class ServerlessUpgrader(
         bool warningEmitted = false;
         var runtime = GetManagedRuntime(upgrade);
 
-        UpgradeResult result = UpgradeResult.None;
+        var result = ProcessingResult.None;
 
         foreach (var path in fileNames)
         {
@@ -45,7 +45,7 @@ internal sealed partial class ServerlessUpgrader(
 
             if (!TryParseServerless(path, out var yaml))
             {
-                result = result.Max(UpgradeResult.Warning);
+                result = result.Max(ProcessingResult.Warning);
                 continue;
             }
 
@@ -63,7 +63,7 @@ internal sealed partial class ServerlessUpgrader(
                         warningEmitted = true;
                     }
 
-                    result = result.Max(UpgradeResult.Warning);
+                    result = result.Max(ProcessingResult.Warning);
                     continue;
                 }
 
@@ -71,7 +71,7 @@ internal sealed partial class ServerlessUpgrader(
 
                 await UpdateRuntimesAsync(path, runtime, finder.LineIndexes, cancellationToken);
 
-                result = result.Max(UpgradeResult.Success);
+                result = result.Max(ProcessingResult.Success);
             }
         }
 
