@@ -82,10 +82,10 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             unitTestClass);
 
         // Act
-        int status = await RunAsync(fixture, [..testCase.Arguments, "--test"]);
+        int actualStatus = await RunAsync(fixture, [..testCase.Arguments, "--test"]);
 
         // Assert
-        status.ShouldBe(0);
+        actualStatus.ShouldBe(0);
 
         var actualSdk = await GetSdkVersionAsync(fixture, globalJson);
         actualSdk.ShouldNotBe(testCase.SdkVersion);
@@ -164,10 +164,10 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             [targetFramework]);
 
         // Act
-        int status = await RunAsync(fixture, [..args, "--test"]);
+        int actualStatus = await RunAsync(fixture, [..args, "--test"]);
 
         // Assert
-        status.ShouldBe(0);
+        actualStatus.ShouldBe(0);
 
         var actualSdk = await GetSdkVersionAsync(fixture, globalJson);
         var actualTfm = await GetTargetFrameworksAsync(fixture, projectFile);
@@ -179,9 +179,14 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData(false, 0)]
-    [InlineData(true, 1)]
-    public async Task Application_Warns_If_Tests_Fail(bool treatWarningsAsErrors, int expected)
+    [InlineData(false, false, 0)]
+    [InlineData(false, true, 0)]
+    [InlineData(true, false, 0)]
+    [InlineData(true, true, 1)]
+    public async Task Application_Behaves_Correctly_If_Tests_Fail(
+        bool runTests,
+        bool treatWarningsAsErrors,
+        int expected)
     {
         // Arrange
         string sdkVersion = "6.0.100";
@@ -219,7 +224,12 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         await fixture.Project.AddFileAsync("tests/Project.Tests/UnitTests.cs", unitTestClass);
 
-        List<string> args = ["--test"];
+        List<string> args = [];
+
+        if (runTests)
+        {
+            args.Add("--test");
+        }
 
         if (treatWarningsAsErrors)
         {
@@ -227,14 +237,30 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         }
 
         // Act
-        int status = await Bumper.RunAsync(
+        int actual = await Bumper.RunAsync(
             fixture.Console,
             [fixture.Project.DirectoryName, "--verbose", ..args],
             (builder) => builder.AddXUnit(fixture),
             CancellationToken.None);
 
         // Assert
-        status.ShouldBe(expected);
+        actual.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task Application_Warns_If_No_Tests()
+    {
+        // Arrange
+        string sdkVersion = "6.0.100";
+
+        using var fixture = new UpgraderFixture(outputHelper);
+        await fixture.Project.AddGlobalJsonAsync(sdkVersion);
+
+        // Act
+        int actual = await RunAsync(fixture, ["--test"]);
+
+        // Assert
+        actual.ShouldBe(1);
     }
 
     [Fact]
