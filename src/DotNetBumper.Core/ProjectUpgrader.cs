@@ -84,7 +84,7 @@ public partial class ProjectUpgrader(
 
         UpgradeResult result = UpgradeResult.None;
 
-        foreach (var upgrader in upgraders.OrderBy((p) => p.Priority))
+        foreach (var upgrader in upgraders.OrderBy((p) => p.Order))
         {
             UpgradeResult stepResult;
 
