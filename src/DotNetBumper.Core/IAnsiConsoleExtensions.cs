@@ -11,6 +11,28 @@ namespace MartinCostello.DotNetBumper;
 public static class IAnsiConsoleExtensions
 {
     /// <summary>
+    /// Writes a disclaimer to the console.
+    /// </summary>
+    /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
+    public static void WriteDisclaimer(this IAnsiConsole console)
+    {
+        string[] disclaimer =
+        [
+            $"{Emoji.Known.Megaphone} .NET Bumper upgrades are made on a best-effort basis.",
+            $"{Emoji.Known.MagnifyingGlassTiltedRight} You should [bold]always[/] review the changes and test your project to validate the upgrade.",
+        ];
+
+        var panel = new Panel(string.Join(Environment.NewLine, disclaimer))
+        {
+            Border = BoxBorder.Rounded,
+            Expand = true,
+            Header = new PanelHeader("[yellow]Disclaimer[/]", Justify.Center),
+        };
+
+        console.Write(panel);
+    }
+
+    /// <summary>
     /// Writes a message about use of a .NET runtime whose support period ends soon to the console.
     /// </summary>
     /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
