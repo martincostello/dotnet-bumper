@@ -38,8 +38,6 @@ internal sealed partial class DotNetTestPostProcessor(
         StatusContext context,
         CancellationToken cancellationToken)
     {
-        Console.WriteProgressLine("Verifying upgrade...");
-
         var projects = ProjectHelpers.FindProjects(Options.ProjectPath);
 
         if (projects.Count is 0)
