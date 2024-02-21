@@ -60,7 +60,7 @@ internal sealed partial class AwsLambdaToolsUpgrader(
 
         try
         {
-            if (!JsonHelpers.TryLoadObject(path, out configuration))
+            if (!JsonHelpers.TryLoadObject(path, out configuration, out var _))
             {
                 return ProcessingResult.Warning;
             }

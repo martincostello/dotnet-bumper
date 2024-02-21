@@ -138,7 +138,7 @@ internal sealed partial class TargetFrameworkUpgrader(
         string filePath,
         CancellationToken cancellationToken)
     {
-        using var stream = FormattingHelpers.OpenFileWithEncoding(filePath, out var encoding);
+        using var stream = FileHelpers.OpenFileForReadWithEncoding(filePath, out var encoding);
         using var reader = new StreamReader(stream, encoding);
 
         try

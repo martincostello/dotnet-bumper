@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace MartinCostello.DotNetBumper;
 
-internal static class FormattingHelpers
+internal static class FileHelpers
 {
     private static readonly Encoding UTF8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
@@ -25,13 +25,13 @@ internal static class FormattingHelpers
         return encoding;
     }
 
-    public static Stream OpenFileWithEncoding(string path, out Encoding encoding)
+    public static Stream OpenFileForReadWithEncoding(string path, out Encoding encoding)
     {
         var stream = File.OpenRead(path);
 
         try
         {
-            encoding = FormattingHelpers.DetectEncoding(stream);
+            encoding = FileHelpers.DetectEncoding(stream);
             return stream;
         }
         catch (Exception)
@@ -39,5 +39,14 @@ internal static class FormattingHelpers
             stream.Dispose();
             throw;
         }
+    }
+
+    public static Stream OpenFileForWriteWithEncoding(string path, out Encoding encoding)
+    {
+        using (OpenFileForReadWithEncoding(path, out encoding))
+        {
+        }
+
+        return File.OpenWrite(path);
     }
 }

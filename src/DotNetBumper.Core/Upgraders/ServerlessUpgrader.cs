@@ -42,7 +42,7 @@ internal sealed partial class ServerlessUpgrader(
 
             context.Status = StatusMessage($"Parsing {name}...");
 
-            if (!TryParseServerless(path, out var yaml))
+            if (!TryParseServerless(path, out var yaml, out var encoding))
             {
                 result = result.Max(ProcessingResult.Warning);
                 continue;
@@ -68,7 +68,7 @@ internal sealed partial class ServerlessUpgrader(
 
                 context.Status = StatusMessage($"Updating {name}...");
 
-                await UpdateRuntimesAsync(path, runtime, finder.LineIndexes, cancellationToken);
+                await UpdateRuntimesAsync(path, runtime, finder.LineIndexes, encoding, cancellationToken);
 
                 result = result.Max(ProcessingResult.Success);
             }
@@ -96,9 +96,10 @@ internal sealed partial class ServerlessUpgrader(
 
     private bool TryParseServerless(
         string fileName,
-        [NotNullWhen(true)] out YamlStream? serverless)
+        [NotNullWhen(true)] out YamlStream? serverless,
+        [NotNullWhen(true)] out Encoding? encoding)
     {
-        using var stream = File.OpenRead(fileName);
+        using var stream = FileHelpers.OpenFileForReadWithEncoding(fileName, out encoding);
         using var reader = new StreamReader(stream);
 
         try
@@ -122,9 +123,10 @@ internal sealed partial class ServerlessUpgrader(
         string path,
         string runtime,
         IList<int> indexes,
+        Encoding encoding,
         CancellationToken cancellationToken)
     {
-        var lines = await File.ReadAllLinesAsync(path, cancellationToken);
+        var lines = await File.ReadAllLinesAsync(path, encoding, cancellationToken);
 
         for (int i = 0; i < indexes.Count; i++)
         {
@@ -152,7 +154,7 @@ internal sealed partial class ServerlessUpgrader(
             lines[indexes[i]] = updated.ToString();
         }
 
-        await File.WriteAllLinesAsync(path, lines, cancellationToken);
+        await File.WriteAllLinesAsync(path, lines, encoding, cancellationToken);
 
         Log.UpgradedManagedRuntimes(logger, path, runtime);
     }

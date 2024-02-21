@@ -192,44 +192,10 @@ internal sealed partial class DockerfileUpgrader(
 
         foreach (var path in fileNames)
         {
-            var name = RelativeName(path);
-
-            context.Status = StatusMessage($"Parsing {name}...");
-
-            (bool edited, var dockerfile) = await TryEditDockerfile(path, upgrade, cancellationToken);
-
-            if (edited)
-            {
-                context.Status = StatusMessage($"Updating {name}...");
-
-                await File.WriteAllLinesAsync(path, dockerfile, cancellationToken);
-
-                result = ProcessingResult.Success;
-            }
+            result = await TryEditDockerfile(path, upgrade, context, cancellationToken);
         }
 
         return result;
-    }
-
-    private static async Task<(bool Edited, IReadOnlyList<string> Dockerfile)> TryEditDockerfile(
-        string path,
-        UpgradeInfo upgrade,
-        CancellationToken cancellationToken)
-    {
-        var dockerfile = await File.ReadAllLinesAsync(path, cancellationToken);
-
-        var edited = false;
-
-        for (int i = 0; i < dockerfile.Length; i++)
-        {
-            if (TryUpdateImage(dockerfile[i], upgrade.Channel, upgrade.SupportPhase, out var updated))
-            {
-                dockerfile[i] = updated;
-                edited |= true;
-            }
-        }
-
-        return (edited, dockerfile);
     }
 
     [GeneratedRegex(@"^(?i)FROM(?-i) ((?<platform>--platform=[\$\w]+)\s)?(?<image>[\w\.\/\-]+)(:(?<tag>[\w\-\.]+))?(\s(?<name>(?i)AS(?-i) [\S]+))?$")]
@@ -237,6 +203,61 @@ internal sealed partial class DockerfileUpgrader(
 
     [GeneratedRegex(@"[1-9]+[0-9]*\.[0-9]")]
     private static partial Regex VersionNumbers();
+
+    private async Task<ProcessingResult> TryEditDockerfile(
+        string path,
+        UpgradeInfo upgrade,
+        StatusContext context,
+        CancellationToken cancellationToken)
+    {
+        var name = RelativeName(path);
+
+        context.Status = StatusMessage($"Parsing {name}...");
+
+        var edited = false;
+
+        using var buffered = new MemoryStream();
+
+        using (var input = FileHelpers.OpenFileForReadWithEncoding(path, out var encoding))
+        using (var reader = new StreamReader(input, encoding))
+        using (var writer = new StreamWriter(buffered, encoding, leaveOpen: true))
+        {
+            // TODO Set NewLine to the correct value for the original file
+            ////writer.NewLine = "///";
+
+            while (await reader.ReadLineAsync(cancellationToken) is { } line)
+            {
+                if (TryUpdateImage(line, upgrade.Channel, upgrade.SupportPhase, out var updated))
+                {
+                    line = updated;
+                    edited |= true;
+                }
+
+                await writer.WriteAsync(line);
+                await writer.WriteLineAsync();
+            }
+
+            await writer.FlushAsync(cancellationToken);
+        }
+
+        if (edited)
+        {
+            context.Status = StatusMessage($"Updating {name}...");
+
+            buffered.Seek(0, SeekOrigin.Begin);
+
+            using var output = File.OpenWrite(path);
+
+            await buffered.CopyToAsync(output, cancellationToken);
+            await buffered.FlushAsync(cancellationToken);
+
+            buffered.SetLength(buffered.Position);
+
+            return ProcessingResult.Success;
+        }
+
+        return ProcessingResult.None;
+    }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private static partial class Log

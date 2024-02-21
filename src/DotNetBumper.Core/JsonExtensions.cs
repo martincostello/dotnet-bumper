@@ -45,7 +45,13 @@ internal static class JsonExtensions
         JsonWriterOptions options,
         CancellationToken cancellationToken)
     {
-        using var stream = File.OpenWrite(path);
+        using var stream = FileHelpers.OpenFileForWriteWithEncoding(path, out var encoding);
+
+        if (encoding.Preamble.Length > 0)
+        {
+            stream.Write(encoding.Preamble);
+        }
+
         using var writer = new Utf8JsonWriter(stream, options);
 
         node.WriteTo(writer);

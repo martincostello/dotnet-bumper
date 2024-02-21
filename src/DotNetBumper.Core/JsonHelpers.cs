@@ -15,9 +15,12 @@ internal static class JsonHelpers
         CommentHandling = JsonCommentHandling.Skip,
     };
 
-    public static bool TryLoadObject(string path, [NotNullWhen(true)] out JsonObject? root)
+    public static bool TryLoadObject(
+        string path,
+        [NotNullWhen(true)] out JsonObject? root,
+        [NotNullWhen(true)] out Encoding? encoding)
     {
-        using var stream = File.OpenRead(path);
+        using var stream = FileHelpers.OpenFileForReadWithEncoding(path, out encoding);
         root = JsonNode.Parse(stream, documentOptions: DocumentOptions) as JsonObject;
         return root is not null;
     }
