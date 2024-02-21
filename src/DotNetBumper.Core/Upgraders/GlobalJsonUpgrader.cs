@@ -76,7 +76,7 @@ internal sealed partial class GlobalJsonUpgrader(
     {
         sdkVersion = null;
 
-        using var globalJson = JsonDocument.Parse(json);
+        using var globalJson = JsonDocument.Parse(json, JsonHelpers.DocumentOptions);
 
         if (globalJson.RootElement.TryGetProperty("sdk", out var sdk) &&
             sdk.TryGetProperty("version", out var version) &&

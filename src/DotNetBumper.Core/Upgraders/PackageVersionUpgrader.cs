@@ -168,7 +168,7 @@ internal sealed partial class PackageVersionUpgrader(
 
             if (json.Length > 0)
             {
-                var updates = JsonDocument.Parse(json);
+                var updates = JsonDocument.Parse(json, JsonHelpers.DocumentOptions);
                 var projects = updates.RootElement.GetProperty("Projects");
 
                 foreach (var project in projects.EnumerateArray())

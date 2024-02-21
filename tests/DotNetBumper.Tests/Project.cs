@@ -134,6 +134,7 @@ internal sealed class Project : IDisposable
                     "name": "Launch app",
                     "type": "coreclr",
                     "request": "launch",
+                    // Comment
                     "program": "${workspaceFolder}/src/Project/bin/Debug/net{{channel}}/Project.dll",
                     "args": [],
                     "cwd": "${workspaceFolder}/src/Project",
@@ -141,7 +142,7 @@ internal sealed class Project : IDisposable
                     "internalConsoleOptions": "openOnSessionStart",
                     "serverReadyAction": {
                       "action": "openExternally",
-                      "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+                      "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
                     },
                     "env": {
                       "ASPNETCORE_ENVIRONMENT": "Development"
