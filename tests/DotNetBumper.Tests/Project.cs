@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Text;
 using System.Xml.Linq;
 
 namespace MartinCostello.DotNetBumper;
@@ -17,12 +18,20 @@ internal sealed class Project : IDisposable
         return await AddFileAsync(path, xml);
     }
 
-    public async Task<string> AddFileAsync(string path, string content)
+    public async Task<string> AddFileAsync(string path, string content, Encoding? encoding = null)
     {
         EnsureDirectoryTree(path);
 
         var fullPath = GetFilePath(path);
-        await File.WriteAllTextAsync(fullPath, content);
+
+        if (encoding is null)
+        {
+            await File.WriteAllTextAsync(fullPath, content);
+        }
+        else
+        {
+            await File.WriteAllTextAsync(fullPath, content, encoding);
+        }
 
         return fullPath;
     }

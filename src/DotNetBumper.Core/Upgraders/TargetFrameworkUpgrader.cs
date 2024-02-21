@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
@@ -139,13 +138,13 @@ internal sealed partial class TargetFrameworkUpgrader(
         string filePath,
         CancellationToken cancellationToken)
     {
-        using var stream = File.OpenRead(filePath);
-        using var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
+        using var stream = FormattingHelpers.OpenFileWithEncoding(filePath, out var encoding);
+        using var reader = new StreamReader(stream, encoding);
 
         try
         {
             var project = await XDocument.LoadAsync(reader, LoadOptions.PreserveWhitespace, cancellationToken);
-            return (project, reader.CurrentEncoding);
+            return (project, encoding);
         }
         catch (Exception ex)
         {

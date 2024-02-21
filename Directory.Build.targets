@@ -1,6 +1,7 @@
 <Project>
   <ItemGroup>
     <Using Include="System.Globalization" />
+    <Using Include="System.Text" />
   </ItemGroup>
   <PropertyGroup>
     <CommitBranch Condition=" '$(CommitBranch)' == '' ">$(BUILD_SOURCEBRANCHNAME)</CommitBranch>
