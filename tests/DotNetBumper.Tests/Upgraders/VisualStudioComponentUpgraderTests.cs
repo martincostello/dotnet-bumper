@@ -195,7 +195,7 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
             Channel = Version.Parse("10.0"),
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new($"10.0.100"),
+            SdkVersion = new("10.0.100"),
             SupportPhase = DotNetSupportPhase.Active,
         };
 

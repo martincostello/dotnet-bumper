@@ -42,7 +42,7 @@ internal sealed partial class ServerlessUpgrader(
 
             context.Status = StatusMessage($"Parsing {name}...");
 
-            if (!TryParseServerless(path, out var yaml, out var encoding))
+            if (!TryParseServerless(path, out var yaml))
             {
                 result = result.Max(ProcessingResult.Warning);
                 continue;
@@ -68,7 +68,7 @@ internal sealed partial class ServerlessUpgrader(
 
                 context.Status = StatusMessage($"Updating {name}...");
 
-                await UpdateRuntimesAsync(path, runtime, finder.LineIndexes, encoding, cancellationToken);
+                await UpdateRuntimesAsync(path, runtime, finder.LineIndexes, cancellationToken);
 
                 result = result.Max(ProcessingResult.Success);
             }
@@ -96,10 +96,9 @@ internal sealed partial class ServerlessUpgrader(
 
     private bool TryParseServerless(
         string fileName,
-        [NotNullWhen(true)] out YamlStream? serverless,
-        [NotNullWhen(true)] out FileMetadata? metadata)
+        [NotNullWhen(true)] out YamlStream? serverless)
     {
-        using var stream = FileHelpers.OpenRead(fileName, out metadata);
+        using var stream = File.OpenRead(fileName);
         using var reader = new StreamReader(stream);
 
         try
@@ -123,39 +122,59 @@ internal sealed partial class ServerlessUpgrader(
         string path,
         string runtime,
         IList<int> indexes,
-        FileMetadata metadata,
         CancellationToken cancellationToken)
     {
-        // TODO Use FileHelpers instead so that line endings are preserved
-        var lines = await File.ReadAllLinesAsync(path, metadata.Encoding, cancellationToken);
+        using var buffered = new MemoryStream();
 
-        for (int i = 0; i < indexes.Count; i++)
+        using (var input = FileHelpers.OpenRead(path, out var metadata))
+        using (var reader = new StreamReader(input, metadata.Encoding))
+        using (var writer = new StreamWriter(buffered, metadata.Encoding, leaveOpen: true))
         {
-            string original = lines[indexes[i]];
+            writer.NewLine = metadata.NewLine;
 
-            var updated = new StringBuilder(original.Length);
+            int i = 0;
 
-            int index = original.IndexOf(':', StringComparison.Ordinal);
-
-            Debug.Assert(index != -1, "The runtime line should contain a colon.");
-
-            updated.Append(original[..(index + 1)]);
-            updated.Append(' ');
-            updated.Append(runtime);
-
-            // Preserve any comments
-            index = original.IndexOf('#', StringComparison.Ordinal);
-
-            if (index != -1)
+            while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
-                updated.Append(' ');
-                updated.Append(original[index..]);
+                if (indexes.Contains(i++))
+                {
+                    var updated = new StringBuilder(line.Length);
+
+                    int index = line.IndexOf(':', StringComparison.Ordinal);
+
+                    Debug.Assert(index != -1, "The runtime line should contain a colon.");
+
+                    updated.Append(line[..(index + 1)]);
+                    updated.Append(' ');
+                    updated.Append(runtime);
+
+                    // Preserve any comments
+                    index = line.IndexOf('#', StringComparison.Ordinal);
+
+                    if (index != -1)
+                    {
+                        updated.Append(' ');
+                        updated.Append(line[index..]);
+                    }
+
+                    line = updated.ToString();
+                }
+
+                await writer.WriteAsync(line);
+                await writer.WriteLineAsync();
             }
 
-            lines[indexes[i]] = updated.ToString();
+            await writer.FlushAsync(cancellationToken);
         }
 
-        await File.WriteAllLinesAsync(path, lines, metadata.Encoding, cancellationToken);
+        buffered.Seek(0, SeekOrigin.Begin);
+
+        using var output = File.OpenWrite(path);
+
+        await buffered.CopyToAsync(output, cancellationToken);
+        await buffered.FlushAsync(cancellationToken);
+
+        buffered.SetLength(buffered.Position);
 
         Log.UpgradedManagedRuntimes(logger, path, runtime);
     }

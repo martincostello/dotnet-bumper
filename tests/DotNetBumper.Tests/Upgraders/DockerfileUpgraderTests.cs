@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Text;
 using Microsoft.Extensions.Options;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
@@ -297,10 +298,13 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData("\n")]
-    [InlineData("\r")]
-    [InlineData("\r\n")]
-    public async Task UpgradeAsync_Preserves_Line_Endings(string newLine)
+    [InlineData("\n", false)]
+    [InlineData("\n", true)]
+    [InlineData("\r", false)]
+    [InlineData("\r", true)]
+    [InlineData("\r\n", false)]
+    [InlineData("\r\n", true)]
+    public async Task UpgradeAsync_Preserves_Line_Endings(string newLine, bool bom)
     {
         // Arrange
         string[] originalLines =
@@ -338,14 +342,15 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string dockerfile = await fixture.Project.AddFileAsync("Dockerfile", fileContents);
+        var encoding = new UTF8Encoding(bom);
+        string dockerfile = await fixture.Project.AddFileAsync("Dockerfile", fileContents, encoding);
 
         var upgrade = new UpgradeInfo()
         {
             Channel = Version.Parse("10.0"),
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new($"10.0.100"),
+            SdkVersion = new("10.0.100"),
             SupportPhase = DotNetSupportPhase.Active,
         };
 
@@ -361,6 +366,17 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
         string actualContent = await File.ReadAllTextAsync(dockerfile);
         actualContent.ShouldBe(expectedContent);
+
+        byte[] actualBytes = await File.ReadAllBytesAsync(dockerfile);
+
+        if (bom)
+        {
+            actualBytes.ShouldStartWithUTF8Bom();
+        }
+        else
+        {
+            actualBytes.ShouldNotStartWithUTF8Bom();
+        }
 
         // Act
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);

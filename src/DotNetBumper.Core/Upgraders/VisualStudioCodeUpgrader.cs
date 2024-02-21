@@ -87,7 +87,7 @@ internal sealed partial class VisualStudioCodeUpgrader(
 
         try
         {
-            if (!JsonHelpers.TryLoadObject(path, out configuration, out var _))
+            if (!JsonHelpers.TryLoadObject(path, out configuration))
             {
                 return false;
             }
