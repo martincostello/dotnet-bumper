@@ -253,6 +253,7 @@ internal sealed partial class DockerfileUpgrader(
 
             buffered.SetLength(buffered.Position);
 
+            // TODO Add final newline if the original file had one
             return ProcessingResult.Success;
         }
 

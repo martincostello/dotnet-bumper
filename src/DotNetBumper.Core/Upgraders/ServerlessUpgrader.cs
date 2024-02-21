@@ -126,6 +126,7 @@ internal sealed partial class ServerlessUpgrader(
         FileMetadata metadata,
         CancellationToken cancellationToken)
     {
+        // TODO Use FileHelpers instead so that line endings are preserved
         var lines = await File.ReadAllLinesAsync(path, metadata.Encoding, cancellationToken);
 
         for (int i = 0; i < indexes.Count; i++)

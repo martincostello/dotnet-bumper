@@ -57,6 +57,8 @@ internal static class JsonExtensions
         node.WriteTo(writer);
 
         await writer.FlushAsync(cancellationToken);
+
+        // TODO Only add the final newline if the file already ended with one
         await stream.WriteAsync(NewLineBytes, cancellationToken);
 
         // The edit may have caused the file to shrink, so truncate it to the new length
