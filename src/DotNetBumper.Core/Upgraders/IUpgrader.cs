@@ -9,9 +9,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 public interface IUpgrader
 {
     /// <summary>
-    /// Gets the global priority of the upgrader.
+    /// Gets the global order the upgrader should run in where lower numbers run before higher numbers.
     /// </summary>
-    int Priority { get; }
+    int Order { get; }
 
     /// <summary>
     /// Attempts to apply an upgrade to the project.

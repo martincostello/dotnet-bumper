@@ -12,7 +12,7 @@ internal abstract partial class Upgrader(
     IOptions<UpgradeOptions> options,
     ILogger logger) : IUpgrader
 {
-    public virtual int Priority => 0;
+    public virtual int Order => 0;
 
     protected IAnsiConsole Console => console;
 
