@@ -143,6 +143,8 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             testCases.Add("FROM mcr.microsoft.com/dotnet/aspnet:6.0-preview", version, type, true, $"FROM mcr.microsoft.com/dotnet/aspnet:{channel}{suffix}");
             testCases.Add("FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:6.0-jammy-chiseled-extra", version, type, true, $"FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:{channel}{suffix}-jammy-chiseled-extra");
             testCases.Add("FROM docker.custom-domain.com/base-images/dotnet-6.0-sdk", version, type, true, $"FROM docker.custom-domain.com/base-images/dotnet-{channel}-sdk");
+            testCases.Add("From docker.custom-domain.com/base-images/dotnet-6.0-sdk", version, type, true, $"FROM docker.custom-domain.com/base-images/dotnet-{channel}-sdk");
+            testCases.Add("from docker.custom-domain.com/base-images/dotnet-6.0-sdk", version, type, true, $"FROM docker.custom-domain.com/base-images/dotnet-{channel}-sdk");
 
             // With name
             testCases.Add("FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS build", version, type, true, $"FROM mcr.microsoft.com/dotnet/aspnet:{channel}{suffix} AS build");
@@ -150,12 +152,16 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             testCases.Add("FROM mcr.microsoft.com/dotnet/aspnet:6.0-preview AS build", version, type, true, $"FROM mcr.microsoft.com/dotnet/aspnet:{channel}{suffix} AS build");
             testCases.Add("FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:6.0-jammy-chiseled-extra AS final", version, type, true, $"FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:{channel}{suffix}-jammy-chiseled-extra AS final");
             testCases.Add("FROM docker.custom-domain.com/base-images/dotnet-6.0-sdk AS build", version, type, true, $"FROM docker.custom-domain.com/base-images/dotnet-{channel}-sdk AS build");
+            testCases.Add("From docker.custom-domain.com/base-images/dotnet-6.0-sdk As build", version, type, true, $"FROM docker.custom-domain.com/base-images/dotnet-{channel}-sdk As build");
+            testCases.Add("from docker.custom-domain.com/base-images/dotnet-6.0-sdk as build", version, type, true, $"FROM docker.custom-domain.com/base-images/dotnet-{channel}-sdk as build");
 
             // With platform
             testCases.Add("FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:6.0", version, type, true, $"FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:{channel}{suffix}");
             testCases.Add("FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:6.0-preview", version, type, true, $"FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:{channel}{suffix}");
             testCases.Add("FROM --platform=$BUILDPLATFORM docker-virtual.custom-domain.com/dotnet/runtime-deps:6.0-jammy-chiseled-extra", version, type, true, $"FROM --platform=$BUILDPLATFORM docker-virtual.custom-domain.com/dotnet/runtime-deps:{channel}{suffix}-jammy-chiseled-extra");
             testCases.Add("FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-6.0-sdk", version, type, true, $"FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-{channel}-sdk");
+            testCases.Add("From --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-6.0-sdk", version, type, true, $"FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-{channel}-sdk");
+            testCases.Add("from --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-6.0-sdk", version, type, true, $"FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-{channel}-sdk");
 
             // With platform and name
             testCases.Add("FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:6.0 AS build", version, type, true, $"FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:{channel}{suffix} AS build");
@@ -163,6 +169,8 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             testCases.Add("FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:6.0-preview AS build-env", version, type, true, $"FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:{channel}{suffix} AS build-env");
             testCases.Add("FROM --platform=$BUILDPLATFORM docker-virtual.custom-domain.com/dotnet/runtime-deps:6.0-jammy-chiseled-extra AS final", version, type, true, $"FROM --platform=$BUILDPLATFORM docker-virtual.custom-domain.com/dotnet/runtime-deps:{channel}{suffix}-jammy-chiseled-extra AS final");
             testCases.Add("FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-6.0-sdk AS build", version, type, true, $"FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-{channel}-sdk AS build");
+            testCases.Add("From --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-6.0-sdk As build", version, type, true, $"FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-{channel}-sdk As build");
+            testCases.Add("from --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-6.0-sdk as build", version, type, true, $"FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-{channel}-sdk as build");
         }
 
         return testCases;
