@@ -47,6 +47,37 @@ internal static class FileHelpers
 
         stream.Seek(0, SeekOrigin.Begin);
 
-        return new(encoding);
+        var newLine = GetNewLine(reader);
+
+        return new(encoding, newLine);
+    }
+
+    private static string GetNewLine(StreamReader reader)
+    {
+        bool hasCarriageReturn = false;
+        string? newLine = null;
+
+        while (reader.Peek() is not -1)
+        {
+            var ch = reader.Read();
+
+            if (ch == '\n')
+            {
+                newLine = hasCarriageReturn ? "\r\n" : "\n";
+                break;
+            }
+            else if (hasCarriageReturn)
+            {
+                newLine = "\r";
+                break;
+            }
+
+            hasCarriageReturn = ch == '\r';
+        }
+
+        reader.BaseStream.Seek(0, SeekOrigin.Begin);
+
+        // Assume the current OS default
+        return newLine ?? (hasCarriageReturn ? "\r" : Environment.NewLine);
     }
 }

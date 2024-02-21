@@ -7,4 +7,7 @@ namespace MartinCostello.DotNetBumper;
 /// Represents metadata for a file that may edited.
 /// </summary>
 /// <param name="Encoding">The file's encoding.</param>
-internal sealed record class FileMetadata(Encoding Encoding);
+/// <param name="NewLine">The file's new line delimiter.</param>
+internal sealed record class FileMetadata(
+    Encoding Encoding,
+    string NewLine);

@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using Microsoft.Extensions.Options;
-using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
@@ -254,7 +253,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
         string actualContent = await File.ReadAllTextAsync(dockerfile);
-        actualContent.NormalizeLineEndings().TrimEnd().ShouldBe(expectedContents.NormalizeLineEndings().TrimEnd());
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
 
         // Act
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -295,5 +294,78 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [InlineData("\n")]
+    [InlineData("\r")]
+    [InlineData("\r\n")]
+    public async Task UpgradeAsync_Preserves_Line_Endings(string newLine)
+    {
+        // Arrange
+        string[] originalLines =
+        [
+            "FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env",
+            "WORKDIR /App",
+            string.Empty,
+            "COPY . ./",
+            "RUN dotnet restore",
+            "RUN dotnet publish -c Release -o out",
+            string.Empty,
+            "FROM mcr.microsoft.com/dotnet/aspnet:6.0",
+            "WORKDIR /App",
+            "COPY --from=build-env /App/out .",
+            "ENTRYPOINT [\"dotnet\", \"DotNet.Docker.dll\"]",
+        ];
+
+        string[] expectedLines =
+        [
+            "FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build-env",
+            "WORKDIR /App",
+            string.Empty,
+            "COPY . ./",
+            "RUN dotnet restore",
+            "RUN dotnet publish -c Release -o out",
+            string.Empty,
+            "FROM mcr.microsoft.com/dotnet/aspnet:10.0",
+            "WORKDIR /App",
+            "COPY --from=build-env /App/out .",
+            "ENTRYPOINT [\"dotnet\", \"DotNet.Docker.dll\"]",
+        ];
+
+        string fileContents = string.Join(newLine, originalLines) + newLine;
+        string expectedContent = string.Join(newLine, expectedLines) + newLine;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string dockerfile = await fixture.Project.AddFileAsync("Dockerfile", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse("10.0"),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new($"10.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
+        var logger = outputHelper.ToLogger<DockerfileUpgrader>();
+        var target = new DockerfileUpgrader(fixture.Console, options, logger);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(dockerfile);
+        actualContent.ShouldBe(expectedContent);
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 }

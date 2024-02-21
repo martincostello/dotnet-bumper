@@ -222,8 +222,7 @@ internal sealed partial class DockerfileUpgrader(
         using (var reader = new StreamReader(input, metadata.Encoding))
         using (var writer = new StreamWriter(buffered, metadata.Encoding, leaveOpen: true))
         {
-            // TODO Set NewLine to the correct value for the original file
-            ////writer.NewLine = "///";
+            writer.NewLine = metadata.NewLine;
 
             while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
@@ -253,7 +252,6 @@ internal sealed partial class DockerfileUpgrader(
 
             buffered.SetLength(buffered.Position);
 
-            // TODO Add final newline if the original file had one
             return ProcessingResult.Success;
         }
 
