@@ -49,13 +49,14 @@ internal static class FileHelpers
 
         var newLine = GetNewLine(reader);
 
+        stream.Seek(0, SeekOrigin.Begin);
+
         return new(encoding, newLine);
     }
 
     private static string GetNewLine(StreamReader reader)
     {
         bool hasCarriageReturn = false;
-        string? newLine = null;
 
         while (reader.Peek() is not -1)
         {
@@ -63,21 +64,17 @@ internal static class FileHelpers
 
             if (ch == '\n')
             {
-                newLine = hasCarriageReturn ? "\r\n" : "\n";
-                break;
+                return hasCarriageReturn ? "\r\n" : "\n";
             }
             else if (hasCarriageReturn)
             {
-                newLine = "\r";
-                break;
+                return "\r";
             }
 
             hasCarriageReturn = ch == '\r';
         }
 
-        reader.BaseStream.Seek(0, SeekOrigin.Begin);
-
         // Assume the current OS default
-        return newLine ?? (hasCarriageReturn ? "\r" : Environment.NewLine);
+        return hasCarriageReturn ? "\r" : Environment.NewLine;
     }
 }
