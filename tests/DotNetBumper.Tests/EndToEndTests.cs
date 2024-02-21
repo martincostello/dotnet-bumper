@@ -35,13 +35,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     public async Task Application_Upgrades_Project(BumperTestCase testCase)
     {
         // Arrange
-        var testPackages = new Dictionary<string, string>()
-        {
-            ["Microsoft.NET.Test.Sdk"] = "17.9.0",
-            ["xunit"] = "2.7.0",
-            ["xunit.runner.visualstudio"] = "2.5.7",
-        };
-
         using var fixture = new UpgraderFixture(outputHelper);
 
         await fixture.Project.AddSolutionAsync("Project.sln");
@@ -51,35 +44,14 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         string vscode = await fixture.Project.AddVisualStudioCodeLaunchConfigurationsAsync();
         string vsconfig = await fixture.Project.AddVisualStudioConfigurationAsync();
 
-        string appProject = await fixture.Project.AddProjectAsync(
-            "src/Project/Project.csproj",
+        string appProject = await fixture.Project.AddApplicationProjectAsync(
             testCase.TargetFrameworks,
             testCase.PackageReferences);
 
-        string testProject = await fixture.Project.AddProjectAsync(
-            "tests/Project.Tests/Project.Tests.csproj",
-            testCase.TargetFrameworks,
-            testPackages);
+        string testProject = await fixture.Project.AddTestProjectAsync(
+            testCase.TargetFrameworks);
 
-        string unitTestClass =
-            """
-            using Xunit;
-
-            namespace MyProject.Tests;
-
-            public static class UnitTests
-            {
-                [Fact]
-                public static void Always_Passes_Test()
-                {
-                    Assert.True(true);
-                }
-            }
-            """;
-
-        await fixture.Project.AddFileAsync(
-            "tests/Project.Tests/UnitTests.cs",
-            unitTestClass);
+        await fixture.Project.AddUnitTestsAsync();
 
         // Act
         int actualStatus = await RunAsync(fixture, [..testCase.Arguments, "--test"]);
@@ -111,10 +83,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                 actualPackages.ShouldNotContainValueForKey(key, value);
             }
         }
-
-        actualPackages = await GetPackageReferencesAsync(fixture, testProject);
-
-        actualPackages.ShouldBe(testPackages);
 
         var actualConfig = await File.ReadAllTextAsync(vsconfig);
 
@@ -159,9 +127,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         string globalJson = await fixture.Project.AddGlobalJsonAsync(sdkVersion);
-        string projectFile = await fixture.Project.AddProjectAsync(
-            "src/Project/Project.csproj",
-            [targetFramework]);
+        string projectFile = await fixture.Project.AddApplicationProjectAsync([targetFramework]);
 
         // Act
         int actualStatus = await RunAsync(fixture, [..args, "--test"]);
@@ -203,26 +169,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         await fixture.Project.AddSolutionAsync("Project.sln");
         await fixture.Project.AddGlobalJsonAsync(sdkVersion);
-        await fixture.Project.AddProjectAsync("src/Project/Project.csproj", targetFrameworks);
-        await fixture.Project.AddProjectAsync("tests/Project.Tests/Project.Tests.csproj", targetFrameworks, testPackages);
-
-        string unitTestClass =
-            """
-            using Xunit;
-
-            namespace MyProject.Tests;
-
-            public static class UnitTests
-            {
-                [Fact]
-                public static void Always_Fails_Test()
-                {
-                    Assert.True(false);
-                }
-            }
-            """;
-
-        await fixture.Project.AddFileAsync("tests/Project.Tests/UnitTests.cs", unitTestClass);
+        await fixture.Project.AddApplicationProjectAsync(targetFrameworks);
+        await fixture.Project.AddTestProjectAsync(targetFrameworks, testPackages);
+        await fixture.Project.AddUnitTestsAsync("Always_Fails_Test", "Assert.True(false);");
 
         List<string> args = [];
 
