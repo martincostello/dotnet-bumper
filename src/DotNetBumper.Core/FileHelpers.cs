@@ -9,6 +9,14 @@ internal static class FileHelpers
 {
     private static readonly Encoding UTF8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
+    public static FileMetadata GetMetadata(string path)
+    {
+        using (FileHelpers.OpenRead(path, out var metadata))
+        {
+            return metadata;
+        }
+    }
+
     public static Stream OpenRead(string path, out FileMetadata metadata)
     {
         var stream = File.OpenRead(path);

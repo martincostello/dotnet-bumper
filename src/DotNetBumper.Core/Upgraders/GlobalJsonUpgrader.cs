@@ -39,7 +39,6 @@ internal sealed partial class GlobalJsonUpgrader(
 
             context.Status = StatusMessage($"Parsing {name}...");
 
-            // TODO Use FileHelpers instead so that line endings are preserved
             string json = await File.ReadAllTextAsync(path, cancellationToken);
 
             if (!TryParseSdkVersion(json, out var currentVersion))
@@ -56,7 +55,9 @@ internal sealed partial class GlobalJsonUpgrader(
 
                 json = json.Replace($@"""{currentVersion}""", $@"""{upgrade.SdkVersion}""", StringComparison.Ordinal);
 
-                await File.WriteAllTextAsync(path, json, cancellationToken);
+                FileMetadata metadata = FileHelpers.GetMetadata(path);
+
+                await File.WriteAllTextAsync(path, json, metadata.Encoding, cancellationToken);
 
                 Log.UpgradedDotNetSdk(
                     logger,

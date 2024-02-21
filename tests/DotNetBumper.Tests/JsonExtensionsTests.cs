@@ -23,19 +23,19 @@ public static class JsonExtensionsTests
         // Assert
         byte[] contents = await File.ReadAllBytesAsync(path);
 
-        AssertStartsWithBom(contents, writeBom);
+        if (writeBom)
+        {
+            contents.ShouldStartWithUTF8Bom();
+        }
+        else
+        {
+            contents.ShouldNotStartWithUTF8Bom();
+        }
 
         using var stream = File.OpenRead(path);
 
         var parsed = JsonNode.Parse(stream)!.AsObject();
         parsed["foo"]!.GetValue<string>().ShouldBe("bar");
-    }
-
-    private static void AssertStartsWithBom(ReadOnlySpan<byte> value, bool expected)
-    {
-        var bom = Encoding.UTF8.Preamble;
-        var actual = value[0..3];
-        actual.SequenceEqual(bom).ShouldBe(expected);
     }
 
     private static JsonObject ReadJsonFromFile(string path)
