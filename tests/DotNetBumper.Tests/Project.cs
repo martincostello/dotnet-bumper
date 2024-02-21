@@ -38,6 +38,29 @@ internal sealed class Project : IDisposable
         return await AddFileAsync(path, globalJson);
     }
 
+    public async Task<string> AddApplicationProjectAsync(
+        IList<string> targetFrameworks,
+        ICollection<KeyValuePair<string, string>>? packageReferences = default,
+        string path = "src/Project/Project.csproj")
+    {
+        return await AddProjectAsync(path, targetFrameworks, packageReferences);
+    }
+
+    public async Task<string> AddTestProjectAsync(
+        IList<string> targetFrameworks,
+        ICollection<KeyValuePair<string, string>>? packageReferences = default,
+        string path = "tests/Project.Tests/Project.Tests.csproj")
+    {
+        packageReferences ??= new Dictionary<string, string>()
+        {
+            ["Microsoft.NET.Test.Sdk"] = "17.9.0",
+            ["xunit"] = "2.7.0",
+            ["xunit.runner.visualstudio"] = "2.5.7",
+        };
+
+        return await AddProjectAsync(path, targetFrameworks, packageReferences);
+    }
+
     public async Task<string> AddProjectAsync(
         string path,
         IList<string> targetFrameworks,
@@ -72,6 +95,30 @@ internal sealed class Project : IDisposable
             """;
 
         return await AddFileAsync(path, manifest);
+    }
+
+    public async Task<string> AddUnitTestsAsync(
+        string testName = "Always_Passes_Test",
+        string assertion = "Assert.True(true);",
+        string path = "tests/Project.Tests/UnitTests.cs")
+    {
+        var testClass =
+            $$"""
+              using Xunit;
+              
+              namespace MyProject.Tests;
+              
+              public static class UnitTests
+              {
+                  [Fact]
+                  public static void {{testName}}()
+                  {
+                      {{assertion}}
+                  }
+              }
+              """;
+
+        return await AddFileAsync(path, testClass);
     }
 
     public async Task<string> AddVisualStudioCodeLaunchConfigurationsAsync(
