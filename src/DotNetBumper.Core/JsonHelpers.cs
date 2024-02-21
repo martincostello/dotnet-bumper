@@ -18,9 +18,9 @@ internal static class JsonHelpers
     public static bool TryLoadObject(
         string path,
         [NotNullWhen(true)] out JsonObject? root,
-        [NotNullWhen(true)] out Encoding? encoding)
+        [NotNullWhen(true)] out FileMetadata? metadata)
     {
-        using var stream = FileHelpers.OpenFileForReadWithEncoding(path, out encoding);
+        using var stream = FileHelpers.OpenRead(path, out metadata);
         root = JsonNode.Parse(stream, documentOptions: DocumentOptions) as JsonObject;
         return root is not null;
     }

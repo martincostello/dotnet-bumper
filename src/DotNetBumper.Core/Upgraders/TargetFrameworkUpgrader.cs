@@ -138,13 +138,13 @@ internal sealed partial class TargetFrameworkUpgrader(
         string filePath,
         CancellationToken cancellationToken)
     {
-        using var stream = FileHelpers.OpenFileForReadWithEncoding(filePath, out var encoding);
-        using var reader = new StreamReader(stream, encoding);
+        using var stream = FileHelpers.OpenRead(filePath, out var metadata);
+        using var reader = new StreamReader(stream, metadata.Encoding);
 
         try
         {
             var project = await XDocument.LoadAsync(reader, LoadOptions.PreserveWhitespace, cancellationToken);
-            return (project, encoding);
+            return (project, metadata.Encoding);
         }
         catch (Exception ex)
         {

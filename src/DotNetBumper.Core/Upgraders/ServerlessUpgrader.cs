@@ -97,9 +97,9 @@ internal sealed partial class ServerlessUpgrader(
     private bool TryParseServerless(
         string fileName,
         [NotNullWhen(true)] out YamlStream? serverless,
-        [NotNullWhen(true)] out Encoding? encoding)
+        [NotNullWhen(true)] out FileMetadata? metadata)
     {
-        using var stream = FileHelpers.OpenFileForReadWithEncoding(fileName, out encoding);
+        using var stream = FileHelpers.OpenRead(fileName, out metadata);
         using var reader = new StreamReader(stream);
 
         try
@@ -123,10 +123,10 @@ internal sealed partial class ServerlessUpgrader(
         string path,
         string runtime,
         IList<int> indexes,
-        Encoding encoding,
+        FileMetadata metadata,
         CancellationToken cancellationToken)
     {
-        var lines = await File.ReadAllLinesAsync(path, encoding, cancellationToken);
+        var lines = await File.ReadAllLinesAsync(path, metadata.Encoding, cancellationToken);
 
         for (int i = 0; i < indexes.Count; i++)
         {
@@ -154,7 +154,7 @@ internal sealed partial class ServerlessUpgrader(
             lines[indexes[i]] = updated.ToString();
         }
 
-        await File.WriteAllLinesAsync(path, lines, encoding, cancellationToken);
+        await File.WriteAllLinesAsync(path, lines, metadata.Encoding, cancellationToken);
 
         Log.UpgradedManagedRuntimes(logger, path, runtime);
     }

@@ -218,9 +218,9 @@ internal sealed partial class DockerfileUpgrader(
 
         using var buffered = new MemoryStream();
 
-        using (var input = FileHelpers.OpenFileForReadWithEncoding(path, out var encoding))
-        using (var reader = new StreamReader(input, encoding))
-        using (var writer = new StreamWriter(buffered, encoding, leaveOpen: true))
+        using (var input = FileHelpers.OpenRead(path, out var metadata))
+        using (var reader = new StreamReader(input, metadata.Encoding))
+        using (var writer = new StreamWriter(buffered, metadata.Encoding, leaveOpen: true))
         {
             // TODO Set NewLine to the correct value for the original file
             ////writer.NewLine = "///";
