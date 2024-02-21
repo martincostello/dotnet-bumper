@@ -7,7 +7,7 @@ using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
-internal abstract partial class FileUpgrader(
+internal abstract class FileUpgrader(
     IAnsiConsole console,
     IOptions<UpgradeOptions> options,
     ILogger logger) : Upgrader(console, options, logger)

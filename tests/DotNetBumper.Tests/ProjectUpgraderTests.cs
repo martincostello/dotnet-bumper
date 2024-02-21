@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using MartinCostello.DotNetBumper.PostProcessors;
 using MartinCostello.DotNetBumper.Upgraders;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -16,8 +17,11 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
         var target = CreateTarget(fixture);
 
-        // Act and Assert
-        await Should.NotThrowAsync(() => target.UpgradeAsync(CancellationToken.None));
+        // Act
+        int actual = await target.UpgradeAsync(CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(0);
     }
 
     private ProjectUpgrader CreateTarget(
@@ -31,7 +35,6 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
 
         var options = Options.Create(upgradeOptions);
 
-        var dotnet = new DotNetProcess(outputHelper.ToLogger<DotNetProcess>());
         var finder = new DotNetUpgradeFinder(
             new HttpClient(),
             options,
@@ -39,9 +42,9 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
 
         return new ProjectUpgrader(
             fixture.Console,
-            dotnet,
             finder,
             [Substitute.For<IUpgrader>()],
+            [Substitute.For<IPostProcessor>()],
             TimeProvider.System,
             options,
             outputHelper.ToLogger<ProjectUpgrader>());
