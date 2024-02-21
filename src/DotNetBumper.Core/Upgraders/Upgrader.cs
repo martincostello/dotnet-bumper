@@ -12,7 +12,7 @@ internal abstract class Upgrader(
     IOptions<UpgradeOptions> options,
     ILogger logger) : UpgradeTask(console, options, logger), IUpgrader
 {
-    public virtual async Task<UpgradeResult> UpgradeAsync(
+    public virtual async Task<ProcessingResult> UpgradeAsync(
         UpgradeInfo upgrade,
         CancellationToken cancellationToken)
     {
@@ -25,7 +25,7 @@ internal abstract class Upgrader(
             .StartAsync($"[{StatusColor}]{InitialStatus}...[/]", async (context) => await UpgradeCoreAsync(upgrade, context, cancellationToken));
     }
 
-    protected abstract Task<UpgradeResult> UpgradeCoreAsync(
+    protected abstract Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         StatusContext context,
         CancellationToken cancellationToken);

@@ -240,10 +240,10 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         var target = new DockerfileUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.Success);
+        actualUpdated.ShouldBe(ProcessingResult.Success);
 
         string actualContent = await File.ReadAllTextAsync(dockerfile);
         actualContent.NormalizeLineEndings().TrimEnd().ShouldBe(expectedContents.NormalizeLineEndings().TrimEnd());
@@ -252,7 +252,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.None);
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
     [Theory]
@@ -283,9 +283,9 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         var target = new DockerfileUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actual.ShouldBe(UpgradeResult.None);
+        actual.ShouldBe(ProcessingResult.None);
     }
 }

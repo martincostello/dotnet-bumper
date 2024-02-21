@@ -60,10 +60,10 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = new ServerlessUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.Success);
+        actualUpdated.ShouldBe(ProcessingResult.Success);
 
         string expectedContent = string.Join(
             Environment.NewLine,
@@ -101,7 +101,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.None);
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
     [Theory]
@@ -173,24 +173,24 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = new ServerlessUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actual.ShouldBe(UpgradeResult.None);
+        actual.ShouldBe(ProcessingResult.None);
     }
 
     [Theory]
-    [InlineData(5, DotNetReleaseType.Sts, DotNetSupportPhase.Eol, UpgradeResult.None)]
-    [InlineData(7, DotNetReleaseType.Sts, DotNetSupportPhase.Active, UpgradeResult.Warning)]
-    [InlineData(9, DotNetReleaseType.Sts, DotNetSupportPhase.Preview, UpgradeResult.Warning)]
-    [InlineData(9, DotNetReleaseType.Sts, DotNetSupportPhase.Active, UpgradeResult.Warning)]
-    [InlineData(10, DotNetReleaseType.Lts, DotNetSupportPhase.Preview, UpgradeResult.Warning)]
-    [InlineData(10, DotNetReleaseType.Lts, DotNetSupportPhase.GoLive, UpgradeResult.Warning)]
+    [InlineData(5, DotNetReleaseType.Sts, DotNetSupportPhase.Eol, ProcessingResult.None)]
+    [InlineData(7, DotNetReleaseType.Sts, DotNetSupportPhase.Active, ProcessingResult.Warning)]
+    [InlineData(9, DotNetReleaseType.Sts, DotNetSupportPhase.Preview, ProcessingResult.Warning)]
+    [InlineData(9, DotNetReleaseType.Sts, DotNetSupportPhase.Active, ProcessingResult.Warning)]
+    [InlineData(10, DotNetReleaseType.Lts, DotNetSupportPhase.Preview, ProcessingResult.Warning)]
+    [InlineData(10, DotNetReleaseType.Lts, DotNetSupportPhase.GoLive, ProcessingResult.Warning)]
     public async Task UpgradeAsync_Does_Not_Upgrade_To_Unsupported_Runtimes(
         int version,
         DotNetReleaseType releaseType,
         DotNetSupportPhase supportPhase,
-        UpgradeResult expected)
+        ProcessingResult expected)
     {
         // Arrange
         string serverless =
@@ -221,7 +221,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = new ServerlessUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
         actual.ShouldBe(expected);
@@ -255,9 +255,9 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = new ServerlessUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actual.ShouldBe(UpgradeResult.Warning);
+        actual.ShouldBe(ProcessingResult.Warning);
     }
 }

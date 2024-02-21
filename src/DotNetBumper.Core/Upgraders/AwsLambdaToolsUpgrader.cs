@@ -21,7 +21,7 @@ internal sealed partial class AwsLambdaToolsUpgrader(
 
     protected override IReadOnlyList<string> Patterns => ["aws-lambda-tools-defaults.json"];
 
-    protected override async Task<UpgradeResult> UpgradeCoreAsync(
+    protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,
@@ -29,7 +29,7 @@ internal sealed partial class AwsLambdaToolsUpgrader(
     {
         Log.UpgradingAwsLambdaTools(logger);
 
-        UpgradeResult result = UpgradeResult.None;
+        var result = ProcessingResult.None;
 
         foreach (var path in fileNames)
         {
@@ -39,7 +39,7 @@ internal sealed partial class AwsLambdaToolsUpgrader(
 
             var editResult = TryEditDefaults(path, upgrade, out var configuration);
 
-            if (editResult is UpgradeResult.Success && configuration is { })
+            if (editResult is ProcessingResult.Success && configuration is { })
             {
                 context.Status = StatusMessage($"Updating {name}...");
 
@@ -54,7 +54,7 @@ internal sealed partial class AwsLambdaToolsUpgrader(
         return result;
     }
 
-    private UpgradeResult TryEditDefaults(string path, UpgradeInfo upgrade, [NotNullWhen(true)] out JsonObject? configuration)
+    private ProcessingResult TryEditDefaults(string path, UpgradeInfo upgrade, [NotNullWhen(true)] out JsonObject? configuration)
     {
         configuration = null;
 
@@ -62,16 +62,16 @@ internal sealed partial class AwsLambdaToolsUpgrader(
         {
             if (!JsonHelpers.TryLoadObject(path, out configuration))
             {
-                return UpgradeResult.Warning;
+                return ProcessingResult.Warning;
             }
         }
         catch (JsonException ex)
         {
             Log.ParseConfigurationFailed(logger, path, ex);
-            return UpgradeResult.Warning;
+            return ProcessingResult.Warning;
         }
 
-        UpgradeResult result = UpgradeResult.None;
+        var result = ProcessingResult.None;
 
         if (configuration.TryGetStringProperty("framework", out var node, out var framework))
         {
@@ -80,7 +80,7 @@ internal sealed partial class AwsLambdaToolsUpgrader(
             if (version is { } && version < upgrade.Channel)
             {
                 node.ReplaceWith(JsonValue.Create(upgrade.Channel.ToTargetFramework()));
-                result = result.Max(UpgradeResult.Success);
+                result = result.Max(ProcessingResult.Success);
             }
         }
 
@@ -94,12 +94,12 @@ internal sealed partial class AwsLambdaToolsUpgrader(
                     upgrade.ReleaseType != DotNetReleaseType.Lts)
                 {
                     Console.WriteUnsupportedLambdaRuntimeWarning(upgrade);
-                    result = result.Max(UpgradeResult.Warning);
+                    result = result.Max(ProcessingResult.Warning);
                 }
                 else
                 {
                     node.ReplaceWith(JsonValue.Create(upgrade.Channel.ToLambdaRuntime()));
-                    result = result.Max(UpgradeResult.Success);
+                    result = result.Max(ProcessingResult.Success);
                 }
             }
         }

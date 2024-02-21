@@ -181,7 +181,7 @@ internal sealed partial class DockerfileUpgrader(
         }
     }
 
-    protected override async Task<UpgradeResult> UpgradeCoreAsync(
+    protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,
@@ -189,7 +189,7 @@ internal sealed partial class DockerfileUpgrader(
     {
         Log.UpgradingDockerfiles(logger);
 
-        UpgradeResult result = UpgradeResult.None;
+        var result = ProcessingResult.None;
 
         foreach (var path in fileNames)
         {
@@ -205,7 +205,7 @@ internal sealed partial class DockerfileUpgrader(
 
                 await File.WriteAllLinesAsync(path, dockerfile, cancellationToken);
 
-                result = UpgradeResult.Success;
+                result = ProcessingResult.Success;
             }
         }
 

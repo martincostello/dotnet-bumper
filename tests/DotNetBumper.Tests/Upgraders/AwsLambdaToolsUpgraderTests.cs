@@ -49,10 +49,10 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         var target = new AwsLambdaToolsUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.Success);
+        actualUpdated.ShouldBe(ProcessingResult.Success);
 
         string actualContent = await File.ReadAllTextAsync(lambdaDefaultsFile);
 
@@ -71,7 +71,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.None);
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
     [Theory]
@@ -120,35 +120,35 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         var target = new AwsLambdaToolsUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Act
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.Warning);
+        actualUpdated.ShouldBe(ProcessingResult.Warning);
 
         string actualContent = await File.ReadAllTextAsync(lambdaDefaultsFile);
         actualContent.NormalizeLineEndings().Trim().ShouldBe(fileContents.NormalizeLineEndings().Trim());
     }
 
     [Theory]
-    [InlineData("Not JSON", UpgradeResult.Warning)]
-    [InlineData("[]", UpgradeResult.Warning)]
-    [InlineData("[]]", UpgradeResult.Warning)]
-    [InlineData("\"value\"", UpgradeResult.Warning)]
-    [InlineData("{}", UpgradeResult.None)]
-    [InlineData("{\"framework\":1}", UpgradeResult.None)]
-    [InlineData("{\"framework\":true}", UpgradeResult.None)]
-    [InlineData("{\"framework\":\"bar\"}", UpgradeResult.None)]
-    [InlineData("{\"framework\":{}}", UpgradeResult.None)]
-    [InlineData("{\"framework\":[]}", UpgradeResult.None)]
-    [InlineData("{\"function-runtime\":1}", UpgradeResult.None)]
-    [InlineData("{\"function-runtime\":true}", UpgradeResult.None)]
-    [InlineData("{\"function-runtime\":\"bar\"}", UpgradeResult.None)]
-    [InlineData("{\"function-runtime\":{}}", UpgradeResult.None)]
-    [InlineData("{\"function-runtime\":[]}", UpgradeResult.None)]
-    public async Task UpgradeAsync_Handles_Invalid_Json(string content, UpgradeResult expected)
+    [InlineData("Not JSON", ProcessingResult.Warning)]
+    [InlineData("[]", ProcessingResult.Warning)]
+    [InlineData("[]]", ProcessingResult.Warning)]
+    [InlineData("\"value\"", ProcessingResult.Warning)]
+    [InlineData("{}", ProcessingResult.None)]
+    [InlineData("{\"framework\":1}", ProcessingResult.None)]
+    [InlineData("{\"framework\":true}", ProcessingResult.None)]
+    [InlineData("{\"framework\":\"bar\"}", ProcessingResult.None)]
+    [InlineData("{\"framework\":{}}", ProcessingResult.None)]
+    [InlineData("{\"framework\":[]}", ProcessingResult.None)]
+    [InlineData("{\"function-runtime\":1}", ProcessingResult.None)]
+    [InlineData("{\"function-runtime\":true}", ProcessingResult.None)]
+    [InlineData("{\"function-runtime\":\"bar\"}", ProcessingResult.None)]
+    [InlineData("{\"function-runtime\":{}}", ProcessingResult.None)]
+    [InlineData("{\"function-runtime\":[]}", ProcessingResult.None)]
+    public async Task UpgradeAsync_Handles_Invalid_Json(string content, ProcessingResult expected)
     {
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
@@ -169,7 +169,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         var target = new AwsLambdaToolsUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
         actual.ShouldBe(expected);

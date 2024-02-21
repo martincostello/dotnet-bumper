@@ -21,7 +21,7 @@ internal sealed partial class TargetFrameworkUpgrader(
 
     protected override IReadOnlyList<string> Patterns => ["Directory.Build.props", "*.csproj", "*.fsproj"];
 
-    protected override async Task<UpgradeResult> UpgradeCoreAsync(
+    protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,
@@ -29,7 +29,7 @@ internal sealed partial class TargetFrameworkUpgrader(
     {
         Log.UpgradingTargetFramework(logger);
 
-        UpgradeResult result = UpgradeResult.None;
+        var result = ProcessingResult.None;
         XmlWriterSettings? writerSettings = null;
 
         foreach (var filePath in fileNames)
@@ -42,7 +42,7 @@ internal sealed partial class TargetFrameworkUpgrader(
 
             if (project is null || project.Root is null)
             {
-                result = result.Max(UpgradeResult.Warning);
+                result = result.Max(ProcessingResult.Warning);
                 continue;
             }
 
@@ -85,7 +85,7 @@ internal sealed partial class TargetFrameworkUpgrader(
                     encoding ?? Encoding.UTF8,
                     cancellationToken);
 
-                result = result.Max(UpgradeResult.Success);
+                result = result.Max(ProcessingResult.Success);
             }
         }
 

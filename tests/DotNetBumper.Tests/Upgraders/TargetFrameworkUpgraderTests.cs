@@ -66,10 +66,10 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         var target = new TargetFrameworkUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.Success);
+        actualUpdated.ShouldBe(ProcessingResult.Success);
 
         string actualContent = await File.ReadAllTextAsync(projectFile);
 
@@ -88,19 +88,19 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.None);
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
     [Theory]
-    [InlineData("Not XML", UpgradeResult.Warning)]
-    [InlineData("<>", UpgradeResult.Warning)]
-    [InlineData("<Project></Project>", UpgradeResult.None)]
-    [InlineData("<Project><PropertyGroup></PropertyGroup></Project>", UpgradeResult.None)]
-    [InlineData("<Project><PropertyGroup><SomeProperty></SomeProperty></PropertyGroup></Project>", UpgradeResult.None)]
-    [InlineData("<Project><PropertyGroup><SomeProperty>;;</SomeProperty></PropertyGroup></Project>", UpgradeResult.None)]
-    [InlineData("<Project><PropertyGroup><SomeProperty>8.0</SomeProperty></PropertyGroup></Project>", UpgradeResult.None)]
-    [InlineData("<Project><PropertyGroup><SomeProperty>SomeValue</SomeProperty></PropertyGroup></Project>", UpgradeResult.None)]
-    public async Task UpgradeAsync_Handles_Invalid_Xml(string content, UpgradeResult expected)
+    [InlineData("Not XML", ProcessingResult.Warning)]
+    [InlineData("<>", ProcessingResult.Warning)]
+    [InlineData("<Project></Project>", ProcessingResult.None)]
+    [InlineData("<Project><PropertyGroup></PropertyGroup></Project>", ProcessingResult.None)]
+    [InlineData("<Project><PropertyGroup><SomeProperty></SomeProperty></PropertyGroup></Project>", ProcessingResult.None)]
+    [InlineData("<Project><PropertyGroup><SomeProperty>;;</SomeProperty></PropertyGroup></Project>", ProcessingResult.None)]
+    [InlineData("<Project><PropertyGroup><SomeProperty>8.0</SomeProperty></PropertyGroup></Project>", ProcessingResult.None)]
+    [InlineData("<Project><PropertyGroup><SomeProperty>SomeValue</SomeProperty></PropertyGroup></Project>", ProcessingResult.None)]
+    public async Task UpgradeAsync_Handles_Invalid_Xml(string content, ProcessingResult expected)
     {
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
@@ -121,7 +121,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         var target = new TargetFrameworkUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
         actual.ShouldBe(expected);

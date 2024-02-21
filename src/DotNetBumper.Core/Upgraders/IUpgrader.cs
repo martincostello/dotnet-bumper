@@ -19,9 +19,9 @@ public interface IUpgrader
     /// <param name="upgrade">The version of .NET to upgrade to.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to use.</param>
     /// <returns>
-    /// A <see cref="Task{UpgradeResult}"/> representing the result of the asynchronous operation to upgrade the project.
+    /// A <see cref="Task{ProcessingResult}"/> representing the result of the asynchronous operation to upgrade the project.
     /// </returns>
-    Task<UpgradeResult> UpgradeAsync(
+    Task<ProcessingResult> UpgradeAsync(
         UpgradeInfo upgrade,
         CancellationToken cancellationToken);
 }

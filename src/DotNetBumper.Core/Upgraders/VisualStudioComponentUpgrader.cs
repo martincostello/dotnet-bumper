@@ -21,7 +21,7 @@ internal sealed partial class VisualStudioComponentUpgrader(
 
     protected override IReadOnlyList<string> Patterns => [".vsconfig"];
 
-    protected override async Task<UpgradeResult> UpgradeCoreAsync(
+    protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,
@@ -29,7 +29,7 @@ internal sealed partial class VisualStudioComponentUpgrader(
     {
         Log.UpgradingComponentConfiguration(logger);
 
-        UpgradeResult result = UpgradeResult.None;
+        var result = ProcessingResult.None;
 
         foreach (var path in fileNames)
         {
@@ -46,7 +46,7 @@ internal sealed partial class VisualStudioComponentUpgrader(
 
             await configuration.SaveAsync(path, cancellationToken);
 
-            result = UpgradeResult.Success;
+            result = ProcessingResult.Success;
         }
 
         return result;

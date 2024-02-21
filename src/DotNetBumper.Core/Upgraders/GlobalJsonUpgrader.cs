@@ -23,7 +23,7 @@ internal sealed partial class GlobalJsonUpgrader(
 
     protected override IReadOnlyList<string> Patterns => ["global.json"];
 
-    protected override async Task<UpgradeResult> UpgradeCoreAsync(
+    protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
         StatusContext context,
@@ -31,7 +31,7 @@ internal sealed partial class GlobalJsonUpgrader(
     {
         Log.UpgradingDotNetSdk(logger);
 
-        UpgradeResult result = UpgradeResult.None;
+        var result = ProcessingResult.None;
 
         foreach (var path in fileNames)
         {
@@ -45,7 +45,7 @@ internal sealed partial class GlobalJsonUpgrader(
             {
                 Log.ParseSdkVersionFailed(logger, path);
 
-                result = result.Max(UpgradeResult.Warning);
+                result = result.Max(ProcessingResult.Warning);
                 continue;
             }
 
@@ -63,7 +63,7 @@ internal sealed partial class GlobalJsonUpgrader(
                     currentVersion.ToString(),
                     upgrade.SdkVersion.ToString());
 
-                result = result.Max(UpgradeResult.Success);
+                result = result.Max(ProcessingResult.Success);
             }
         }
 

@@ -33,10 +33,10 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         var target = new VisualStudioCodeUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.Success);
+        actualUpdated.ShouldBe(ProcessingResult.Success);
 
         string actualContent = await File.ReadAllTextAsync(launchFile);
         var launch = JsonDocument.Parse(actualContent);
@@ -65,7 +65,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actualUpdated.ShouldBe(UpgradeResult.None);
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
     [Theory]
@@ -100,9 +100,9 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         var target = new VisualStudioCodeUpgrader(fixture.Console, options, logger);
 
         // Act
-        UpgradeResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
-        actual.ShouldBe(UpgradeResult.None);
+        actual.ShouldBe(ProcessingResult.None);
     }
 }
