@@ -52,13 +52,12 @@ internal static class JsonExtensions
             stream.Write(metadata.Encoding.Preamble);
         }
 
+        // JsonWriterOptions does not currently support a custom NewLine character
         using var writer = new Utf8JsonWriter(stream, options);
 
         node.WriteTo(writer);
 
         await writer.FlushAsync(cancellationToken);
-
-        // TODO Only add the final newline if the file already ended with one
         await stream.WriteAsync(NewLineBytes, cancellationToken);
 
         // The edit may have caused the file to shrink, so truncate it to the new length
