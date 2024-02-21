@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using MartinCostello.DotNetBumper.PostProcessors;
 using MartinCostello.DotNetBumper.Upgraders;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<DotNetUpgradeFinder>();
 
         services.AddUpgraders();
+        services.AddPostProcessors();
 
         return services;
     }
@@ -69,6 +71,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUpgrader, TargetFrameworkUpgrader>();
         services.AddSingleton<IUpgrader, VisualStudioCodeUpgrader>();
         services.AddSingleton<IUpgrader, VisualStudioComponentUpgrader>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddPostProcessors(this IServiceCollection services)
+    {
+        services.AddSingleton<IPostProcessor, DotNetTestPostProcessor>();
 
         return services;
     }

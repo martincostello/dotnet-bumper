@@ -5,14 +5,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
 
-namespace MartinCostello.DotNetBumper.Upgraders;
+namespace MartinCostello.DotNetBumper.PostProcessors;
 
-internal abstract class Upgrader(
+internal abstract class PostProcessor(
     IAnsiConsole console,
     IOptions<UpgradeOptions> options,
-    ILogger logger) : UpgradeTask(console, options, logger), IUpgrader
+    ILogger logger) : UpgradeTask(console, options, logger), IPostProcessor
 {
-    public virtual async Task<UpgradeResult> UpgradeAsync(
+    public virtual async Task<ProcessingResult> PostProcessAsync(
         UpgradeInfo upgrade,
         CancellationToken cancellationToken)
     {
@@ -22,10 +22,10 @@ internal abstract class Upgrader(
             .Status()
             .Spinner(Spinner)
             .SpinnerStyle(SpinnerStyle)
-            .StartAsync($"[{StatusColor}]{InitialStatus}...[/]", async (context) => await UpgradeCoreAsync(upgrade, context, cancellationToken));
+            .StartAsync($"[{StatusColor}]{InitialStatus}...[/]", async (context) => await PostProcessCoreAsync(upgrade, context, cancellationToken));
     }
 
-    protected abstract Task<UpgradeResult> UpgradeCoreAsync(
+    protected abstract Task<ProcessingResult> PostProcessCoreAsync(
         UpgradeInfo upgrade,
         StatusContext context,
         CancellationToken cancellationToken);

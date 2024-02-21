@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Reflection;
+using MartinCostello.DotNetBumper.PostProcessors;
 using MartinCostello.DotNetBumper.Upgraders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,17 +14,17 @@ namespace MartinCostello.DotNetBumper;
 /// A class that upgrades a project  to a newer version of .NET.
 /// </summary>
 /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
-/// <param name="dotnet">The <see cref="DotNetProcess"/> to use.</param>
 /// <param name="upgradeFinder">The <see cref="DotNetUpgradeFinder"/> to use.</param>
 /// <param name="upgraders">The <see cref="IUpgrader"/> implementations to use.</param>
+/// <param name="postProcessors">The <see cref="IPostProcessor"/> implementations to use.</param>
 /// <param name="timeProvider">The <see cref="TimeProvider"/> to use.</param>
 /// <param name="options">The <see cref="IOptions{UpgradeOptions}"/> to use.</param>
 /// <param name="logger">The <see cref="ILogger{ProjectUpgrader}"/> to use.</param>
 public partial class ProjectUpgrader(
     IAnsiConsole console,
-    DotNetProcess dotnet,
     DotNetUpgradeFinder upgradeFinder,
     IEnumerable<IUpgrader> upgraders,
+    IEnumerable<IPostProcessor> postProcessors,
     TimeProvider timeProvider,
     IOptions<UpgradeOptions> options,
     ILogger<ProjectUpgrader> logger)
@@ -82,7 +83,7 @@ public partial class ProjectUpgrader(
 
         Log.Upgrading(logger, ProjectPath);
 
-        UpgradeResult result = UpgradeResult.None;
+        var upgradeResult = UpgradeResult.None;
 
         foreach (var upgrader in upgraders.OrderBy((p) => p.Order))
         {
@@ -104,16 +105,16 @@ public partial class ProjectUpgrader(
                 console.WriteExceptionLine($"An error occurred while performing upgrade step {upgrader.GetType().Name}.", ex);
             }
 
-            result = result.Max(stepResult);
+            upgradeResult = upgradeResult.Max(stepResult);
         }
 
-        if (result is UpgradeResult.Warning)
+        if (upgradeResult is UpgradeResult.Warning)
         {
             console.WriteLine();
             console.WriteWarningLine("One or more upgrade steps produced a warning.");
         }
 
-        if (result is UpgradeResult.Success or UpgradeResult.Warning)
+        if (upgradeResult is UpgradeResult.Success or UpgradeResult.Warning)
         {
             Log.Upgraded(
                 logger,
@@ -121,65 +122,42 @@ public partial class ProjectUpgrader(
                 upgrade.Channel.ToString(),
                 upgrade.SdkVersion.ToString());
 
-            if (options.Value.TestUpgrade)
+            var processingResult = ProcessingResult.None;
+
+            foreach (var processor in postProcessors.OrderBy((p) => p.Order))
             {
-                console.WriteProgressLine("Verifying upgrade...");
+                ProcessingResult stepResult;
 
-                var projects = ProjectHelpers.FindProjects(ProjectPath);
-
-                if (projects.Count is 0)
+                try
                 {
-                    result = result.Max(UpgradeResult.Warning);
-
-                    console.WriteWarningLine("Could not find any test projects.");
-                    console.WriteWarningLine("The project may not be in a working state.");
+                    stepResult = await processor.PostProcessAsync(upgrade, cancellationToken);
                 }
-                else
+                catch (OperationCanceledException ex) when (ex.CancellationToken == cancellationToken)
                 {
-                    var testResult = await console
-                        .Status()
-                        .Spinner(Spinner.Known.Dots)
-                        .SpinnerStyle(Style.Parse("green"))
-                        .StartAsync(
-                            $"[teal]Running tests...[/]",
-                            async (context) => await RunTestsAsync(projects, context, cancellationToken));
-
-                    result = result.Max(testResult.Success ? UpgradeResult.Success : UpgradeResult.Warning);
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    stepResult = ProcessingResult.Error;
 
                     console.WriteLine();
-
-                    if (testResult.Success)
-                    {
-                        console.WriteSuccessLine("Upgrade successfully tested.");
-                    }
-                    else
-                    {
-                        console.WriteWarningLine("The project upgrade did not result in a successful test run.");
-                        console.WriteWarningLine("The project may not be in a working state.");
-
-                        if (!string.IsNullOrWhiteSpace(testResult.StandardError))
-                        {
-                            console.WriteLine();
-                            console.WriteProgressLine(testResult.StandardError);
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(testResult.StandardOutput))
-                        {
-                            console.WriteLine();
-                            console.WriteProgressLine(testResult.StandardOutput);
-                        }
-                    }
+                    console.WriteExceptionLine($"An error occurred while performing post-processing step {processor.GetType().Name}.", ex);
                 }
+
+                processingResult = processingResult.Max(stepResult);
             }
+
+            // TODO Have upgrades use the same result type as post-processors
+            upgradeResult = upgradeResult.Max((UpgradeResult)processingResult);
         }
 
         console.WriteLine();
 
-        if (result is UpgradeResult.Success)
+        if (upgradeResult is UpgradeResult.Success)
         {
             console.MarkupLine($"[aqua]{name}[/] upgrade to [white on purple].NET {upgrade.Channel}[/] [green]successful[/]! :rocket:");
         }
-        else if (result is UpgradeResult.None)
+        else if (upgradeResult is UpgradeResult.None)
         {
             Log.NothingToUpgrade(logger, ProjectPath);
 
@@ -188,7 +166,7 @@ public partial class ProjectUpgrader(
         }
         else
         {
-            (string emoji, string color, string description) = result switch
+            (string emoji, string color, string description) = upgradeResult switch
             {
                 UpgradeResult.Warning => (":warning:", "yellow", "completed with warnings"),
                 _ => (":cross_mark:", "red", "failed"),
@@ -200,36 +178,12 @@ public partial class ProjectUpgrader(
         const int Success = 0;
         const int Error = 1;
 
-        return result switch
+        return upgradeResult switch
         {
             UpgradeResult.None or UpgradeResult.Success => Success,
             UpgradeResult.Warning => options.Value.TreatWarningsAsErrors ? Error : Success,
             _ => Error,
         };
-    }
-
-    private async Task<DotNetResult> RunTestsAsync(
-        IReadOnlyList<string> projects,
-        StatusContext context,
-        CancellationToken cancellationToken)
-    {
-        foreach (var project in projects)
-        {
-            string name = ProjectHelpers.RelativeName(ProjectPath, project);
-            context.Status = $"[teal]Running tests for {name}...[/]";
-
-            var result = await dotnet.RunAsync(
-                project,
-                ["test", "--nologo", "--verbosity", "quiet"],
-                cancellationToken);
-
-            if (!result.Success)
-            {
-                return result;
-            }
-        }
-
-        return new(true, 0, string.Empty, string.Empty);
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
