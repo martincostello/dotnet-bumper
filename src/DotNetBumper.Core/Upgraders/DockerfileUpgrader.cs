@@ -233,7 +233,7 @@ internal sealed partial class DockerfileUpgrader(
         return (edited, dockerfile);
     }
 
-    [GeneratedRegex(@"^FROM ((?<platform>--platform=[\$\w]+)\s)?(?<image>[\w\.\/\-]+)(:(?<tag>[\w\-\.]+))?(\s(?<name>AS [\S]+))?$")]
+    [GeneratedRegex(@"^(?i)FROM(?-i) ((?<platform>--platform=[\$\w]+)\s)?(?<image>[\w\.\/\-]+)(:(?<tag>[\w\-\.]+))?(\s(?<name>(?i)AS(?-i) [\S]+))?$")]
     private static partial Regex DockerImage();
 
     [GeneratedRegex(@"[1-9]+[0-9]*\.[0-9]")]
