@@ -52,7 +52,7 @@ public static class IAnsiConsoleExtensions
     /// <param name="message">The error message to write.</param>
     public static void WriteErrorLine(this IAnsiConsole console, string message)
     {
-        console.MarkupLineInterpolated($"[red]:cross_mark: {message}[/]");
+        console.MarkupLineInterpolated($"[red]{Emoji.Known.CrossMark} {message}[/]");
     }
 
     /// <summary>
@@ -84,7 +84,7 @@ public static class IAnsiConsoleExtensions
     /// <param name="message">The success message to write.</param>
     public static void WriteSuccessLine(this IAnsiConsole console, string message)
     {
-        console.MarkupLineInterpolated($"[green]:check_mark_button: {message}[/]");
+        console.MarkupLineInterpolated($"[green]{Emoji.Known.CheckMarkButton} {message}[/]");
     }
 
     /// <summary>
@@ -105,6 +105,6 @@ public static class IAnsiConsoleExtensions
     /// <param name="message">The warning message to write.</param>
     public static void WriteWarningLine(this IAnsiConsole console, string message)
     {
-        console.MarkupLineInterpolated($"[yellow]:warning: {message}[/]");
+        console.MarkupLineInterpolated($"[yellow]{Emoji.Known.Warning} {message}[/]");
     }
 }
