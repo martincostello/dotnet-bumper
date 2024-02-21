@@ -165,8 +165,8 @@ public partial class ProjectUpgrader(
         {
             (string emoji, string color, string description) = result switch
             {
-                ProcessingResult.Warning => (":warning:", "yellow", "completed with warnings"),
-                _ => (":cross_mark:", "red", "failed"),
+                ProcessingResult.Warning => (Emoji.Known.Warning, "yellow", "completed with warnings"),
+                _ => (Emoji.Known.CrossMark, "red", "failed"),
             };
 
             console.MarkupLine($"[aqua]{name}[/] upgrade to [purple].NET {upgrade.Channel}[/] [{color}]{description}[/]! {emoji}");
