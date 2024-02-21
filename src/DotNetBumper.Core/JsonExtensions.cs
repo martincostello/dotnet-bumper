@@ -53,5 +53,8 @@ internal static class JsonExtensions
 
         await writer.FlushAsync(cancellationToken);
         await stream.WriteAsync(NewLineBytes, cancellationToken);
+
+        // If the edit may have caused the file to shrink, so truncate it to the new length
+        stream.SetLength(stream.Position);
     }
 }
