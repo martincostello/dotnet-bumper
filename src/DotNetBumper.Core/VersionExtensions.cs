@@ -74,9 +74,9 @@ internal static partial class VersionExtensions
         return null;
     }
 
-    [GeneratedRegex($"(?!dot){TfmPattern}")]
+    [GeneratedRegex($"(?<!dot){TfmPattern}")]
     private static partial Regex ContainsTargetFrameworkMoniker();
 
-    [GeneratedRegex($"^{TfmPattern}")]
+    [GeneratedRegex($"^{TfmPattern}$")]
     private static partial Regex TargetFrameworkMoniker();
 }
