@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.RegularExpressions;
-using NuGet.Versioning;
 
 namespace MartinCostello.DotNetBumper;
 
@@ -24,9 +23,6 @@ internal static partial class VersionExtensions
 
     public static string ToTargetFramework(this Version version)
         => $"net{version.ToString(2)}";
-
-    public static string ToTargetFramework(this NuGetVersion version)
-        => $"net{version.Major}.{version.Minor}";
 
     public static Version? ToVersionFromLambdaRuntime(this string runtime)
         => runtime.AsSpan().ToVersionFromLambdaRuntime();
