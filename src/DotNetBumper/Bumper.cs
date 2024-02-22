@@ -28,6 +28,11 @@ internal partial class Bumper(ProjectUpgrader upgrader)
     public string? DotNetChannel { get; set; }
 
     [Option(
+        "-q|--no-logo",
+        Description = "Do not display the startup banner.")]
+    public bool NoLogo { get; set; }
+
+    [Option(
         "-t|--upgrade-type <TYPE>",
         Description = "The type of upgrade to perform.",
         ValueName = "TYPE")]
@@ -81,6 +86,12 @@ internal partial class Bumper(ProjectUpgrader upgrader)
     {
         try
         {
+            if (!NoLogo)
+            {
+                console.Write(new FigletText(".NET Bumper").Color(Color.Purple));
+                console.MarkupLineInterpolated($"[{Color.Blue}]{GetVersion()}[/]");
+            }
+
             var stopwatch = Stopwatch.StartNew();
 
             int status = await upgrader.UpgradeAsync(cancellationToken);

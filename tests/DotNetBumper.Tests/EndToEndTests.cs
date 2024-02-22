@@ -281,15 +281,22 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Arrange
         using var console = new TestConsole();
 
-        // Act
-        int actual = await Bumper.RunAsync(
-            console,
-            [],
-            (builder) => builder.AddXUnit(outputHelper),
-            CancellationToken.None);
+        try
+        {
+            // Act
+            int actual = await Bumper.RunAsync(
+                console,
+                ["--no-logo"],
+                (builder) => builder.AddXUnit(outputHelper),
+                CancellationToken.None);
 
-        // Assert
-        actual.ShouldBe(1);
+            // Assert
+            actual.ShouldBe(1);
+        }
+        finally
+        {
+            outputHelper.WriteLine(console.Output);
+        }
     }
 
     private static async Task<int> RunAsync(UpgraderFixture fixture, IList<string> args)
