@@ -36,6 +36,8 @@ internal sealed partial class LeftoverReferencesPostProcessor(
                 continue;
             }
 
+            context.Status = StatusMessage($"Searching {relativePath}...");
+
             int lineNumber = 0;
             var fileReferences = new List<PotentialFileEdit>();
 
