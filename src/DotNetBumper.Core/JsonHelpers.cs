@@ -20,22 +20,6 @@ internal static class JsonHelpers
         [NotNullWhen(true)] out JsonObject? root)
     {
         using var stream = File.OpenRead(path);
-        return TryLoadObject(stream, out root);
-    }
-
-    public static bool TryLoadObject(
-        string path,
-        [NotNullWhen(true)] out JsonObject? root,
-        [NotNullWhen(true)] out FileMetadata? metadata)
-    {
-        using var stream = FileHelpers.OpenRead(path, out metadata);
-        return TryLoadObject(stream, out root);
-    }
-
-    private static bool TryLoadObject(
-        Stream stream,
-        [NotNullWhen(true)] out JsonObject? root)
-    {
         root = JsonNode.Parse(stream, documentOptions: DocumentOptions) as JsonObject;
         return root is not null;
     }
