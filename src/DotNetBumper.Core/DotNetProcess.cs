@@ -121,7 +121,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 
         if (logFilePath is not null)
         {
-            logEntries = await GetLogsAsync(logFilePath, cancellationToken);
+            logEntries = await GetLogsAsync(logFilePath, CancellationToken.None);
         }
 
         var result = new DotNetResult(
@@ -201,6 +201,12 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         try
         {
             using var stream = File.OpenRead(logFilePath);
+
+            if (stream.Length is 0)
+            {
+                return [];
+            }
+
             var logs = await JsonSerializer.DeserializeAsync<BumperLog>(stream, cancellationToken: cancellationToken);
             return logs?.Entries ?? [];
         }
