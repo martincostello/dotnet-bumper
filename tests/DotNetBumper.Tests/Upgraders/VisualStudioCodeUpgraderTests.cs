@@ -234,13 +234,8 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData("\n", false)]
-    [InlineData("\n", true)]
-    [InlineData("\r", false)]
-    [InlineData("\r", true)]
-    [InlineData("\r\n", false)]
-    [InlineData("\r\n", true)]
-    public async Task UpgradeAsync_Preserves_Bom(string newLine, bool bom)
+    [ClassData(typeof(FileEncodingTestData))]
+    public async Task UpgradeAsync_Preserves_Bom(string newLine, bool hasUtf8Bom)
     {
         // Arrange
         string[] originalLines =
@@ -270,7 +265,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        var encoding = new UTF8Encoding(bom);
+        var encoding = new UTF8Encoding(hasUtf8Bom);
         string filePath = await fixture.Project.AddFileAsync(".vscode/launch.json", fileContents, encoding);
 
         var upgrade = new UpgradeInfo()
@@ -295,7 +290,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
 
         byte[] actualBytes = await File.ReadAllBytesAsync(filePath);
 
-        if (bom)
+        if (hasUtf8Bom)
         {
             actualBytes.ShouldStartWithUTF8Bom();
         }

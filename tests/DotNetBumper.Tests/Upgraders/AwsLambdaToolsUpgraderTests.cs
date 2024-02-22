@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using Spectre.Console.Testing;
@@ -45,9 +44,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<AwsLambdaToolsUpgrader>();
-        var target = new AwsLambdaToolsUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -116,9 +113,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = supportPhase,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<AwsLambdaToolsUpgrader>();
-        var target = new AwsLambdaToolsUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -165,9 +160,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<AwsLambdaToolsUpgrader>();
-        var target = new AwsLambdaToolsUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -177,13 +170,8 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData("\n", false)]
-    [InlineData("\n", true)]
-    [InlineData("\r", false)]
-    [InlineData("\r", true)]
-    [InlineData("\r\n", false)]
-    [InlineData("\r\n", true)]
-    public async Task UpgradeAsync_Preserves_Bom(string newLine, bool bom)
+    [ClassData(typeof(FileEncodingTestData))]
+    public async Task UpgradeAsync_Preserves_Bom(string newLine, bool hasUtf8Bom)
     {
         // Arrange
         string[] originalLines =
@@ -205,7 +193,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        var encoding = new UTF8Encoding(bom);
+        var encoding = new UTF8Encoding(hasUtf8Bom);
         string dockerfile = await fixture.Project.AddFileAsync("aws-lambda-tools-defaults.json", fileContents, encoding);
 
         var upgrade = new UpgradeInfo()
@@ -217,9 +205,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<AwsLambdaToolsUpgrader>();
-        var target = new AwsLambdaToolsUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -232,7 +218,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
 
         byte[] actualBytes = await File.ReadAllBytesAsync(dockerfile);
 
-        if (bom)
+        if (hasUtf8Bom)
         {
             actualBytes.ShouldStartWithUTF8Bom();
         }
@@ -246,5 +232,12 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    private AwsLambdaToolsUpgrader CreateTarget(UpgraderFixture fixture)
+    {
+        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
+        var logger = outputHelper.ToLogger<AwsLambdaToolsUpgrader>();
+        return new AwsLambdaToolsUpgrader(fixture.Console, options, logger);
     }
 }

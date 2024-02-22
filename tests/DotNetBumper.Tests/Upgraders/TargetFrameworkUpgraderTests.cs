@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Text;
 using System.Xml.Linq;
 using Microsoft.Extensions.Options;
 
@@ -67,9 +66,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<TargetFrameworkUpgrader>();
-        var target = new TargetFrameworkUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -133,14 +130,88 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<TargetFrameworkUpgrader>();
-        var target = new TargetFrameworkUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
         actual.ShouldBe(expected);
+    }
+
+    [Theory]
+    [ClassData(typeof(FileEncodingTestData))]
+    public async Task UpgradeAsync_Preserves_Bom(string newLine, bool hasUtf8Bom)
+    {
+        // Arrange
+        string[] originalLines =
+        [
+            "<Project Sdk=\"Microsoft.NET.Sdk\">",
+            "  <PropertyGroup>",
+            "    <TargetFramework>net6.0</TargetFramework>",
+            "  </PropertyGroup>",
+            "</Project>",
+        ];
+
+        string[] expectedLines =
+        [
+            "<Project Sdk=\"Microsoft.NET.Sdk\">",
+            "  <PropertyGroup>",
+            "    <TargetFramework>net10.0</TargetFramework>",
+            "  </PropertyGroup>",
+            "</Project>",
+        ];
+
+        string fileContents = string.Join(newLine, originalLines) + newLine;
+        string expectedContent = string.Join(Environment.NewLine, expectedLines) + Environment.NewLine;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        var encoding = new UTF8Encoding(hasUtf8Bom);
+        string dockerfile = await fixture.Project.AddFileAsync("Directory.Build.props", fileContents, encoding);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse("10.0"),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("10.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(dockerfile);
+        actualContent.ShouldBe(expectedContent);
+
+        byte[] actualBytes = await File.ReadAllBytesAsync(dockerfile);
+
+        if (hasUtf8Bom)
+        {
+            actualBytes.ShouldStartWithUTF8Bom();
+        }
+        else
+        {
+            actualBytes.ShouldNotStartWithUTF8Bom();
+        }
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    private TargetFrameworkUpgrader CreateTarget(UpgraderFixture fixture)
+    {
+        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
+        var logger = outputHelper.ToLogger<TargetFrameworkUpgrader>();
+        return new TargetFrameworkUpgrader(fixture.Console, options, logger);
     }
 }
