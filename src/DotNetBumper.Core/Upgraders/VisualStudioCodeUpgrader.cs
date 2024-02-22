@@ -177,11 +177,15 @@ internal sealed partial class VisualStudioCodeUpgrader(
                     }
                     else if (property.Value is JsonArray array)
                     {
-                        foreach (var item in array)
+                        foreach (var item in array.ToArray())
                         {
                             if (item is JsonObject obj)
                             {
                                 edited |= Visit(obj, channel, processValue);
+                            }
+                            else if (item is JsonValue arrayValue && arrayValue.GetValueKind() is JsonValueKind.String)
+                            {
+                                edited |= processValue(arrayValue, channel);
                             }
                         }
                     }

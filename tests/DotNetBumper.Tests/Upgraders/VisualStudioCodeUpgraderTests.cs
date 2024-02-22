@@ -142,6 +142,13 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
                 },
                 {
                   "program": "${workspaceFolder}\\src\\Project\\bin\\Release\\netcoreapp3.1\\Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Debug\\net6.0\\Project.dll",
+                  "args": [
+                    "--framework",
+                    "net6.0"
+                  ]
                 }
               ]
             }
@@ -183,6 +190,13 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
                 },
                 {
                   "program": "${workspaceFolder}\\src\\Project\\bin\\Release\\net10.0\\Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Debug\\net10.0\\Project.dll",
+                  "args": [
+                    "--framework",
+                    "net10.0"
+                  ]
                 }
               ]
             }
