@@ -69,7 +69,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
         {
             var table = new Table
             {
-                Title = new TableTitle("Remaining References"),
+                Title = new TableTitle($"Remaining References - {references.Sum((p) => p.Value.Count)}"),
             };
 
             table.AddColumn("Location");
