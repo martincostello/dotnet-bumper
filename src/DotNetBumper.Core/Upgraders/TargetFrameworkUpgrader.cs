@@ -37,7 +37,7 @@ internal sealed partial class TargetFrameworkUpgrader(
 
             context.Status = StatusMessage($"Parsing {name}...");
 
-            (var project, var encoding) = await LoadProjectAsync(filePath, cancellationToken);
+            (var project, var metadata) = await LoadProjectAsync(filePath, cancellationToken);
 
             if (project is null || project.Root is null)
             {
@@ -75,13 +75,14 @@ internal sealed partial class TargetFrameworkUpgrader(
                 {
                     Async = true,
                     Indent = true,
+                    NewLineChars = metadata?.NewLine ?? Environment.NewLine,
                     OmitXmlDeclaration = true,
                 };
 
                 await File.WriteAllTextAsync(
                     filePath,
                     xml,
-                    encoding ?? Encoding.UTF8,
+                    metadata?.Encoding ?? Encoding.UTF8,
                     cancellationToken);
 
                 result = result.Max(ProcessingResult.Success);
@@ -134,7 +135,7 @@ internal sealed partial class TargetFrameworkUpgrader(
         return validTfms > 0;
     }
 
-    private async Task<(XDocument? Project, Encoding? Encoding)> LoadProjectAsync(
+    private async Task<(XDocument? Project, FileMetadata? Metadata)> LoadProjectAsync(
         string filePath,
         CancellationToken cancellationToken)
     {
@@ -144,7 +145,7 @@ internal sealed partial class TargetFrameworkUpgrader(
         try
         {
             var project = await XDocument.LoadAsync(reader, LoadOptions.PreserveWhitespace, cancellationToken);
-            return (project, metadata.Encoding);
+            return (project, metadata);
         }
         catch (Exception ex)
         {
