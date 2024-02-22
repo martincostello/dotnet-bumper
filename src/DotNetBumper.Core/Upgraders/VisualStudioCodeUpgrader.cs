@@ -116,28 +116,33 @@ internal sealed partial class VisualStudioCodeUpgrader(
                 while (!remaining.IsEmpty)
                 {
                     int index = remaining.IndexOfAny(PathSeparators);
+                    var maybeTfm = remaining;
 
-                    if (index < 0)
+                    if (index is not -1)
                     {
-                        builder.Append(remaining);
-                        break;
+                        maybeTfm = maybeTfm[..index];
                     }
 
-                    string segment = new(remaining[..index]);
+                    int consumed = maybeTfm.Length;
 
-                    if (segment.IsTargetFrameworkMoniker())
+                    if (maybeTfm.IsTargetFrameworkMoniker())
                     {
-                        if (segment.ToVersionFromTargetFramework() is { } version && version < channel)
+                        if (maybeTfm.ToVersionFromTargetFramework() is { } version && version < channel)
                         {
-                            segment = channel.ToTargetFramework();
+                            maybeTfm = channel.ToTargetFramework();
                             updated = true;
                         }
                     }
 
-                    builder.Append(segment)
-                           .Append(remaining.Slice(index, 1));
+                    builder.Append(maybeTfm);
 
-                    remaining = remaining[(index + 1)..];
+                    if (index is not -1)
+                    {
+                        builder.Append(remaining.Slice(index, 1));
+                        consumed++;
+                    }
+
+                    remaining = remaining[consumed..];
                 }
 
                 if (updated)
@@ -172,11 +177,15 @@ internal sealed partial class VisualStudioCodeUpgrader(
                     }
                     else if (property.Value is JsonArray array)
                     {
-                        foreach (var item in array)
+                        foreach (var item in array.ToArray())
                         {
                             if (item is JsonObject obj)
                             {
                                 edited |= Visit(obj, channel, processValue);
+                            }
+                            else if (item is JsonValue arrayValue && arrayValue.GetValueKind() is JsonValueKind.String)
+                            {
+                                edited |= processValue(arrayValue, channel);
                             }
                         }
                     }

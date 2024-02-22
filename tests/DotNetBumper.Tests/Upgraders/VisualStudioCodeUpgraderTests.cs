@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 
@@ -10,9 +9,7 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
 {
     [Theory]
-    [InlineData("7.0")]
-    [InlineData("8.0")]
-    [InlineData("9.0")]
+    [ClassData(typeof(DotNetChannelTestData))]
     public async Task UpgradeAsync_Upgrades_Launch_Path(string channel)
     {
         // Arrange
@@ -29,9 +26,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<VisualStudioCodeUpgrader>();
-        var target = new VisualStudioCodeUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -96,9 +91,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<VisualStudioCodeUpgrader>();
-        var target = new VisualStudioCodeUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -107,14 +100,140 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.None);
     }
 
+    [Fact]
+    public async Task UpgradeAsync_Updates_Tfm_Properties()
+    {
+        // Arrange
+        string fileContents =
+            """
+            {
+              "configurations": [
+                {
+                  "program": "net6.0"
+                },
+                {
+                  "program": "${workspaceFolder}/net6.0"
+                },
+                {
+                  "program": "${workspaceFolder}\\net6.0"
+                },
+                {
+                  "program": "net6.0/Project.dll"
+                },
+                {
+                  "program": "net6.0\\Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}/src/Project/bin/Debug/net6.0/Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Debug\\net6.0\\Project.dll"
+                },
+                {
+                  "program": "./net6.0/Project.dll"
+                },
+                {
+                  "program": ".\\net6.0\\Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}/src/Project/bin/Debug/netcoreapp3.1/Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Release\\netcoreapp3.1\\Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Debug\\net6.0\\Project.dll",
+                  "args": [
+                    "--framework",
+                    "net6.0"
+                  ]
+                }
+              ]
+            }
+            """;
+
+        string expectedContent =
+            """
+            {
+              "configurations": [
+                {
+                  "program": "net10.0"
+                },
+                {
+                  "program": "${workspaceFolder}/net10.0"
+                },
+                {
+                  "program": "${workspaceFolder}\\net10.0"
+                },
+                {
+                  "program": "net10.0/Project.dll"
+                },
+                {
+                  "program": "net10.0\\Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}/src/Project/bin/Debug/net10.0/Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Debug\\net10.0\\Project.dll"
+                },
+                {
+                  "program": "./net10.0/Project.dll"
+                },
+                {
+                  "program": ".\\net10.0\\Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}/src/Project/bin/Debug/net10.0/Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Release\\net10.0\\Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Debug\\net10.0\\Project.dll",
+                  "args": [
+                    "--framework",
+                    "net10.0"
+                  ]
+                }
+              ]
+            }
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string filePath = await fixture.Project.AddFileAsync(".vscode/launch.json", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse("10.0"),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("10.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(filePath);
+        actualContent.Trim().ShouldBe(expectedContent.Trim());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
     [Theory]
-    [InlineData("\n", false)]
-    [InlineData("\n", true)]
-    [InlineData("\r", false)]
-    [InlineData("\r", true)]
-    [InlineData("\r\n", false)]
-    [InlineData("\r\n", true)]
-    public async Task UpgradeAsync_Preserves_Bom(string newLine, bool bom)
+    [ClassData(typeof(FileEncodingTestData))]
+    public async Task UpgradeAsync_Preserves_Bom(string newLine, bool hasUtf8Bom)
     {
         // Arrange
         string[] originalLines =
@@ -144,8 +263,8 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        var encoding = new UTF8Encoding(bom);
-        string dockerfile = await fixture.Project.AddFileAsync(".vscode/launch.json", fileContents, encoding);
+        var encoding = new UTF8Encoding(hasUtf8Bom);
+        string filePath = await fixture.Project.AddFileAsync(".vscode/launch.json", fileContents, encoding);
 
         var upgrade = new UpgradeInfo()
         {
@@ -156,9 +275,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<VisualStudioCodeUpgrader>();
-        var target = new VisualStudioCodeUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -166,12 +283,12 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(dockerfile);
+        string actualContent = await File.ReadAllTextAsync(filePath);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(dockerfile);
+        byte[] actualBytes = await File.ReadAllBytesAsync(filePath);
 
-        if (bom)
+        if (hasUtf8Bom)
         {
             actualBytes.ShouldStartWithUTF8Bom();
         }
@@ -185,5 +302,12 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    private VisualStudioCodeUpgrader CreateTarget(UpgraderFixture fixture)
+    {
+        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
+        var logger = outputHelper.ToLogger<VisualStudioCodeUpgrader>();
+        return new VisualStudioCodeUpgrader(fixture.Console, options, logger);
     }
 }
