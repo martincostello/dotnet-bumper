@@ -25,7 +25,7 @@ internal sealed partial class RemainingTargetFrameworksPostProcessor(
     {
         var gitignore = await LoadGitIgnoreAsync(cancellationToken);
 
-        var references = new Dictionary<(Uri Location, string RelativePath), List<(string Text, int Line)>>();
+        var references = new Dictionary<FileWithPotentialEdits, List<PotentialFileEdit>>();
 
         foreach (var path in Directory.EnumerateFiles(Options.ProjectPath, "*", SearchOption.AllDirectories))
         {
@@ -37,7 +37,7 @@ internal sealed partial class RemainingTargetFrameworksPostProcessor(
             }
 
             int lineNumber = 0;
-            var fileReferences = new List<(string Text, int Line)>();
+            var fileReferences = new List<PotentialFileEdit>();
 
             foreach (var line in await File.ReadAllLinesAsync(path, cancellationToken))
             {
@@ -51,7 +51,7 @@ internal sealed partial class RemainingTargetFrameworksPostProcessor(
                     {
                         if (match.ValueSpan.ToVersionFromTargetFramework() is { } version && version < upgrade.Channel)
                         {
-                            fileReferences.Add((match.Value, lineNumber));
+                            fileReferences.Add(new(lineNumber, match.Index + 1, match.Value));
                         }
                     }
                 }
@@ -59,7 +59,7 @@ internal sealed partial class RemainingTargetFrameworksPostProcessor(
 
             if (fileReferences.Count > 0)
             {
-                references[(new(path), relativePath)] = fileReferences;
+                references[new(path, relativePath)] = fileReferences;
             }
         }
 
@@ -70,18 +70,14 @@ internal sealed partial class RemainingTargetFrameworksPostProcessor(
                 Title = new TableTitle("Remaining Target Framework References"),
             };
 
-            table.AddColumn("Path");
-            table.AddColumn(new TableColumn("Line").RightAligned());
+            table.AddColumn("Location");
             table.AddColumn(new TableColumn("Match").RightAligned());
 
-            foreach ((var key, var value) in references.OrderBy((p) => p.Key.RelativePath))
+            foreach ((var file, var values) in references.OrderBy((p) => p.Key.RelativePath))
             {
-                var first = value[0];
-                table.AddRow(Path(key.Location, key.RelativePath), Line(first.Line), Match(first.Text));
-
-                foreach (var item in value.Skip(1))
+                foreach (var item in values)
                 {
-                    table.AddRow(Empty(), Line(item.Line), Match(item.Text));
+                    table.AddRow(Location(file, item), Match(item.Text));
                 }
             }
 
@@ -90,16 +86,31 @@ internal sealed partial class RemainingTargetFrameworksPostProcessor(
 
         return ProcessingResult.Success;
 
-        static Markup Empty() => new(string.Empty);
-        static Markup Line(int line) => new(line.ToString(CultureInfo.CurrentCulture));
-        static Markup Match(string text) => new($"[{Color.Yellow}]{text}[/]");
-
-        static Markup Path(Uri location, string relativePath)
+        static Markup Location(FileWithPotentialEdits file, PotentialFileEdit edit)
         {
-            string locationText = location.ToString().EscapeMarkup();
-            string pathText = relativePath.EscapeMarkup();
+            string location = VisualStudioCodeLink(file, edit);
+            string path = $"{file.RelativePath.EscapeMarkup()}:{edit.Line}";
 
-            return new Markup($"[link={locationText}]{pathText}[/]");
+            return new Markup($"[link={location}]{path}[/]");
+        }
+
+        static Markup Match(string text) => new($"[{Color.Yellow}]{text.EscapeMarkup()}[/]");
+
+        static string VisualStudioCodeLink(FileWithPotentialEdits file, PotentialFileEdit? edit = null)
+        {
+            // See https://code.visualstudio.com/docs/editor/command-line#_opening-vs-code-with-urls
+            var builder = new StringBuilder("vscode://file/")
+                .Append(file.Path.Replace('\\', '/').EscapeMarkup());
+
+            if (edit is not null)
+            {
+                builder.Append(':')
+                       .Append(edit.Line)
+                       .Append(':')
+                       .Append(edit.Column);
+            }
+
+            return builder.ToString();
         }
     }
 
@@ -129,4 +140,8 @@ internal sealed partial class RemainingTargetFrameworksPostProcessor(
 
         return ignore;
     }
+
+    private sealed record FileWithPotentialEdits(string Path, string RelativePath);
+
+    private sealed record PotentialFileEdit(int Line, int Column, string Text);
 }
