@@ -16,6 +16,8 @@ internal sealed partial class DockerfileUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<DockerfileUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
+    private static readonly Version EightPointZero = new(8, 0);
+
     protected override string Action => "Upgrading Dockerfiles";
 
     protected override string InitialStatus => "Update Dockerfiles";
@@ -181,6 +183,62 @@ internal sealed partial class DockerfileUpgrader(
         }
     }
 
+    internal static bool TryUpdatePort(
+        string current,
+        Version channel,
+        [NotNullWhen(true)] out string? updated)
+    {
+        updated = null;
+
+        if (channel < EightPointZero)
+        {
+            return false;
+        }
+
+        var remaining = current.AsSpan();
+
+        const string Prefix = "EXPOSE ";
+
+        // See https://learn.microsoft.com/dotnet/core/compatibility/containers/8.0/aspnet-port
+        const string BeforeDotNet8Port = "80";
+        const string DotNet8AndLaterPort = "8080";
+
+        if (remaining.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var builder = new StringBuilder(current.Length);
+            builder.Append(remaining[..Prefix.Length]);
+
+            remaining = remaining[Prefix.Length..];
+
+            int start = remaining.IndexOfAnyInRange('1', '9');
+
+            if (start is not -1)
+            {
+                int end = remaining.IndexOfAnyExceptInRange('0', '9');
+
+                if (end is -1)
+                {
+                    end = remaining.Length;
+                }
+
+                int length = end - start;
+
+                var port = remaining[start..length];
+
+                if (port.SequenceEqual(BeforeDotNet8Port))
+                {
+                    builder.Append(DotNet8AndLaterPort)
+                           .Append(remaining[(start + length)..]);
+
+                    updated = builder.ToString();
+                    return current != updated;
+                }
+            }
+        }
+
+        return false;
+    }
+
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,
@@ -227,7 +285,8 @@ internal sealed partial class DockerfileUpgrader(
 
             while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
-                if (TryUpdateImage(line, upgrade.Channel, upgrade.SupportPhase, out var updated))
+                if (TryUpdateImage(line, upgrade.Channel, upgrade.SupportPhase, out var updated) ||
+                    TryUpdatePort(line, upgrade.Channel, out updated))
                 {
                     line = updated;
                     edited |= true;

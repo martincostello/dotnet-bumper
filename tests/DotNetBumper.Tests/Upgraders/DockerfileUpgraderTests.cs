@@ -199,11 +199,11 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             """
             FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
             WORKDIR /App
-            
+
             COPY . ./
             RUN dotnet restore
             RUN dotnet publish -c Release -o out
-            
+
             FROM mcr.microsoft.com/dotnet/aspnet:6.0
             WORKDIR /App
             COPY --from=build-env /App/out .
@@ -214,11 +214,11 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             $"""
              FROM mcr.microsoft.com/dotnet/sdk:{channel} AS build-env
              WORKDIR /App
-             
+
              COPY . ./
              RUN dotnet restore
              RUN dotnet publish -c Release -o out
-             
+
              FROM mcr.microsoft.com/dotnet/aspnet:{channel}
              WORKDIR /App
              COPY --from=build-env /App/out .
@@ -304,6 +304,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             string.Empty,
             "FROM mcr.microsoft.com/dotnet/aspnet:6.0",
             "WORKDIR /App",
+            "expose 123 # We don't use port 80",
             "COPY --from=build-env /App/out .",
             "ENTRYPOINT [\"dotnet\", \"DotNet.Docker.dll\"]",
         ];
@@ -319,6 +320,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             string.Empty,
             "FROM mcr.microsoft.com/dotnet/aspnet:10.0",
             "WORKDIR /App",
+            "expose 123 # We don't use port 80",
             "COPY --from=build-env /App/out .",
             "ENTRYPOINT [\"dotnet\", \"DotNet.Docker.dll\"]",
         ];
@@ -361,6 +363,102 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         {
             actualBytes.ShouldNotStartWithUTF8Bom();
         }
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [InlineData("7.0", "EXPOSE", false, "8", "8", ProcessingResult.None)]
+    [InlineData("7.0", "EXPOSE", false, "80", "80", ProcessingResult.None)]
+    [InlineData("7.0", "EXPOSE", false, "123", "123", ProcessingResult.None)]
+    [InlineData("7.0", "EXPOSE", false, "8080", "8080", ProcessingResult.None)]
+    [InlineData("8.0", "EXPOSE", false, "8", "8", ProcessingResult.None)]
+    [InlineData("8.0", "EXPOSE", false, "80", "8080", ProcessingResult.Success)]
+    [InlineData("8.0", "EXPOSE", true, "80", "8080", ProcessingResult.Success)]
+    [InlineData("8.0", "EXPOSE", false, "123", "123", ProcessingResult.None)]
+    [InlineData("8.0", "EXPOSE", false, "8080", "8080", ProcessingResult.None)]
+    [InlineData("9.0", "EXPOSE", false, "8", "8", ProcessingResult.None)]
+    [InlineData("9.0", "EXPOSE", false, "80", "8080", ProcessingResult.Success)]
+    [InlineData("9.0", "EXPOSE", true, "80", "8080", ProcessingResult.Success)]
+    [InlineData("9.0", "EXPOSE", false, "123", "123", ProcessingResult.None)]
+    [InlineData("9.0", "EXPOSE", false, "8080", "8080", ProcessingResult.None)]
+    [InlineData("10.0", "EXPOSE", false, "8", "8", ProcessingResult.None)]
+    [InlineData("10.0", "EXPOSE", false, "80", "8080", ProcessingResult.Success)]
+    [InlineData("10.0", "EXPOSE", true, "80", "8080", ProcessingResult.Success)]
+    [InlineData("10.0", "EXPOSE", false, "123", "123", ProcessingResult.None)]
+    [InlineData("10.0", "EXPOSE", false, "8080", "8080", ProcessingResult.None)]
+    [InlineData("10.0", "expose", false, "80", "8080", ProcessingResult.Success)]
+    [InlineData("10.0", "expose", true, "80", "8080", ProcessingResult.Success)]
+    [InlineData("10.0", "Expose", false, "80", "8080", ProcessingResult.Success)]
+    [InlineData("10.0", "Expose", true, "80", "8080", ProcessingResult.Success)]
+    public async Task UpgradeAsync_Upgrades_Dockerfile_Port(
+        string channel,
+        string expose,
+        bool hasComment,
+        string currentPort,
+        string expectedPort,
+        ProcessingResult expectedResult)
+    {
+        // Arrange
+        string fileContents =
+            $"""
+             FROM mcr.microsoft.com/dotnet/sdk:{channel} AS build-env
+             WORKDIR /App
+
+             COPY . ./
+             RUN dotnet restore # This is a comment with {currentPort} in it
+             RUN dotnet publish -c Release -o out
+
+             FROM mcr.microsoft.com/dotnet/aspnet:{channel}
+             WORKDIR /App
+             {expose} {currentPort}{(hasComment ? " # A comment" : string.Empty)}
+             COPY --from=build-env /App/out .
+             ENTRYPOINT ["dotnet", "DotNet.Docker.dll"]
+             """;
+
+        string expectedContents =
+            $"""
+             FROM mcr.microsoft.com/dotnet/sdk:{channel} AS build-env
+             WORKDIR /App
+
+             COPY . ./
+             RUN dotnet restore # This is a comment with {currentPort} in it
+             RUN dotnet publish -c Release -o out
+
+             FROM mcr.microsoft.com/dotnet/aspnet:{channel}
+             WORKDIR /App
+             {expose} {expectedPort}{(hasComment ? " # A comment" : string.Empty)}
+             COPY --from=build-env /App/out .
+             ENTRYPOINT ["dotnet", "DotNet.Docker.dll"]
+             """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string dockerfile = await fixture.Project.AddFileAsync("Dockerfile", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse(channel),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new($"{channel}.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(expectedResult);
+
+        string actualContent = await File.ReadAllTextAsync(dockerfile);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
 
         // Act
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
