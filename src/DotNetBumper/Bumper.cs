@@ -99,6 +99,7 @@ internal partial class Bumper(ProjectUpgrader upgrader)
             {
                 console.Write(new FigletText(".NET Bumper").Color(Color.Purple));
                 console.MarkupLineInterpolated($"[{Color.Blue}]{GetVersion()}[/]");
+                console.WriteLine();
             }
 
             var stopwatch = Stopwatch.StartNew();
