@@ -74,7 +74,16 @@ internal partial class Bumper(ProjectUpgrader upgrader)
             .UseDefaultConventions()
             .UseConstructorInjection(serviceProvider);
 
-        return await app.ExecuteAsync(args, cancellationToken);
+        try
+        {
+            return await app.ExecuteAsync(args, cancellationToken);
+        }
+        catch (UnrecognizedCommandParsingException ex)
+        {
+            console.WriteLine();
+            console.WriteWarningLine(ex.Message);
+            return 1;
+        }
     }
 
     public static string GetVersion() => ProjectUpgrader.Version;
