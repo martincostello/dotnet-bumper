@@ -10,7 +10,7 @@ public static class JsonExtensionsTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public static async void File_Encoding_Is_Retained(bool writeBom)
+    public static async Task File_Encoding_Is_Retained(bool writeBom)
     {
         // Arrange
         var path = WriteJsonToFile(writeBom);
@@ -33,7 +33,7 @@ public static class JsonExtensionsTests
 
         using var stream = File.OpenRead(path);
 
-        var parsed = JsonNode.Parse(stream)!.AsObject();
+        var parsed = (await JsonNode.ParseAsync(stream))!.AsObject();
         parsed["foo"]!.GetValue<string>().ShouldBe("bar");
     }
 

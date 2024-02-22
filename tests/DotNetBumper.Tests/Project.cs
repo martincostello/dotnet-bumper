@@ -73,6 +73,7 @@ internal sealed class Project : IDisposable
     public async Task<string> AddTestProjectAsync(
         IList<string> targetFrameworks,
         ICollection<KeyValuePair<string, string>>? packageReferences = default,
+        ICollection<string>? projectReferences = default,
         string path = "tests/Project.Tests/Project.Tests.csproj")
     {
         packageReferences ??= new Dictionary<string, string>()
@@ -82,15 +83,16 @@ internal sealed class Project : IDisposable
             ["xunit.runner.visualstudio"] = "2.5.7",
         };
 
-        return await AddProjectAsync(path, targetFrameworks, packageReferences);
+        return await AddProjectAsync(path, targetFrameworks, packageReferences, projectReferences);
     }
 
     public async Task<string> AddProjectAsync(
         string path,
         IList<string> targetFrameworks,
-        ICollection<KeyValuePair<string, string>>? packageReferences = default)
+        ICollection<KeyValuePair<string, string>>? packageReferences = default,
+        ICollection<string>? projectReferences = default)
     {
-        var project = CreateProjectXml(targetFrameworks, packageReferences);
+        var project = CreateProjectXml(targetFrameworks, packageReferences, projectReferences);
         return await AddFileAsync(path, project);
     }
 
@@ -227,7 +229,8 @@ internal sealed class Project : IDisposable
 
     private static XDocument CreateProjectXml(
         IList<string> targetFrameworks,
-        ICollection<KeyValuePair<string, string>>? packageReferences)
+        ICollection<KeyValuePair<string, string>>? packageReferences,
+        ICollection<string>? projectReferences)
     {
         string tfms = targetFrameworks.Count == 1
             ? $"<TargetFramework>{targetFrameworks[0]}</TargetFramework>"
@@ -254,6 +257,17 @@ internal sealed class Project : IDisposable
                             "PackageReference",
                             new XAttribute("Include", p.Key),
                             new XAttribute("Version", p.Value)))));
+        }
+
+        if (projectReferences?.Count > 0)
+        {
+            project.Root!.Add(
+                new XElement(
+                    "ItemGroup",
+                    projectReferences.Select((p) =>
+                        new XElement(
+                            "ProjectReference",
+                            new XAttribute("Include", p)))));
         }
 
         return project;

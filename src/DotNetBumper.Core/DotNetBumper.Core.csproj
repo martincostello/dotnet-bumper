@@ -24,6 +24,9 @@
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DotNetBumper.MSBuild\DotNetBumper.MSBuild.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="DotNetBumper.Tests" Key="$(StrongNamePublicKey)" />
   </ItemGroup>
 </Project>

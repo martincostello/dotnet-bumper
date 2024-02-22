@@ -10,8 +10,10 @@ namespace MartinCostello.DotNetBumper;
 /// <param name="ExitCode">The exit code from the process.</param>
 /// <param name="StandardOutput">The standard output from the process.</param>
 /// <param name="StandardError">The standard error from the process.</param>
+/// <param name="LogEntries">The errors and warnings logged by the process.</param>
 public sealed record DotNetResult(
     bool Success,
     int ExitCode,
     string StandardOutput,
-    string StandardError);
+    string StandardError,
+    IList<BumperLogEntry> LogEntries);

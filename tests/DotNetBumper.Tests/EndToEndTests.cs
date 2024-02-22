@@ -161,19 +161,12 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         string sdkVersion = "6.0.100";
         string[] targetFrameworks = ["net6.0"];
 
-        var testPackages = new Dictionary<string, string>()
-        {
-            ["Microsoft.NET.Test.Sdk"] = "17.9.0",
-            ["xunit"] = "2.7.0",
-            ["xunit.runner.visualstudio"] = "2.5.7",
-        };
-
         using var fixture = new UpgraderFixture(outputHelper);
 
         await fixture.Project.AddSolutionAsync("Project.sln");
         await fixture.Project.AddGlobalJsonAsync(sdkVersion);
         await fixture.Project.AddApplicationProjectAsync(targetFrameworks);
-        await fixture.Project.AddTestProjectAsync(targetFrameworks, testPackages);
+        await fixture.Project.AddTestProjectAsync(targetFrameworks);
         await fixture.Project.AddUnitTestsAsync("Always_Fails_Test", "Assert.True(false);");
 
         List<string> args = [];
@@ -213,6 +206,55 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         // Assert
         actual.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(true, 1)]
+    public async Task Application_Behaves_Correctly_If_Tests_Fail_Due_To_Build_Errors(
+        bool treatWarningsAsErrors,
+        int expected)
+    {
+        // Arrange
+        string sdkVersion = "6.0.100";
+        string[] targetFrameworks = ["net6.0"];
+
+        using var fixture = new UpgraderFixture(outputHelper);
+        fixture.Project.AddGitRepository();
+
+        await fixture.Project.AddGitIgnoreAsync();
+        await fixture.Project.AddSolutionAsync("Project.sln");
+        await fixture.Project.AddGlobalJsonAsync(sdkVersion);
+
+        string project = await fixture.Project.AddApplicationProjectAsync(targetFrameworks);
+
+        string brokenCode =
+            """
+            // Missing using System;
+            Console.WriteLine("Hello, World!");
+            """;
+
+        await fixture.Project.AddFileAsync("src/Project/Program.cs", brokenCode);
+
+        await fixture.Project.AddTestProjectAsync(targetFrameworks, projectReferences: [project]);
+        await fixture.Project.AddUnitTestsAsync();
+
+        List<string> args = ["--test"];
+
+        if (treatWarningsAsErrors)
+        {
+            args.Add("--warnings-as-errors");
+        }
+
+        // Act
+        int actual = await Bumper.RunAsync(
+            fixture.Console,
+            [fixture.Project.DirectoryName, "--verbose", .. args],
+            (builder) => builder.AddXUnit(fixture),
+            CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(expected);
     }
 
     [Fact]

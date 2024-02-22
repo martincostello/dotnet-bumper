@@ -100,8 +100,8 @@ internal sealed partial class LeftoverReferencesPostProcessor(
             Title = new TableTitle($"Remaining References - {references.Sum((p) => p.Value.Count)}"),
         };
 
-        table.AddColumn("Location");
-        table.AddColumn("Match");
+        table.AddColumn("[bold]Location[/]");
+        table.AddColumn("[bold]Match[/]");
 
         foreach ((var file, var values) in references.OrderBy((p) => p.Key.RelativePath))
         {
