@@ -134,7 +134,7 @@ internal sealed partial class DotNetTestPostProcessor(
             foreach (var entries in group.GroupBy((p) => p.Id))
             {
                 var helpLink = entries
-                    .Where((p) => !string.IsNullOrEmpty(p.HelpLink))
+                    .Where((p) => !string.IsNullOrWhiteSpace(p.HelpLink))
                     .Select((p) => p.HelpLink)
                     .FirstOrDefault();
 
