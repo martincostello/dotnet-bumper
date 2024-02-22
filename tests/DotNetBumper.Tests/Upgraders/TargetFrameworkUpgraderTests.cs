@@ -10,7 +10,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
 {
     public static TheoryData<string, string, bool, string, string, string> TargetFrameworks()
     {
-        string[] channels = ["7.0", "8.0", "9.0"];
+        string[] channels = ["7.0", "8.0", "9.0", "10.0"];
         string[] fileNames = ["Directory.Build.props", "src/MyProject.csproj", "src/MyProject.fsproj"];
 
         var testCases = new TheoryData<string, string, bool, string, string, string>();

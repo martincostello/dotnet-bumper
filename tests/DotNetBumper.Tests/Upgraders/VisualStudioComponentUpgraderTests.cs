@@ -9,9 +9,7 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
 {
     [Theory]
-    [InlineData("7.0")]
-    [InlineData("8.0")]
-    [InlineData("9.0")]
+    [ClassData(typeof(DotNetChannelTestData))]
     public async Task UpgradeAsync_Upgrades_Component_Configuration(string channel)
     {
         // Arrange
