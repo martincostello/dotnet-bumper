@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 
@@ -29,9 +28,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<VisualStudioCodeUpgrader>();
-        var target = new VisualStudioCodeUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -96,15 +93,100 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<VisualStudioCodeUpgrader>();
-        var target = new VisualStudioCodeUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Updates_Tfm_Properties()
+    {
+        // Arrange
+        string fileContents =
+            """
+            {
+              "configurations": [
+                {
+                  "program": "net6.0"
+                },
+                {
+                  "program": "${workspaceFolder}/net6.0"
+                },
+                {
+                  "program": "net6.0/Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}/src/Project/bin/Debug/net6.0/Project.dll"
+                },
+                {
+                  "program": "./net6.0/Project.dll",
+                },
+                {
+                  "program": "${workspaceFolder}/src/Project/bin/Debug/netcoreapp3.1/Project.dll"
+                }
+              ]
+            }
+            """;
+
+        string expectedContent =
+            """
+            {
+              "configurations": [
+                {
+                  "program": "net10.0"
+                },
+                {
+                  "program": "${workspaceFolder}/net10.0"
+                },
+                {
+                  "program": "net10.0/Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}/src/Project/bin/Debug/net10.0/Project.dll"
+                },
+                {
+                  "program": "./net10.0/Project.dll",
+                },
+                {
+                  "program": "${workspaceFolder}/src/Project/bin/Debug/net10.0/Project.dll"
+                }
+              ]
+            }
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string filePath = await fixture.Project.AddFileAsync(".vscode/launch.json", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse("10.0"),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("10.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(filePath);
+        actualContent.ShouldBe(expectedContent);
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
     [Theory]
@@ -145,7 +227,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         var encoding = new UTF8Encoding(bom);
-        string dockerfile = await fixture.Project.AddFileAsync(".vscode/launch.json", fileContents, encoding);
+        string filePath = await fixture.Project.AddFileAsync(".vscode/launch.json", fileContents, encoding);
 
         var upgrade = new UpgradeInfo()
         {
@@ -156,9 +238,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<VisualStudioCodeUpgrader>();
-        var target = new VisualStudioCodeUpgrader(fixture.Console, options, logger);
+        var target = CreateTarget(fixture);
 
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -166,10 +246,10 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(dockerfile);
+        string actualContent = await File.ReadAllTextAsync(filePath);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(dockerfile);
+        byte[] actualBytes = await File.ReadAllBytesAsync(filePath);
 
         if (bom)
         {
@@ -185,5 +265,12 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    private VisualStudioCodeUpgrader CreateTarget(UpgraderFixture fixture)
+    {
+        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
+        var logger = outputHelper.ToLogger<VisualStudioCodeUpgrader>();
+        return new VisualStudioCodeUpgrader(fixture.Console, options, logger);
     }
 }
