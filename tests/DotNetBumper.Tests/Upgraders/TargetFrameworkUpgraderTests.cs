@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Text;
 using System.Xml.Linq;
 using Microsoft.Extensions.Options;
 
@@ -8,21 +9,24 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
 {
-    public static TheoryData<string, string, string, string, string> TargetFrameworks()
+    public static TheoryData<string, string, bool, string, string, string> TargetFrameworks()
     {
         string[] channels = ["7.0", "8.0", "9.0"];
         string[] fileNames = ["Directory.Build.props", "src/MyProject.csproj", "src/MyProject.fsproj"];
 
-        var testCases = new TheoryData<string, string, string, string, string>();
+        var testCases = new TheoryData<string, string, bool, string, string, string>();
 
         foreach (var channel in channels)
         {
             foreach (var fileName in fileNames)
             {
-                testCases.Add(channel, fileName, "DefaultTargetFramework", "net6.0", $"net{channel}");
-                testCases.Add(channel, fileName, "TargetFramework", "net6.0", $"net{channel}");
-                testCases.Add(channel, fileName, "TargetFrameworks", "net5.0;net6.0", $"net5.0;net6.0;net{channel}");
-                testCases.Add(channel, fileName, "TargetFrameworks", "net5.0;;;;net6.0", $"net5.0;;;;net6.0;net{channel}");
+                foreach (var hasByteOrderMark in new[] { false, true })
+                {
+                    testCases.Add(channel, fileName, hasByteOrderMark, "DefaultTargetFramework", "net6.0", $"net{channel}");
+                    testCases.Add(channel, fileName, hasByteOrderMark, "TargetFramework", "net6.0", $"net{channel}");
+                    testCases.Add(channel, fileName, hasByteOrderMark, "TargetFrameworks", "net5.0;net6.0", $"net5.0;net6.0;net{channel}");
+                    testCases.Add(channel, fileName, hasByteOrderMark, "TargetFrameworks", "net5.0;;;;net6.0", $"net5.0;;;;net6.0;net{channel}");
+                }
             }
         }
 
@@ -34,6 +38,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Upgrades_Properties(
         string channel,
         string fileName,
+        bool hasByteOrderMark,
         string propertyName,
         string propertyValue,
         string expectedValue)
@@ -50,7 +55,8 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string projectFile = await fixture.Project.AddFileAsync(fileName, fileContents);
+        var encoding = new UTF8Encoding(hasByteOrderMark);
+        string projectFile = await fixture.Project.AddFileAsync(fileName, fileContents, encoding);
 
         var upgrade = new UpgradeInfo()
         {
@@ -71,7 +77,18 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(projectFile);
+        using (var stream = File.OpenRead(projectFile))
+        {
+            var bom = Encoding.UTF8.GetPreamble();
+            var buffer = new byte[bom.Length];
+
+            await stream.ReadExactlyAsync(buffer, 0, buffer.Length);
+
+            bom.Length.ShouldBeGreaterThan(0);
+            bom.SequenceEqual(buffer).ShouldBe(hasByteOrderMark);
+        }
+
+        string actualContent = await File.ReadAllTextAsync(projectFile, encoding);
 
         var xml = await fixture.Project.GetFileAsync(projectFile);
         var project = XDocument.Parse(xml);

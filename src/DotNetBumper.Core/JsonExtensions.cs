@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -46,7 +45,14 @@ internal static class JsonExtensions
         JsonWriterOptions options,
         CancellationToken cancellationToken)
     {
-        using var stream = File.OpenWrite(path);
+        using var stream = FileHelpers.OpenWrite(path, out var metadata);
+
+        if (metadata.Encoding.Preamble.Length > 0)
+        {
+            stream.Write(metadata.Encoding.Preamble);
+        }
+
+        // JsonWriterOptions does not currently support a custom NewLine character
         using var writer = new Utf8JsonWriter(stream, options);
 
         node.WriteTo(writer);

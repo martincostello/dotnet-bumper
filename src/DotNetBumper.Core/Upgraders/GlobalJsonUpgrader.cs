@@ -55,7 +55,9 @@ internal sealed partial class GlobalJsonUpgrader(
 
                 json = json.Replace($@"""{currentVersion}""", $@"""{upgrade.SdkVersion}""", StringComparison.Ordinal);
 
-                await File.WriteAllTextAsync(path, json, cancellationToken);
+                FileMetadata metadata = FileHelpers.GetMetadata(path);
+
+                await File.WriteAllTextAsync(path, json, metadata.Encoding, cancellationToken);
 
                 Log.UpgradedDotNetSdk(
                     logger,

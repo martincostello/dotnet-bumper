@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
@@ -38,7 +37,7 @@ internal sealed partial class TargetFrameworkUpgrader(
 
             context.Status = StatusMessage($"Parsing {name}...");
 
-            (var project, var encoding) = await LoadProjectAsync(filePath, cancellationToken);
+            (var project, var metadata) = await LoadProjectAsync(filePath, cancellationToken);
 
             if (project is null || project.Root is null)
             {
@@ -76,13 +75,14 @@ internal sealed partial class TargetFrameworkUpgrader(
                 {
                     Async = true,
                     Indent = true,
+                    NewLineChars = metadata?.NewLine ?? Environment.NewLine,
                     OmitXmlDeclaration = true,
                 };
 
                 await File.WriteAllTextAsync(
                     filePath,
                     xml,
-                    encoding ?? Encoding.UTF8,
+                    metadata?.Encoding ?? Encoding.UTF8,
                     cancellationToken);
 
                 result = result.Max(ProcessingResult.Success);
@@ -135,17 +135,17 @@ internal sealed partial class TargetFrameworkUpgrader(
         return validTfms > 0;
     }
 
-    private async Task<(XDocument? Project, Encoding? Encoding)> LoadProjectAsync(
+    private async Task<(XDocument? Project, FileMetadata? Metadata)> LoadProjectAsync(
         string filePath,
         CancellationToken cancellationToken)
     {
-        using var stream = File.OpenRead(filePath);
-        using var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
+        using var stream = FileHelpers.OpenRead(filePath, out var metadata);
+        using var reader = new StreamReader(stream, metadata.Encoding);
 
         try
         {
             var project = await XDocument.LoadAsync(reader, LoadOptions.PreserveWhitespace, cancellationToken);
-            return (project, reader.CurrentEncoding);
+            return (project, metadata);
         }
         catch (Exception ex)
         {
