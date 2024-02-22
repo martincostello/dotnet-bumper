@@ -82,7 +82,7 @@ internal sealed partial class PackageVersionUpgrader(
 
     private async Task TryRestoreNuGetPackagesAsync(string directory, CancellationToken cancellationToken)
     {
-        var result = await dotnet.RunAsync(
+        var result = await dotnet.RunWithLoggerAsync(
             directory,
             ["restore", "--verbosity", "quiet"],
             cancellationToken);
@@ -207,24 +207,5 @@ internal sealed partial class PackageVersionUpgrader(
 
         public void Dispose()
             => File.Move(_temporary, _original, overwrite: true);
-    }
-
-    private sealed class TemporaryFile : IDisposable
-    {
-        public string Path { get; } = System.IO.Path.GetTempFileName();
-
-        public void Dispose()
-        {
-            try
-            {
-                File.Delete(Path);
-            }
-            catch (Exception)
-            {
-                // Ignore
-            }
-        }
-
-        public bool Exists() => File.Exists(Path);
     }
 }

@@ -24,3 +24,5 @@ updates:
   reviewers:
     - "martincostello"
   open-pull-requests-limit: 99
+  ignore:
+    - dependency-name: "Microsoft.Build.Utilities.Core"

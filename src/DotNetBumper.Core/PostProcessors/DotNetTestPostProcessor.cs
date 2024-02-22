@@ -73,6 +73,11 @@ internal sealed partial class DotNetTestPostProcessor(
                     Console.WriteLine();
                     Console.WriteProgressLine(result.StandardOutput);
                 }
+
+                if (result.LogEntries.Count > 0)
+                {
+                    WriteErrorsAndWarnings(result.LogEntries);
+                }
             }
 
             return result.Success ? ProcessingResult.Success : ProcessingResult.Warning;
@@ -89,7 +94,7 @@ internal sealed partial class DotNetTestPostProcessor(
             string name = ProjectHelpers.RelativeName(Options.ProjectPath, project);
             context.Status = StatusMessage($"Running tests for {name}...");
 
-            var result = await dotnet.RunAsync(
+            var result = await dotnet.RunWithLoggerAsync(
                 project,
                 ["test", "--nologo", "--verbosity", "quiet"],
                 cancellationToken);
@@ -100,6 +105,55 @@ internal sealed partial class DotNetTestPostProcessor(
             }
         }
 
-        return new(true, 0, string.Empty, string.Empty);
+        return new(true, 0, string.Empty, string.Empty, []);
+    }
+
+    private void WriteErrorsAndWarnings(IList<BumperLogEntry> logEntries)
+    {
+        var table = new Table
+        {
+            Title = new TableTitle($"Errors and warnings"),
+        };
+
+        table.AddColumn("[bold]Type[/]");
+        table.AddColumn("[bold]Id[/]");
+        table.AddColumn("[bold]Count[/]");
+
+        foreach (var group in logEntries.GroupBy((p) => p.Type))
+        {
+            var color = group.Key switch
+            {
+                "Error" => Color.Red,
+                "Warning" => Color.Yellow,
+                _ => Color.Blue,
+            };
+
+            var typeEscaped = group.Key.EscapeMarkup();
+            var type = new Markup($"[{color}]{typeEscaped}[/]");
+
+            foreach (var entries in group.GroupBy((p) => p.Id))
+            {
+                var helpLink = entries
+                    .Where((p) => !string.IsNullOrEmpty(p.HelpLink))
+                    .Select((p) => p.HelpLink)
+                    .FirstOrDefault();
+
+                string idMarkup = entries.Key.EscapeMarkup();
+
+                if (!string.IsNullOrEmpty(helpLink))
+                {
+                    string linkEscaped = helpLink.EscapeMarkup();
+                    idMarkup = $"[link={linkEscaped}]{idMarkup}[/]";
+                }
+
+                var id = new Markup(idMarkup);
+                var count = new Markup(entries.Count().ToString(CultureInfo.CurrentCulture)).RightJustified();
+
+                table.AddRow(type, id, count);
+            }
+        }
+
+        Console.Write(table);
+        Console.WriteLine();
     }
 }

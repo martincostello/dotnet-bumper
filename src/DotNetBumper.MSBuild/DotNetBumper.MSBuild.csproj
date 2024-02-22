@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>A library containing the MSBuild integration for .NET Bumper.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>false</IsPackable>
+    <OutputType>Library</OutputType>
+    <PackageId>MartinCostello.DotNetBumper.MSBuild</PackageId>
+    <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
+    <Summary>$(Description)</Summary>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Title>$(PackageId)</Title>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="DotNetBumper.Tests" Key="$(StrongNamePublicKey)" />
+  </ItemGroup>
+</Project>
