@@ -40,6 +40,22 @@ internal sealed class Project : IDisposable
     public async Task<string> GetFileAsync(string path)
         => await File.ReadAllTextAsync(GetFilePath(path));
 
+    public async Task AddGitIgnoreAsync(string? gitignore = null)
+    {
+        gitignore ??=
+            """
+            bin
+            obj
+            """;
+
+        await AddFileAsync(".gitignore", gitignore);
+    }
+
+    public void AddGitRepository()
+    {
+        Directory.CreateDirectory(Path.Combine(DirectoryName, ".git"));
+    }
+
     public async Task<string> AddGlobalJsonAsync(string sdkVersion, string path = "global.json")
     {
         var globalJson = CreateGlobalJson(sdkVersion);
