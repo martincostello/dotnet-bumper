@@ -112,6 +112,7 @@ public partial class ProjectUpgrader(
         {
             console.WriteLine();
             console.WriteWarningLine("One or more upgrade steps produced a warning.");
+            console.WriteLine();
         }
 
         if (result is ProcessingResult.Success or ProcessingResult.Warning)

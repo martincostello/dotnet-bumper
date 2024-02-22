@@ -2,26 +2,27 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.RegularExpressions;
-using NuGet.Versioning;
 
 namespace MartinCostello.DotNetBumper;
 
 internal static partial class VersionExtensions
 {
+    private const string TfmPattern = "net(coreapp)?[1-9]+\\.[0-9]{1}";
+
     public static bool IsTargetFrameworkMoniker(this string value)
         => TargetFrameworkMoniker().IsMatch(value);
 
     public static bool IsTargetFrameworkMoniker(this ReadOnlySpan<char> value)
         => TargetFrameworkMoniker().IsMatch(value);
 
+    public static MatchCollection MatchTargetFrameworkMonikers(this string value)
+        => ContainsTargetFrameworkMoniker().Matches(value);
+
     public static string ToLambdaRuntime(this Version version)
         => $"dotnet{version.ToString(1)}";
 
     public static string ToTargetFramework(this Version version)
         => $"net{version.ToString(2)}";
-
-    public static string ToTargetFramework(this NuGetVersion version)
-        => $"net{version.Major}.{version.Minor}";
 
     public static Version? ToVersionFromLambdaRuntime(this string runtime)
         => runtime.AsSpan().ToVersionFromLambdaRuntime();
@@ -69,6 +70,9 @@ internal static partial class VersionExtensions
         return null;
     }
 
-    [GeneratedRegex("^net(coreapp)?[1-9]+\\.[0-9]{1}$")]
+    [GeneratedRegex($"(?<!dot){TfmPattern}")]
+    private static partial Regex ContainsTargetFrameworkMoniker();
+
+    [GeneratedRegex($"^{TfmPattern}$")]
     private static partial Regex TargetFrameworkMoniker();
 }

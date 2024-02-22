@@ -37,6 +37,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
+        fixture.Project.AddGitRepository();
+        await fixture.Project.AddGitIgnoreAsync();
+
         await fixture.Project.AddSolutionAsync("Project.sln");
         await fixture.Project.AddToolManifestAsync();
 

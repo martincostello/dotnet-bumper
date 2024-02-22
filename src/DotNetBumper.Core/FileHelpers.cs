@@ -9,6 +9,46 @@ internal static class FileHelpers
 {
     private static readonly Encoding UTF8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
+    public static string? FindDirectoryInProject(string path, string relativePath)
+    {
+        var directory = new DirectoryInfo(path);
+
+        do
+        {
+            var directoryName = Path.Combine(directory.FullName, relativePath);
+
+            if (Directory.Exists(directoryName))
+            {
+                return directoryName;
+            }
+
+            directory = directory.Parent;
+        }
+        while (directory is not null);
+
+        return null;
+    }
+
+    public static string? FindFileInProject(string path, string relativePath)
+    {
+        var directory = new DirectoryInfo(path);
+
+        do
+        {
+            var fileName = Path.Combine(directory.FullName, relativePath);
+
+            if (File.Exists(fileName))
+            {
+                return fileName;
+            }
+
+            directory = directory.Parent;
+        }
+        while (directory is not null);
+
+        return null;
+    }
+
     public static FileMetadata GetMetadata(string path)
     {
         using (FileHelpers.OpenRead(path, out var metadata))

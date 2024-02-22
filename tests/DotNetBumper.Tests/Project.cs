@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Text;
 using System.Xml.Linq;
 
 namespace MartinCostello.DotNetBumper;
@@ -40,6 +39,22 @@ internal sealed class Project : IDisposable
 
     public async Task<string> GetFileAsync(string path)
         => await File.ReadAllTextAsync(GetFilePath(path));
+
+    public async Task AddGitIgnoreAsync(string? gitignore = null)
+    {
+        gitignore ??=
+            """
+            bin
+            obj
+            """;
+
+        await AddFileAsync(".gitignore", gitignore);
+    }
+
+    public void AddGitRepository()
+    {
+        Directory.CreateDirectory(Path.Combine(DirectoryName, ".git"));
+    }
 
     public async Task<string> AddGlobalJsonAsync(string sdkVersion, string path = "global.json")
     {

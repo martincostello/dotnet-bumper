@@ -55,45 +55,24 @@ internal sealed partial class PackageVersionUpgrader(
 
     private static HiddenFile? TryHideGlobalJson(string path)
     {
-        var directory = new DirectoryInfo(path);
+        var globalJson = FileHelpers.FindFileInProject(path, "global.json");
 
-        do
+        if (globalJson != null)
         {
-            var globalJson = Directory.EnumerateFiles(directory.FullName, "global.json").FirstOrDefault();
-
-            if (globalJson != null)
-            {
-                return new HiddenFile(globalJson);
-            }
-
-            directory = directory.Parent;
+            return new HiddenFile(globalJson);
         }
-        while (directory is not null);
 
         return null;
     }
 
     private static HiddenFile? TryDotNetToolManifest(string path)
     {
-        var directory = new DirectoryInfo(path);
+        var toolManifest = FileHelpers.FindFileInProject(path, Path.Join(".config", "dotnet-tools.json"));
 
-        do
+        if (toolManifest != null)
         {
-            var configPath = Path.Combine(directory.FullName, ".config");
-
-            if (Directory.Exists(configPath))
-            {
-                var toolManifest = Directory.EnumerateFiles(configPath, "dotnet-tools.json").FirstOrDefault();
-
-                if (toolManifest != null)
-                {
-                    return new HiddenFile(toolManifest);
-                }
-            }
-
-            directory = directory.Parent;
+            return new HiddenFile(toolManifest);
         }
-        while (directory is not null);
 
         return null;
     }
