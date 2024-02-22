@@ -78,7 +78,7 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddPostProcessors(this IServiceCollection services)
     {
         services.AddSingleton<IPostProcessor, DotNetTestPostProcessor>();
-        services.AddSingleton<IPostProcessor, RemainingTargetFrameworksPostProcessor>();
+        services.AddSingleton<IPostProcessor, LeftoverReferencesPostProcessor>();
 
         return services;
     }

@@ -9,14 +9,14 @@ using GitIgnore = Ignore.Ignore;
 
 namespace MartinCostello.DotNetBumper.PostProcessors;
 
-internal sealed partial class RemainingTargetFrameworksPostProcessor(
+internal sealed partial class LeftoverReferencesPostProcessor(
     IAnsiConsole console,
     IOptions<UpgradeOptions> options,
-    ILogger<RemainingTargetFrameworksPostProcessor> logger) : PostProcessor(console, options, logger)
+    ILogger<LeftoverReferencesPostProcessor> logger) : PostProcessor(console, options, logger)
 {
-    protected override string Action => "Running tests";
+    protected override string Action => "Find leftover references";
 
-    protected override string InitialStatus => "Test project";
+    protected override string InitialStatus => "Search files";
 
     protected override async Task<ProcessingResult> PostProcessCoreAsync(
         UpgradeInfo upgrade,
@@ -67,11 +67,11 @@ internal sealed partial class RemainingTargetFrameworksPostProcessor(
         {
             var table = new Table
             {
-                Title = new TableTitle("Remaining Target Framework References"),
+                Title = new TableTitle("Remaining References"),
             };
 
             table.AddColumn("Location");
-            table.AddColumn(new TableColumn("Match").RightAligned());
+            table.AddColumn("Match");
 
             foreach ((var file, var values) in references.OrderBy((p) => p.Key.RelativePath))
             {
@@ -81,6 +81,7 @@ internal sealed partial class RemainingTargetFrameworksPostProcessor(
                 }
             }
 
+            Console.WriteLine();
             Console.Write(table);
         }
 
