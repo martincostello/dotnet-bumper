@@ -22,13 +22,21 @@ public sealed class BumperLogger : Logger
 
     /// <inheritdoc />
     public override void Initialize(IEventSource eventSource)
-    {
-        _logFilePath = Environment.GetEnvironmentVariable(LoggerFilePathVariableName);
+        => Initialize(eventSource, Environment.GetEnvironmentVariable(LoggerFilePathVariableName));
 
-        if (string.IsNullOrWhiteSpace(_logFilePath))
+    /// <summary>
+    /// Initializes the logger with the specified event source and log file path.
+    /// </summary>
+    /// <param name="eventSource">The <see cref="IEventSource"/> to use.</param>
+    /// <param name="logFilePath">The path of the log file to use.</param>
+    public void Initialize(IEventSource eventSource, string logFilePath)
+    {
+        if (string.IsNullOrWhiteSpace(logFilePath))
         {
             throw new InvalidOperationException($"The {LoggerFilePathVariableName} environment variable has no value set.");
         }
+
+        _logFilePath = logFilePath;
 
         eventSource.ErrorRaised += OnErrorRaised;
         eventSource.WarningRaised += OnWarningRaised;
