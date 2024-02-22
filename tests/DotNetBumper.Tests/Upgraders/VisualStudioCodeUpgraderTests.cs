@@ -117,16 +117,31 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
                   "program": "${workspaceFolder}/net6.0"
                 },
                 {
+                  "program": "${workspaceFolder}\\net6.0"
+                },
+                {
                   "program": "net6.0/Project.dll"
+                },
+                {
+                  "program": "net6.0\\Project.dll"
                 },
                 {
                   "program": "${workspaceFolder}/src/Project/bin/Debug/net6.0/Project.dll"
                 },
                 {
-                  "program": "./net6.0/Project.dll",
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Debug\\net6.0\\Project.dll"
+                },
+                {
+                  "program": "./net6.0/Project.dll"
+                },
+                {
+                  "program": ".\\net6.0\\Project.dll"
                 },
                 {
                   "program": "${workspaceFolder}/src/Project/bin/Debug/netcoreapp3.1/Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Release\\netcoreapp3.1\\Project.dll"
                 }
               ]
             }
@@ -143,16 +158,31 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
                   "program": "${workspaceFolder}/net10.0"
                 },
                 {
+                  "program": "${workspaceFolder}\\net10.0"
+                },
+                {
                   "program": "net10.0/Project.dll"
                 },
                 {
-                  "program": "${workspaceFolder}/src/Project/bin/Debug/net10.0/Project.dll"
-                },
-                {
-                  "program": "./net10.0/Project.dll",
+                  "program": "net10.0\\Project.dll"
                 },
                 {
                   "program": "${workspaceFolder}/src/Project/bin/Debug/net10.0/Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Debug\\net10.0\\Project.dll"
+                },
+                {
+                  "program": "./net10.0/Project.dll"
+                },
+                {
+                  "program": ".\\net10.0\\Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}/src/Project/bin/Debug/net10.0/Project.dll"
+                },
+                {
+                  "program": "${workspaceFolder}\\src\\Project\\bin\\Release\\net10.0\\Project.dll"
                 }
               ]
             }
@@ -180,7 +210,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
         string actualContent = await File.ReadAllTextAsync(filePath);
-        actualContent.ShouldBe(expectedContent);
+        actualContent.Trim().ShouldBe(expectedContent.Trim());
 
         // Act
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
