@@ -11,6 +11,7 @@
     <Title>MartinCostello.DotNetBumper.Core</Title>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Ignore" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />

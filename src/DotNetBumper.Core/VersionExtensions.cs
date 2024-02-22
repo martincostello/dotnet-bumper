@@ -8,11 +8,16 @@ namespace MartinCostello.DotNetBumper;
 
 internal static partial class VersionExtensions
 {
+    private const string TfmPattern = "net(coreapp)?[1-9]+\\.[0-9]{1}";
+
     public static bool IsTargetFrameworkMoniker(this string value)
         => TargetFrameworkMoniker().IsMatch(value);
 
     public static bool IsTargetFrameworkMoniker(this ReadOnlySpan<char> value)
         => TargetFrameworkMoniker().IsMatch(value);
+
+    public static MatchCollection MatchTargetFrameworkMonikers(this string value)
+        => ContainsTargetFrameworkMoniker().Matches(value);
 
     public static string ToLambdaRuntime(this Version version)
         => $"dotnet{version.ToString(1)}";
@@ -69,6 +74,9 @@ internal static partial class VersionExtensions
         return null;
     }
 
-    [GeneratedRegex("^net(coreapp)?[1-9]+\\.[0-9]{1}$")]
+    [GeneratedRegex($"(?!dot){TfmPattern}")]
+    private static partial Regex ContainsTargetFrameworkMoniker();
+
+    [GeneratedRegex($"^{TfmPattern}")]
     private static partial Regex TargetFrameworkMoniker();
 }
