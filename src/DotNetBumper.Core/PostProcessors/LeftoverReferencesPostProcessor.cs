@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,17 +19,40 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
     protected override string InitialStatus => "Search files";
 
-    protected override async Task<ProcessingResult> PostProcessCoreAsync(
-        UpgradeInfo upgrade,
-        StatusContext context,
+    internal static async Task<List<PotentialFileEdit>> FindReferencesAsync(
+        ProjectFile file,
+        Version channel,
         CancellationToken cancellationToken)
+    {
+        int lineNumber = 0;
+        var result = new List<PotentialFileEdit>();
+
+        foreach (var line in await File.ReadAllLinesAsync(file.FullPath, cancellationToken))
+        {
+            lineNumber++;
+
+            IList<Match> matches = line.MatchTargetFrameworkMonikers();
+
+            foreach (var match in matches)
+            {
+                if (match.ValueSpan.ToVersionFromTargetFramework() is { } version && version < channel)
+                {
+                    result.Add(new(lineNumber, match.Index + 1, match.Value));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    internal async IAsyncEnumerable<ProjectFile> EnumerateProjectFilesAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
         var gitignore = await LoadGitIgnoreAsync(cancellationToken);
 
-        var references = new Dictionary<FileWithPotentialEdits, List<PotentialFileEdit>>();
-
         foreach (var path in Directory.EnumerateFiles(Options.ProjectPath, "*", SearchOption.AllDirectories))
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var relativePath = RelativeName(path).Replace('\\', '/');
 
             if (gitignore?.IsIgnored(relativePath) is true)
@@ -36,60 +60,61 @@ internal sealed partial class LeftoverReferencesPostProcessor(
                 continue;
             }
 
-            context.Status = StatusMessage($"Searching {relativePath}...");
+            yield return new(path, relativePath);
+        }
+    }
 
-            int lineNumber = 0;
-            var fileReferences = new List<PotentialFileEdit>();
+    protected override async Task<ProcessingResult> PostProcessCoreAsync(
+        UpgradeInfo upgrade,
+        StatusContext context,
+        CancellationToken cancellationToken)
+    {
+        var references = new Dictionary<ProjectFile, List<PotentialFileEdit>>();
 
-            foreach (var line in await File.ReadAllLinesAsync(path, cancellationToken))
-            {
-                lineNumber++;
+        await foreach (var file in EnumerateProjectFilesAsync(cancellationToken).WithCancellation(cancellationToken))
+        {
+            context.Status = StatusMessage($"Searching {file.RelativePath}...");
 
-                IList<Match> matches = line.MatchTargetFrameworkMonikers();
-
-                if (matches.Count is not 0)
-                {
-                    foreach (var match in matches)
-                    {
-                        if (match.ValueSpan.ToVersionFromTargetFramework() is { } version && version < upgrade.Channel)
-                        {
-                            fileReferences.Add(new(lineNumber, match.Index + 1, match.Value));
-                        }
-                    }
-                }
-            }
+            var fileReferences = await FindReferencesAsync(file, upgrade.Channel, cancellationToken);
 
             if (fileReferences.Count > 0)
             {
-                references[new(path, relativePath)] = fileReferences;
+                references[file] = fileReferences;
             }
         }
 
         if (references.Count > 0)
         {
-            var table = new Table
-            {
-                Title = new TableTitle($"Remaining References - {references.Sum((p) => p.Value.Count)}"),
-            };
-
-            table.AddColumn("Location");
-            table.AddColumn("Match");
-
-            foreach ((var file, var values) in references.OrderBy((p) => p.Key.RelativePath))
-            {
-                foreach (var item in values)
-                {
-                    table.AddRow(Location(file, item), Match(item.Text));
-                }
-            }
-
-            Console.WriteLine();
-            Console.Write(table);
+            RenderTable(Console, references);
         }
 
         return ProcessingResult.Success;
+    }
 
-        static Markup Location(FileWithPotentialEdits file, PotentialFileEdit edit)
+    private static void RenderTable(
+        IAnsiConsole console,
+        Dictionary<ProjectFile, List<PotentialFileEdit>> references)
+    {
+        var table = new Table
+        {
+            Title = new TableTitle($"Remaining References - {references.Sum((p) => p.Value.Count)}"),
+        };
+
+        table.AddColumn("Location");
+        table.AddColumn("Match");
+
+        foreach ((var file, var values) in references.OrderBy((p) => p.Key.RelativePath))
+        {
+            foreach (var item in values)
+            {
+                table.AddRow(Location(file, item), Match(item.Text));
+            }
+        }
+
+        console.WriteLine();
+        console.Write(table);
+
+        static Markup Location(ProjectFile file, PotentialFileEdit edit)
         {
             string location = VisualStudioCodeLink(file, edit);
             string path = $"{file.RelativePath.EscapeMarkup()}:{edit.Line}";
@@ -99,11 +124,11 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
         static Markup Match(string text) => new($"[{Color.Yellow}]{text.EscapeMarkup()}[/]");
 
-        static string VisualStudioCodeLink(FileWithPotentialEdits file, PotentialFileEdit? edit = null)
+        static string VisualStudioCodeLink(ProjectFile file, PotentialFileEdit? edit = null)
         {
             // See https://code.visualstudio.com/docs/editor/command-line#_opening-vs-code-with-urls
             var builder = new StringBuilder("vscode://file/")
-                .Append(file.Path.Replace('\\', '/').EscapeMarkup());
+                .Append(file.FullPath.Replace('\\', '/').EscapeMarkup());
 
             if (edit is not null)
             {
@@ -119,14 +144,17 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
     private async Task<GitIgnore?> LoadGitIgnoreAsync(CancellationToken cancellationToken)
     {
-        var gitDirectory = FileHelpers.FindDirectoryInProject(Options.ProjectPath, ".git");
+        const string GitDirectory = ".git";
+        const string GitIgnoreFile = ".gitignore";
+
+        var gitDirectory = FileHelpers.FindDirectoryInProject(Options.ProjectPath, GitDirectory);
 
         if (gitDirectory is null)
         {
             return null;
         }
 
-        var gitignore = Path.GetFullPath(Path.Combine(gitDirectory, "..", ".gitignore"));
+        var gitignore = Path.GetFullPath(Path.Combine(gitDirectory, "..", GitIgnoreFile));
 
         if (!File.Exists(gitignore))
         {
@@ -134,17 +162,13 @@ internal sealed partial class LeftoverReferencesPostProcessor(
         }
 
         var ignore = new GitIgnore();
-        ignore.Add(".git");
+        ignore.Add(GitDirectory);
 
-        foreach (var entry in await File.ReadAllLinesAsync(gitignore, cancellationToken))
+        foreach (var rule in await File.ReadAllLinesAsync(gitignore, cancellationToken))
         {
-            ignore.Add(entry);
+            ignore.Add(rule);
         }
 
         return ignore;
     }
-
-    private sealed record FileWithPotentialEdits(string Path, string RelativePath);
-
-    private sealed record PotentialFileEdit(int Line, int Column, string Text);
 }
