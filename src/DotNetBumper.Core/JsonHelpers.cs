@@ -15,9 +15,7 @@ internal static class JsonHelpers
         CommentHandling = JsonCommentHandling.Skip,
     };
 
-    public static bool TryLoadObject(
-        string path,
-        [NotNullWhen(true)] out JsonObject? root)
+    public static bool TryLoadObject(string path, [NotNullWhen(true)] out JsonObject? root)
     {
         using var stream = File.OpenRead(path);
         root = JsonNode.Parse(stream, documentOptions: DocumentOptions) as JsonObject;
