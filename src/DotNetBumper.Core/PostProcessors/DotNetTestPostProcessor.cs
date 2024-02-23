@@ -80,6 +80,8 @@ internal sealed partial class DotNetTestPostProcessor(
                 }
             }
 
+            Console.WriteLine();
+
             if (result.TestLogs?.Summary.Count > 0)
             {
                 WriteTestResults(result.TestLogs);
@@ -100,6 +102,8 @@ internal sealed partial class DotNetTestPostProcessor(
         StatusContext context,
         CancellationToken cancellationToken)
     {
+        var results = new List<DotNetResult>(projects.Count);
+
         foreach (var project in projects)
         {
             string name = ProjectHelpers.RelativeName(Options.ProjectPath, project);
@@ -125,9 +129,30 @@ internal sealed partial class DotNetTestPostProcessor(
             {
                 return result;
             }
+
+            results.Add(result);
         }
 
-        return new(true, 0, string.Empty, string.Empty);
+        if (results.Count is 1)
+        {
+            return results[0];
+        }
+
+        var overall = new DotNetResult(true, 0, string.Empty, string.Empty)
+        {
+            TestLogs = new(),
+        };
+
+        foreach (var result in results)
+        {
+            if (result.TestLogs is not null)
+            {
+                overall.TestLogs.Outcomes = overall.TestLogs.Outcomes.Concat(result.TestLogs.Outcomes).ToDictionary();
+                overall.TestLogs.Summary = overall.TestLogs.Summary.Concat(result.TestLogs.Summary).ToDictionary();
+            }
+        }
+
+        return overall;
     }
 
     private void WriteBuildLogs(IList<BumperLogEntry> logs)
