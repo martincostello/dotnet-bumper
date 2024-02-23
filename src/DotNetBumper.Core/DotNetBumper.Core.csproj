@@ -25,6 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetBumper.MSBuild\DotNetBumper.MSBuild.csproj" />
+    <ProjectReference Include="..\DotNetBumper.TestLogger\DotNetBumper.TestLogger.csproj" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="DotNetBumper.Tests" Key="$(StrongNamePublicKey)" />

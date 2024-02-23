@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
-using System.Text.Json;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
@@ -28,7 +27,26 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         IReadOnlyList<string> arguments,
         CancellationToken cancellationToken)
     {
-        return await RunAsync(workingDirectory, null, arguments, cancellationToken);
+        return await RunAsync(workingDirectory, null, arguments, null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Runs the specified dotnet command.
+    /// </summary>
+    /// <param name="workingDirectory">The working directory for the process.</param>
+    /// <param name="arguments">The arguments to the command.</param>
+    /// <param name="environmentVariables">The environment variables to set for the process, if any.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to use.</param>
+    /// <returns>
+    /// A <see cref="Task{DotNetResult}"/> representing the asynchronous operation to run the command.
+    /// </returns>
+    public async Task<DotNetResult> RunAsync(
+        string workingDirectory,
+        IReadOnlyList<string> arguments,
+        IDictionary<string, string?>? environmentVariables,
+        CancellationToken cancellationToken)
+    {
+        return await RunAsync(workingDirectory, null, arguments, environmentVariables, cancellationToken);
     }
 
     /// <summary>
@@ -45,13 +63,33 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         IReadOnlyList<string> arguments,
         CancellationToken cancellationToken)
     {
+        return await RunWithLoggerAsync(workingDirectory, arguments, null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Runs the specified dotnet command with a custom MSBuild logger.
+    /// </summary>
+    /// <param name="workingDirectory">The working directory for the process.</param>
+    /// <param name="arguments">The arguments to the command.</param>
+    /// <param name="environmentVariables">The environment variables to set for the process, if any.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to use.</param>
+    /// <returns>
+    /// A <see cref="Task{DotNetResult}"/> representing the asynchronous operation to run the command.
+    /// </returns>
+    public async Task<DotNetResult> RunWithLoggerAsync(
+        string workingDirectory,
+        IReadOnlyList<string> arguments,
+        IDictionary<string, string?>? environmentVariables,
+        CancellationToken cancellationToken)
+    {
         using var temporaryFile = new TemporaryFile();
-        return await RunAsync(workingDirectory, temporaryFile.Path, arguments, cancellationToken);
+        return await RunAsync(workingDirectory, temporaryFile.Path, arguments, environmentVariables, cancellationToken);
     }
 
     private static Process StartDotNet(
         string workingDirectory,
         IReadOnlyList<string> arguments,
+        IDictionary<string, string?>? environmentVariables,
         string? customLoggerFileName)
     {
         var startInfo = new ProcessStartInfo(DotNetExe.FullPathOrDefault(), arguments)
@@ -67,6 +105,14 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             WorkingDirectory = workingDirectory,
         };
 
+        if (environmentVariables?.Count > 0)
+        {
+            foreach ((var name, var value) in environmentVariables)
+            {
+                startInfo.EnvironmentVariables[name] = value;
+            }
+        }
+
         // HACK See https://github.com/dotnet/msbuild/issues/6753
         startInfo.EnvironmentVariables["MSBUILDDISABLENODEREUSE"] = "1";
         startInfo.EnvironmentVariables["MSBUILDENSURESTDOUTFORTASKPROCESSES"] = "1";
@@ -78,6 +124,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         string workingDirectory,
         string? logFilePath,
         IReadOnlyList<string> arguments,
+        IDictionary<string, string?>? environmentVariables,
         CancellationToken cancellationToken)
     {
         if (logFilePath is not null)
@@ -88,7 +135,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             arguments = [..arguments, customLogger];
         }
 
-        using var process = StartDotNet(workingDirectory, arguments, logFilePath);
+        using var process = StartDotNet(workingDirectory, arguments, environmentVariables, logFilePath);
 
         // See https://stackoverflow.com/a/16326426/1064169 and
         // https://learn.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.redirectstandardoutput.
@@ -117,19 +164,21 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 
         (string error, string output) = await readOutput;
 
-        IList<BumperLogEntry> logEntries = [];
+        IList<BumperLogEntry> buildLogs = [];
 
         if (logFilePath is not null)
         {
-            logEntries = await GetLogsAsync(logFilePath, CancellationToken.None);
+            buildLogs = await LogReader.GetBuildLogsAsync(logFilePath, logger, CancellationToken.None);
         }
 
         var result = new DotNetResult(
             process.ExitCode == 0,
             process.ExitCode,
             output,
-            error,
-            logEntries);
+            error)
+        {
+            BuildLogs = buildLogs,
+        };
 
         if (!result.Success)
         {
@@ -194,29 +243,6 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         }
     }
 
-    private async Task<IList<BumperLogEntry>> GetLogsAsync(
-        string logFilePath,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var stream = File.OpenRead(logFilePath);
-
-            if (stream.Length is 0)
-            {
-                return [];
-            }
-
-            var logs = await JsonSerializer.DeserializeAsync<BumperLog>(stream, cancellationToken: cancellationToken);
-            return logs?.Entries ?? [];
-        }
-        catch (Exception ex)
-        {
-            Log.GetMSBuildLogsFailed(logger, ex);
-            return [];
-        }
-    }
-
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private static partial class Log
     {
@@ -258,11 +284,5 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             Level = LogLevel.Error,
             Message = "Command \"dotnet {Command}\" standard error: {Error}")]
         public static partial void CommandFailedError(ILogger logger, string command, string error);
-
-        [LoggerMessage(
-            EventId = 4,
-            Level = LogLevel.Warning,
-            Message = "Failed to read MSBuild logs.")]
-        public static partial void GetMSBuildLogsFailed(ILogger logger, Exception exception);
     }
 }
