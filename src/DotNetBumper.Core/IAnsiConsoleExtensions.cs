@@ -14,12 +14,14 @@ public static class IAnsiConsoleExtensions
     /// Writes a disclaimer to the console.
     /// </summary>
     /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
-    public static void WriteDisclaimer(this IAnsiConsole console)
+    /// <param name="channel">The version of .NET that the project was upgraded to.</param>
+    public static void WriteDisclaimer(this IAnsiConsole console, Version channel)
     {
         string[] disclaimer =
         [
             $"{Emoji.Known.Megaphone} .NET Bumper upgrades are made on a best-effort basis.",
             $"{Emoji.Known.MagnifyingGlassTiltedRight} You should [bold]always[/] review the changes and test your project to validate the upgrade.",
+            $"{Emoji.Known.OpenBook} [link={BreakingChangesLink(channel)}]Breaking changes in .NET {channel.Major}[/]",
         ];
 
         var panel = new Panel(string.Join(Environment.NewLine, disclaimer))
@@ -30,6 +32,9 @@ public static class IAnsiConsoleExtensions
         };
 
         console.Write(panel);
+
+        static string BreakingChangesLink(Version channel)
+            => $"https://learn.microsoft.com/dotnet/core/compatibility/{channel}";
     }
 
     /// <summary>

@@ -153,7 +153,7 @@ public partial class ProjectUpgrader(
         {
             console.MarkupLine($"[aqua]{name}[/] upgrade to [white on purple].NET {upgrade.Channel}[/] [green]successful[/]! :rocket:");
             console.WriteLine();
-            console.WriteDisclaimer();
+            console.WriteDisclaimer(upgrade.Channel);
         }
         else if (result is ProcessingResult.None)
         {
