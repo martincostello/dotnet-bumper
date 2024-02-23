@@ -128,7 +128,13 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.Add(package);
         }
 
-        var result = await dotnet.RunAsync(directory, ["outdated", ..arguments], cancellationToken);
+        // HACK See https://github.com/dotnet-outdated/dotnet-outdated/pull/516
+        var environmentVariables = new Dictionary<string, string?>(1)
+        {
+            ["NoWarn"] = "NU1605",
+        };
+
+        var result = await dotnet.RunAsync(directory, ["outdated", ..arguments], environmentVariables, cancellationToken);
 
         if (!result.Success)
         {

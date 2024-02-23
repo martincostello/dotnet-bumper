@@ -49,7 +49,7 @@ public sealed class BumperLogger : Logger
         {
             var output = new BumperLog()
             {
-                Entries = [.. _logEntries],
+                Entries = [.._logEntries],
             };
 
             string json = JsonSerializer.Serialize(output);

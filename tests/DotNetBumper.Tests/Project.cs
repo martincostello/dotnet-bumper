@@ -7,9 +7,9 @@ namespace MartinCostello.DotNetBumper;
 
 internal sealed class Project : IDisposable
 {
-    private readonly DirectoryInfo _directory = Directory.CreateTempSubdirectory("dotnet-bumper");
+    private readonly TemporaryDirectory _directory = new();
 
-    public string DirectoryName => _directory.FullName;
+    public string DirectoryName => _directory.Path;
 
     public async Task<string> AddFileAsync(string path, XDocument content)
     {
@@ -204,17 +204,7 @@ internal sealed class Project : IDisposable
         return await AddFileAsync(path, configuration);
     }
 
-    public void Dispose()
-    {
-        try
-        {
-            _directory.Delete(recursive: true);
-        }
-        catch (Exception)
-        {
-            // Ignore
-        }
-    }
+    public void Dispose() => _directory.Dispose();
 
     private static string CreateGlobalJson(string sdkVersion)
     {

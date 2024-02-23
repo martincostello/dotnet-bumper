@@ -249,7 +249,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Act
         int actual = await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, "--verbose", .. args],
+            [fixture.Project.DirectoryName, "--verbose", ..args],
             (builder) => builder.AddXUnit(fixture),
             CancellationToken.None);
 
