@@ -9,8 +9,6 @@ namespace MartinCostello.DotNetBumper;
 
 internal static class JsonExtensions
 {
-    private static readonly byte[] NewLineBytes = Encoding.UTF8.GetBytes(Environment.NewLine);
-
     public static bool TryGetStringProperty(
         this JsonObject node,
         string propertyName,
@@ -45,22 +43,56 @@ internal static class JsonExtensions
         JsonWriterOptions options,
         CancellationToken cancellationToken)
     {
-        using var stream = FileHelpers.OpenWrite(path, out var metadata);
-
-        if (metadata.Encoding.Preamble.Length > 0)
+        FileMetadata metadata;
+        using (var stream = FileHelpers.OpenWrite(path, out metadata))
         {
-            stream.Write(metadata.Encoding.Preamble);
+            if (metadata.Encoding.Preamble.Length > 0)
+            {
+                stream.Write(metadata.Encoding.Preamble);
+            }
+
+            using var writer = new Utf8JsonWriter(stream, options);
+
+            node.WriteTo(writer);
+
+            await writer.FlushAsync(cancellationToken);
+
+            // The edit may have caused the file to shrink, so truncate it to the new length
+            stream.SetLength(stream.Position);
         }
 
-        // JsonWriterOptions does not currently support a custom NewLine character
-        using var writer = new Utf8JsonWriter(stream, options);
+        // JsonWriterOptions does not currently support a custom NewLine character,
+        // so fix up the line endings manually for by re-writing with the original.
+        // See https://github.com/dotnet/runtime/issues/84117.
+        await FixupLineEndingsAsync(path, metadata, cancellationToken);
+    }
 
-        node.WriteTo(writer);
+    private static async Task FixupLineEndingsAsync(string path, FileMetadata metadata, CancellationToken cancellationToken)
+    {
+        using var buffered = new MemoryStream();
 
-        await writer.FlushAsync(cancellationToken);
-        await stream.WriteAsync(NewLineBytes, cancellationToken);
+        using (var input = File.OpenRead(path))
+        using (var reader = new StreamReader(input, metadata.Encoding))
+        using (var writer = new StreamWriter(buffered, metadata.Encoding, leaveOpen: true))
+        {
+            writer.NewLine = metadata.NewLine;
 
-        // The edit may have caused the file to shrink, so truncate it to the new length
-        stream.SetLength(stream.Position);
+            while (await reader.ReadLineAsync(cancellationToken) is { } line)
+            {
+                await writer.WriteAsync(line);
+                await writer.WriteLineAsync();
+            }
+
+            await writer.FlushAsync(cancellationToken);
+        }
+
+        buffered.Seek(0, SeekOrigin.Begin);
+
+        using var output = File.OpenWrite(path);
+
+        await buffered.CopyToAsync(output, cancellationToken);
+        await buffered.FlushAsync(cancellationToken);
+
+        output.SetLength(output.Position);
     }
 }

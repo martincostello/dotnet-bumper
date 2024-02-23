@@ -29,7 +29,6 @@ internal sealed partial class TargetFrameworkUpgrader(
         Log.UpgradingTargetFramework(logger);
 
         var result = ProcessingResult.None;
-        XmlWriterSettings? writerSettings = null;
 
         foreach (var filePath in fileNames)
         {
@@ -71,19 +70,17 @@ internal sealed partial class TargetFrameworkUpgrader(
                 // Ensure that the user's own formatting is preserved
                 string xml = project.ToString(SaveOptions.DisableFormatting);
 
-                writerSettings ??= new XmlWriterSettings()
+                var writerSettings = new XmlWriterSettings()
                 {
                     Async = true,
+                    Encoding = metadata?.Encoding ?? Encoding.UTF8,
                     Indent = true,
                     NewLineChars = metadata?.NewLine ?? Environment.NewLine,
                     OmitXmlDeclaration = true,
                 };
 
-                await File.WriteAllTextAsync(
-                    filePath,
-                    xml,
-                    metadata?.Encoding ?? Encoding.UTF8,
-                    cancellationToken);
+                using var writer = XmlWriter.Create(filePath, writerSettings);
+                await project.WriteToAsync(writer, cancellationToken);
 
                 result = result.Max(ProcessingResult.Success);
             }
