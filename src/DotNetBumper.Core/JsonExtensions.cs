@@ -52,7 +52,8 @@ internal static class JsonExtensions
             stream.Write(metadata.Encoding.Preamble);
         }
 
-        // JsonWriterOptions does not currently support a custom NewLine character
+        // JsonWriterOptions does not currently support a custom NewLine character.
+        // See https://github.com/dotnet/runtime/issues/84117.
         using var writer = new Utf8JsonWriter(stream, options);
 
         node.WriteTo(writer);
