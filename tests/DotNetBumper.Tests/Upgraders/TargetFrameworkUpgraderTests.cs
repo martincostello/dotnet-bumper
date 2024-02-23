@@ -148,6 +148,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         [
             "<Project Sdk=\"Microsoft.NET.Sdk\">",
             "  <PropertyGroup>",
+            "    <!-- This is a comment -->",
             "    <TargetFramework>net6.0</TargetFramework>",
             "  </PropertyGroup>",
             "</Project>",
@@ -157,13 +158,14 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         [
             "<Project Sdk=\"Microsoft.NET.Sdk\">",
             "  <PropertyGroup>",
+            "    <!-- This is a comment -->",
             "    <TargetFramework>net10.0</TargetFramework>",
             "  </PropertyGroup>",
             "</Project>",
         ];
 
         string fileContents = string.Join(newLine, originalLines) + newLine;
-        string expectedContent = string.Join(Environment.NewLine, expectedLines) + Environment.NewLine;
+        string expectedContent = string.Join(newLine, expectedLines) + newLine;
 
         using var fixture = new UpgraderFixture(outputHelper);
 

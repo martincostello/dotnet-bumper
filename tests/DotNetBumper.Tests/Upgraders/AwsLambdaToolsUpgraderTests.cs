@@ -187,7 +187,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         ];
 
         string fileContents = string.Join(newLine, originalLines) + newLine;
-        string expectedContent = string.Join(Environment.NewLine, expectedLines) + Environment.NewLine;
+        string expectedContent = string.Join(newLine, expectedLines) + newLine;
 
         using var fixture = new UpgraderFixture(outputHelper);
 
