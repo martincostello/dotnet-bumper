@@ -274,6 +274,7 @@ internal sealed partial class DockerfileUpgrader(
         context.Status = StatusMessage($"Parsing {name}...");
 
         var edited = false;
+        var portsUpdated = false;
 
         using var buffered = new MemoryStream();
 
@@ -285,11 +286,16 @@ internal sealed partial class DockerfileUpgrader(
 
             while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
-                if (TryUpdateImage(line, upgrade.Channel, upgrade.SupportPhase, out var updated) ||
-                    TryUpdatePort(line, upgrade.Channel, out updated))
+                if (TryUpdateImage(line, upgrade.Channel, upgrade.SupportPhase, out var updated))
                 {
                     line = updated;
                     edited |= true;
+                }
+                else if (TryUpdatePort(line, upgrade.Channel, out updated))
+                {
+                    line = updated;
+                    edited |= true;
+                    portsUpdated |= true;
                 }
 
                 await writer.WriteAsync(line);
@@ -311,6 +317,11 @@ internal sealed partial class DockerfileUpgrader(
             await buffered.FlushAsync(cancellationToken);
 
             buffered.SetLength(buffered.Position);
+
+            if (portsUpdated)
+            {
+                Console.WriteWarningLine($"The exposed port(s) in {name} were updated to match .NET {EightPointZero}+ conventions.");
+            }
 
             return ProcessingResult.Success;
         }
