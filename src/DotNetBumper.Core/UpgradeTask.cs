@@ -22,7 +22,7 @@ internal abstract class UpgradeTask(
 
     protected abstract string Action { get; }
 
-    protected virtual string ActionColor => "grey";
+    protected virtual Color ActionColor { get; } = EnvironmentHelpers.IsGitHubActions ? Color.Teal : Color.Grey;
 
     protected abstract string InitialStatus { get; }
 
@@ -30,7 +30,7 @@ internal abstract class UpgradeTask(
 
     protected virtual Style? SpinnerStyle => null;
 
-    protected virtual string StatusColor => "silver";
+    protected virtual Color StatusColor => Color.Silver;
 
     protected string RelativeName(string path)
         => ProjectHelpers.RelativeName(Options.ProjectPath, path);

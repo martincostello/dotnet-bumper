@@ -19,7 +19,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
     protected override Style? SpinnerStyle { get; } = Style.Parse("green");
 
-    protected override string StatusColor => "teal";
+    protected override Color StatusColor => Color.Teal;
 
     public override async Task<ProcessingResult> PostProcessAsync(
         UpgradeInfo upgrade,
