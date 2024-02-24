@@ -111,10 +111,11 @@ public static class IAnsiConsoleExtensions
     /// Writes a progress message to the console.
     /// </summary>
     /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
+    /// <param name="environment">The current <see cref="IEnvironment"/>.</param>
     /// <param name="message">The progress message to write.</param>
-    public static void WriteProgressLine(this IAnsiConsole console, string message)
+    public static void WriteProgressLine(this IAnsiConsole console, IEnvironment environment, string message)
     {
-        console.MarkupLineInterpolated($"[{Color.Grey}]{message}[/]");
+        console.MarkupLineInterpolated($"[{(environment.IsGitHubActions ? Color.Teal : Color.Grey)}]{message}[/]");
     }
 
     /// <summary>

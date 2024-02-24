@@ -66,13 +66,13 @@ internal sealed partial class DotNetTestPostProcessor(
                 if (!string.IsNullOrWhiteSpace(result.StandardError))
                 {
                     Console.WriteLine();
-                    Console.WriteProgressLine(result.StandardError);
+                    Console.WriteProgressLine(TaskEnvironment, result.StandardError);
                 }
 
                 if (!string.IsNullOrWhiteSpace(result.StandardOutput))
                 {
                     Console.WriteLine();
-                    Console.WriteProgressLine(result.StandardOutput);
+                    Console.WriteProgressLine(TaskEnvironment, result.StandardOutput);
                 }
 
                 if (result.BuildLogs.Count > 0)
