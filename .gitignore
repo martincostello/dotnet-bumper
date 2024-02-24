@@ -40,4 +40,5 @@ PublishProfiles
 *.sln.docstates
 *.sln.ide
 *.suo
+*.tmp
 *.user
