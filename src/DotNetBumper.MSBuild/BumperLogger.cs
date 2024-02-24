@@ -65,12 +65,14 @@ public sealed class BumperLogger : Logger
         _logEntries.Clear();
     }
 
+    private static string Code(string? code) => code ?? UnknownId;
+
     private void OnWarningRaised(object sender, BuildWarningEventArgs args)
     {
         var entry = new BumperLogEntry()
         {
             HelpLink = args.HelpLink,
-            Id = args.Code ?? UnknownId,
+            Id = Code(args.Code),
             Message = args.Message,
             Type = "Warning",
         };
@@ -83,7 +85,7 @@ public sealed class BumperLogger : Logger
         var entry = new BumperLogEntry()
         {
             HelpLink = args.HelpLink,
-            Id = args.Code ?? UnknownId,
+            Id = Code(args.Code),
             Message = args.Message,
             Type = "Error",
         };
