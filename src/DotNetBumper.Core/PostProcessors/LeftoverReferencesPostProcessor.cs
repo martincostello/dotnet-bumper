@@ -116,10 +116,15 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
         static Markup Location(ProjectFile file, PotentialFileEdit edit)
         {
-            string location = VisualStudioCodeLink(file, edit);
             string path = $"{file.RelativePath.EscapeMarkup()}:{edit.Line}";
 
-            return new Markup($"[link={location}]{path}[/]");
+            if (!EnvironmentHelpers.IsGitHubActions)
+            {
+                string location = VisualStudioCodeLink(file, edit);
+                path = $"[link={location}]{path}[/]";
+            }
+
+            return new Markup(path);
         }
 
         static Markup Match(string text) => new($"[{Color.Yellow}]{text.EscapeMarkup()}[/]");

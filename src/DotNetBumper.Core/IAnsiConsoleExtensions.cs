@@ -17,23 +17,35 @@ public static class IAnsiConsoleExtensions
     /// <param name="channel">The version of .NET that the project was upgraded to.</param>
     public static void WriteDisclaimer(this IAnsiConsole console, Version channel)
     {
-        string[] disclaimer =
+        List<string> disclaimer =
         [
             $"{Emoji.Known.Megaphone} .NET Bumper upgrades are made on a best-effort basis.",
             $"{Emoji.Known.MagnifyingGlassTiltedRight} You should [bold]always[/] review the changes and test your project to validate the upgrade.",
-            $"{Emoji.Known.OpenBook} [link={BreakingChangesLink(channel)}]Breaking changes in .NET {channel.Major}[/]",
         ];
+
+        var breakingChangesEmoji = Emoji.Known.OpenBook;
+        var breakingChangesTitle = $"Breaking changes in .NET {channel.Major}";
+        var breakingChangesUrl = BreakingChangesUrl(channel);
+
+        if (EnvironmentHelpers.IsGitHubActions)
+        {
+            disclaimer.Add($"{breakingChangesEmoji} [bold]{breakingChangesTitle}/] - {breakingChangesUrl}");
+        }
+        else
+        {
+            disclaimer.Add($"{breakingChangesEmoji} [link={breakingChangesUrl}]{breakingChangesTitle}[/]");
+        }
 
         var panel = new Panel(string.Join(Environment.NewLine, disclaimer))
         {
             Border = BoxBorder.Rounded,
             Expand = true,
-            Header = new PanelHeader("[yellow]Disclaimer[/]", Justify.Center),
+            Header = new PanelHeader($"[{Color.Yellow}]Disclaimer[/]", Justify.Center),
         };
 
         console.Write(panel);
 
-        static string BreakingChangesLink(Version channel)
+        static string BreakingChangesUrl(Version channel)
             => $"https://learn.microsoft.com/dotnet/core/compatibility/{channel}";
     }
 
@@ -47,7 +59,21 @@ public static class IAnsiConsoleExtensions
     {
         var eolUtc = upgrade.EndOfLife.GetValueOrDefault().ToDateTime(TimeOnly.MinValue);
         console.WriteWarningLine($"Support for .NET {upgrade.Channel} ends in {daysRemaining:N0} days on {eolUtc:D}.");
-        console.WriteWarningLine("See [link=https://dotnet.microsoft.com/platform/support/policy/dotnet-core].NET and .NET Core Support Policy[/] for more information.");
+
+        var supportPolicyTitle = ".NET and .NET Core Support Policy";
+        var supportPolicyUrl = SupportPolicyUrl(upgrade.Channel);
+
+        if (EnvironmentHelpers.IsGitHubActions)
+        {
+            console.WriteWarningLine($"See [bold]{supportPolicyTitle}[/] for more information: {supportPolicyUrl}");
+        }
+        else
+        {
+            console.WriteWarningLine($"See [link={supportPolicyUrl}]{supportPolicyTitle}[/] for more information.");
+        }
+
+        static string SupportPolicyUrl(Version channel)
+            => $"https://learn.microsoft.com/dotnet/core/compatibility/{channel}";
     }
 
     /// <summary>
