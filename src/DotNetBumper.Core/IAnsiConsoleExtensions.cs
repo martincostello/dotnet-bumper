@@ -92,7 +92,7 @@ public static class IAnsiConsoleExtensions
     /// <param name="message">The error message to write.</param>
     public static void WriteErrorLine(this IAnsiConsole console, string message)
     {
-        console.MarkupLineInterpolated($"[red]{Emoji.Known.CrossMark} {message}[/]");
+        console.MarkupLineInterpolated($"[{Color.Red}]{Emoji.Known.CrossMark} {message}[/]");
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public static class IAnsiConsoleExtensions
     /// <param name="message">The progress message to write.</param>
     public static void WriteProgressLine(this IAnsiConsole console, string message)
     {
-        console.MarkupLineInterpolated($"[grey]{message}[/]");
+        console.MarkupLineInterpolated($"[{Color.Grey}]{message}[/]");
     }
 
     /// <summary>
@@ -124,7 +124,7 @@ public static class IAnsiConsoleExtensions
     /// <param name="message">The success message to write.</param>
     public static void WriteSuccessLine(this IAnsiConsole console, string message)
     {
-        console.MarkupLineInterpolated($"[green]{Emoji.Known.CheckMarkButton} {message}[/]");
+        console.MarkupLineInterpolated($"[{Color.Green}]{Emoji.Known.CheckMarkButton} {message}[/]");
     }
 
     /// <summary>
@@ -145,6 +145,6 @@ public static class IAnsiConsoleExtensions
     /// <param name="message">The warning message to write.</param>
     public static void WriteWarningLine(this IAnsiConsole console, string message)
     {
-        console.MarkupLineInterpolated($"[yellow]{Emoji.Known.Warning} {message}[/]");
+        console.MarkupLineInterpolated($"[{Color.Yellow}]{Emoji.Known.Warning} {message}[/]");
     }
 }
