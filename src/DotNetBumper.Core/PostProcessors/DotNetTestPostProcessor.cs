@@ -83,7 +83,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
             Console.WriteLine();
 
-            if (result.TestLogs?.Summary.Count > 0)
+            if (result.TestLogs?.Summary.Sum((p) => p.Value.Count) > 0)
             {
                 WriteTestResults(result.TestLogs);
             }
