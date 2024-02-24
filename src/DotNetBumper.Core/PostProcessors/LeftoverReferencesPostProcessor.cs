@@ -106,12 +106,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
         var segments = mimeType.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-        if (segments.Length < 1)
-        {
-            return false;
-        }
-
-        return segments[0] switch
+        return segments.Length >= 1 && segments[0] switch
         {
             "application" or "font" or "image" or "video" => true,
             _ => false,
