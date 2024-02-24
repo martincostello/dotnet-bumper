@@ -87,7 +87,7 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         {
             return await app.ExecuteAsync(args, cancellationToken);
         }
-        catch (UnrecognizedCommandParsingException ex)
+        catch (CommandParsingException ex)
         {
             console.WriteLine();
             console.WriteWarningLine(ex.Message);
