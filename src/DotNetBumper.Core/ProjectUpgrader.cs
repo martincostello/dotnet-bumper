@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Reflection;
+using MartinCostello.DotNetBumper.Logging;
 using MartinCostello.DotNetBumper.PostProcessors;
 using MartinCostello.DotNetBumper.Upgraders;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ namespace MartinCostello.DotNetBumper;
 /// <param name="upgradeFinder">The <see cref="DotNetUpgradeFinder"/> to use.</param>
 /// <param name="upgraders">The <see cref="IUpgrader"/> implementations to use.</param>
 /// <param name="postProcessors">The <see cref="IPostProcessor"/> implementations to use.</param>
+/// <param name="logContext">The <see cref="BumperLogContext"/> to use.</param>
 /// <param name="timeProvider">The <see cref="TimeProvider"/> to use.</param>
 /// <param name="options">The <see cref="IOptions{UpgradeOptions}"/> to use.</param>
 /// <param name="logger">The <see cref="ILogger{ProjectUpgrader}"/> to use.</param>
@@ -27,6 +29,7 @@ public partial class ProjectUpgrader(
     DotNetUpgradeFinder upgradeFinder,
     IEnumerable<IUpgrader> upgraders,
     IEnumerable<IPostProcessor> postProcessors,
+    BumperLogContext logContext,
     TimeProvider timeProvider,
     IOptions<UpgradeOptions> options,
     ILogger<ProjectUpgrader> logger)
@@ -175,6 +178,8 @@ public partial class ProjectUpgrader(
             console.MarkupLine($"[aqua]{name}[/] upgrade to [purple].NET {upgrade.Channel}[/] [{color}]{description}[/]! {emoji}");
         }
 
+        await WriteLogsAsync(cancellationToken);
+
         const int Success = 0;
         const int Error = 1;
 
@@ -184,6 +189,19 @@ public partial class ProjectUpgrader(
             ProcessingResult.Warning => options.Value.TreatWarningsAsErrors ? Error : Success,
             _ => Error,
         };
+    }
+
+    private async Task WriteLogsAsync(CancellationToken cancellationToken)
+    {
+        IBumperLogWriter writer = options.Value.LogFormat switch
+        {
+            BumperLogFormat.GitHubActions => new GitHubActionsLogWriter(),
+            BumperLogFormat.Json => new JsonLogFormatter(options.Value.LogPath ?? "dotnet-bumper.json"),
+            BumperLogFormat.Markdown => new JsonLogFormatter(options.Value.LogPath ?? "dotnet-bumper.md"),
+            _ => new NullLogWriter(),
+        };
+
+        await writer.WriteAsync(logContext, cancellationToken);
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

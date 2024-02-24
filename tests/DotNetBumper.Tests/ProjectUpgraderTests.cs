@@ -66,6 +66,7 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
             finder,
             [upgrader],
             [postProcessor],
+            new Logging.BumperLogContext(),
             TimeProvider.System,
             options,
             outputHelper.ToLogger<ProjectUpgrader>());

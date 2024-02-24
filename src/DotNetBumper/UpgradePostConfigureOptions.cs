@@ -13,6 +13,7 @@ internal sealed class UpgradePostConfigureOptions(IModelAccessor accessor) : IPo
         var command = (Bumper)accessor.GetModel();
 
         options.DotNetChannel ??= command.DotNetChannel;
+        options.LogFormat = command.LogFormat;
         options.TestUpgrade = command.TestUpgrade;
         options.TreatWarningsAsErrors = command.WarningsAsErrors;
 
@@ -24,6 +25,11 @@ internal sealed class UpgradePostConfigureOptions(IModelAccessor accessor) : IPo
         if (command.UpgradeType is { } upgradeType)
         {
             options.UpgradeType = upgradeType;
+        }
+
+        if (command.LogPath is not null)
+        {
+            options.LogPath = Path.GetFullPath(command.LogPath);
         }
     }
 }

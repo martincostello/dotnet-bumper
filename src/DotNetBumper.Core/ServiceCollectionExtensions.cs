@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using MartinCostello.DotNetBumper.Logging;
 using MartinCostello.DotNetBumper.PostProcessors;
 using MartinCostello.DotNetBumper.Upgraders;
 using Microsoft.Extensions.Configuration;
@@ -42,6 +43,7 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton(configuration)
                 .AddSingleton<DotNetProcess>()
+                .AddSingleton<BumperLogContext>()
                 .AddSingleton<IAnsiConsole>(console)
                 .AddSingleton<IEnvironment, BumperEnvironment>()
                 .AddSingleton<IValidateOptions<UpgradeOptions>, UpgradeOptionsValidator>()
