@@ -112,7 +112,7 @@ internal sealed partial class DotNetTestPostProcessor(
     }
 
     private async Task<DotNetResult> RunTestsAsync(
-        IReadOnlyList<string> projects,
+        List<string> projects,
         StatusContext context,
         CancellationToken cancellationToken)
     {
