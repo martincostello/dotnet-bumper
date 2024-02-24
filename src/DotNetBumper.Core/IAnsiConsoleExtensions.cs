@@ -14,26 +14,42 @@ public static class IAnsiConsoleExtensions
     /// Writes a disclaimer to the console.
     /// </summary>
     /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
+    /// <param name="environment">The current <see cref="IEnvironment"/>.</param>
     /// <param name="channel">The version of .NET that the project was upgraded to.</param>
-    public static void WriteDisclaimer(this IAnsiConsole console, Version channel)
+    public static void WriteDisclaimer(
+        this IAnsiConsole console,
+        IEnvironment environment,
+        Version channel)
     {
-        string[] disclaimer =
+        List<string> disclaimer =
         [
             $"{Emoji.Known.Megaphone} .NET Bumper upgrades are made on a best-effort basis.",
             $"{Emoji.Known.MagnifyingGlassTiltedRight} You should [bold]always[/] review the changes and test your project to validate the upgrade.",
-            $"{Emoji.Known.OpenBook} [link={BreakingChangesLink(channel)}]Breaking changes in .NET {channel.Major}[/]",
         ];
+
+        var breakingChangesEmoji = Emoji.Known.OpenBook;
+        var breakingChangesTitle = $"Breaking changes in .NET {channel.Major}";
+        var breakingChangesUrl = BreakingChangesUrl(channel);
+
+        if (environment.SupportsLinks)
+        {
+            disclaimer.Add($"{breakingChangesEmoji} [link={breakingChangesUrl}]{breakingChangesTitle}[/]");
+        }
+        else
+        {
+            disclaimer.Add($"{breakingChangesEmoji} [bold]{breakingChangesTitle}[/] - {breakingChangesUrl}");
+        }
 
         var panel = new Panel(string.Join(Environment.NewLine, disclaimer))
         {
             Border = BoxBorder.Rounded,
             Expand = true,
-            Header = new PanelHeader("[yellow]Disclaimer[/]", Justify.Center),
+            Header = new PanelHeader($"[{Color.Yellow}]Disclaimer[/]", Justify.Center),
         };
 
         console.Write(panel);
 
-        static string BreakingChangesLink(Version channel)
+        static string BreakingChangesUrl(Version channel)
             => $"https://learn.microsoft.com/dotnet/core/compatibility/{channel}";
     }
 
@@ -41,13 +57,32 @@ public static class IAnsiConsoleExtensions
     /// Writes a message about use of a .NET runtime whose support period ends soon to the console.
     /// </summary>
     /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
+    /// <param name="environment">The current <see cref="IEnvironment"/>.</param>
     /// <param name="upgrade">The <see cref="UpgradeInfo"/> that is nearing the end of support.</param>
     /// <param name="daysRemaining">The number of days remaining until support ends.</param>
-    public static void WriteRuntimeNearingEndOfSupportWarning(this IAnsiConsole console, UpgradeInfo upgrade, double daysRemaining)
+    public static void WriteRuntimeNearingEndOfSupportWarning(
+        this IAnsiConsole console,
+        IEnvironment environment,
+        UpgradeInfo upgrade,
+        double daysRemaining)
     {
         var eolUtc = upgrade.EndOfLife.GetValueOrDefault().ToDateTime(TimeOnly.MinValue);
         console.WriteWarningLine($"Support for .NET {upgrade.Channel} ends in {daysRemaining:N0} days on {eolUtc:D}.");
-        console.WriteWarningLine("See [link=https://dotnet.microsoft.com/platform/support/policy/dotnet-core].NET and .NET Core Support Policy[/] for more information.");
+
+        var supportPolicyTitle = ".NET and .NET Core Support Policy";
+        var supportPolicyUrl = SupportPolicyUrl(upgrade.Channel);
+
+        if (environment.SupportsLinks)
+        {
+            console.WriteWarningLine($"See [link={supportPolicyUrl}]{supportPolicyTitle}[/] for more information.");
+        }
+        else
+        {
+            console.WriteWarningLine($"See [bold]{supportPolicyTitle}[/] for more information: {supportPolicyUrl}");
+        }
+
+        static string SupportPolicyUrl(Version channel)
+            => $"https://learn.microsoft.com/dotnet/core/compatibility/{channel}";
     }
 
     /// <summary>
@@ -57,7 +92,7 @@ public static class IAnsiConsoleExtensions
     /// <param name="message">The error message to write.</param>
     public static void WriteErrorLine(this IAnsiConsole console, string message)
     {
-        console.MarkupLineInterpolated($"[red]{Emoji.Known.CrossMark} {message}[/]");
+        console.MarkupLineInterpolated($"[{Color.Red}]{Emoji.Known.CrossMark} {message}[/]");
     }
 
     /// <summary>
@@ -76,10 +111,11 @@ public static class IAnsiConsoleExtensions
     /// Writes a progress message to the console.
     /// </summary>
     /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
+    /// <param name="environment">The current <see cref="IEnvironment"/>.</param>
     /// <param name="message">The progress message to write.</param>
-    public static void WriteProgressLine(this IAnsiConsole console, string message)
+    public static void WriteProgressLine(this IAnsiConsole console, IEnvironment environment, string message)
     {
-        console.MarkupLineInterpolated($"[grey]{message}[/]");
+        console.MarkupLineInterpolated($"[{(environment.IsGitHubActions ? Color.Teal : Color.Grey)}]{message}[/]");
     }
 
     /// <summary>
@@ -89,7 +125,7 @@ public static class IAnsiConsoleExtensions
     /// <param name="message">The success message to write.</param>
     public static void WriteSuccessLine(this IAnsiConsole console, string message)
     {
-        console.MarkupLineInterpolated($"[green]{Emoji.Known.CheckMarkButton} {message}[/]");
+        console.MarkupLineInterpolated($"[{Color.Green}]{Emoji.Known.CheckMarkButton} {message}[/]");
     }
 
     /// <summary>
@@ -110,6 +146,6 @@ public static class IAnsiConsoleExtensions
     /// <param name="message">The warning message to write.</param>
     public static void WriteWarningLine(this IAnsiConsole console, string message)
     {
-        console.MarkupLineInterpolated($"[yellow]{Emoji.Known.Warning} {message}[/]");
+        console.MarkupLineInterpolated($"[{Color.Yellow}]{Emoji.Known.Warning} {message}[/]");
     }
 }

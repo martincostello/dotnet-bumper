@@ -9,8 +9,9 @@ namespace MartinCostello.DotNetBumper.PostProcessors;
 
 internal abstract class PostProcessor(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger logger) : UpgradeTask(console, options, logger), IPostProcessor
+    ILogger logger) : UpgradeTask(console, environment, options, logger), IPostProcessor
 {
     public virtual async Task<ProcessingResult> PostProcessAsync(
         UpgradeInfo upgrade,

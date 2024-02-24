@@ -11,8 +11,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class TargetFrameworkUpgrader(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<TargetFrameworkUpgrader> logger) : FileUpgrader(console, options, logger)
+    ILogger<TargetFrameworkUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
     protected override string Action => "Upgrading target frameworks";
 

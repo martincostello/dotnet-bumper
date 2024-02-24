@@ -43,6 +43,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(configuration)
                 .AddSingleton<DotNetProcess>()
                 .AddSingleton<IAnsiConsole>(console)
+                .AddSingleton<IEnvironment, BumperEnvironment>()
                 .AddSingleton<IValidateOptions<UpgradeOptions>, UpgradeOptionsValidator>()
                 .AddSingleton<ProjectUpgrader>();
 

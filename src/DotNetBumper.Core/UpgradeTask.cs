@@ -9,6 +9,7 @@ namespace MartinCostello.DotNetBumper;
 
 internal abstract class UpgradeTask(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
     ILogger logger)
 {
@@ -16,13 +17,15 @@ internal abstract class UpgradeTask(
 
     protected IAnsiConsole Console { get; } = console;
 
+    protected IEnvironment TaskEnvironment { get; } = environment;
+
     protected UpgradeOptions Options => options.Value;
 
     protected ILogger Logger { get; } = logger;
 
     protected abstract string Action { get; }
 
-    protected virtual string ActionColor => "grey";
+    protected virtual Color ActionColor { get; } = environment.IsGitHubActions ? Color.Teal : Color.Grey;
 
     protected abstract string InitialStatus { get; }
 
@@ -30,7 +33,7 @@ internal abstract class UpgradeTask(
 
     protected virtual Style? SpinnerStyle => null;
 
-    protected virtual string StatusColor => "silver";
+    protected virtual Color StatusColor => Color.Silver;
 
     protected string RelativeName(string path)
         => ProjectHelpers.RelativeName(Options.ProjectPath, path);

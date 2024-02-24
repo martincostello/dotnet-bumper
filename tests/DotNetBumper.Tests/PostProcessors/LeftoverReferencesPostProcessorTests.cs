@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using Microsoft.Extensions.Options;
+using NSubstitute;
 
 namespace MartinCostello.DotNetBumper.PostProcessors;
 
@@ -154,7 +154,8 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         using var fixture = new UpgraderFixture(outputHelper);
         fixture.Project.AddGitRepository();
 
-        await fixture.Project.AddFileAsync("file.txt", "Hello, World!");
+        await fixture.Project.AddFileAsync("file.txt", "net6.0");
+        await fixture.Project.AddFileAsync("README.md", "Hello World!");
         await fixture.Project.AddFileAsync("src/Program.cs", "Console.WriteLine(\"Hello, World!\"");
         await fixture.Project.AddFileAsync("src/Project.csproj", "<Project/>");
 
@@ -180,10 +181,15 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         actual.ShouldBe(ProcessingResult.Success);
     }
 
-    private LeftoverReferencesPostProcessor CreateTarget(UpgraderFixture fixture)
+    private static LeftoverReferencesPostProcessor CreateTarget(UpgraderFixture fixture)
     {
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<LeftoverReferencesPostProcessor>();
-        return new LeftoverReferencesPostProcessor(fixture.Console, options, logger);
+        var environment = Substitute.For<IEnvironment>();
+        environment.SupportsLinks.Returns(true);
+
+        return new(
+            fixture.Console,
+            environment,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<LeftoverReferencesPostProcessor>());
     }
 }

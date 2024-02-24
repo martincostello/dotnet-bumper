@@ -10,8 +10,9 @@ namespace MartinCostello.DotNetBumper.PostProcessors;
 internal sealed partial class DotNetTestPostProcessor(
     DotNetProcess dotnet,
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<DotNetTestPostProcessor> logger) : PostProcessor(console, options, logger)
+    ILogger<DotNetTestPostProcessor> logger) : PostProcessor(console, environment, options, logger)
 {
     protected override string Action => "Running tests";
 
@@ -19,7 +20,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
     protected override Style? SpinnerStyle { get; } = Style.Parse("green");
 
-    protected override string StatusColor => "teal";
+    protected override Color StatusColor => Color.Teal;
 
     public override async Task<ProcessingResult> PostProcessAsync(
         UpgradeInfo upgrade,
@@ -65,13 +66,13 @@ internal sealed partial class DotNetTestPostProcessor(
                 if (!string.IsNullOrWhiteSpace(result.StandardError))
                 {
                     Console.WriteLine();
-                    Console.WriteProgressLine(result.StandardError);
+                    Console.WriteProgressLine(TaskEnvironment, result.StandardError);
                 }
 
                 if (!string.IsNullOrWhiteSpace(result.StandardOutput))
                 {
                     Console.WriteLine();
-                    Console.WriteProgressLine(result.StandardOutput);
+                    Console.WriteProgressLine(TaskEnvironment, result.StandardOutput);
                 }
 
                 if (result.BuildLogs.Count > 0)
@@ -187,7 +188,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
                 string idMarkup = entries.Key.EscapeMarkup();
 
-                if (!string.IsNullOrEmpty(helpLink))
+                if (!string.IsNullOrEmpty(helpLink) && TaskEnvironment.SupportsLinks)
                 {
                     string linkEscaped = helpLink.EscapeMarkup();
                     idMarkup = $"[link={linkEscaped}]{idMarkup}[/]";

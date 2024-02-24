@@ -14,8 +14,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class VisualStudioCodeUpgrader(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<VisualStudioCodeUpgrader> logger) : FileUpgrader(console, options, logger)
+    ILogger<VisualStudioCodeUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
     private static readonly char[] PathSeparators = ['\\', '/'];
 

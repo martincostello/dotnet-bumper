@@ -9,8 +9,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal abstract class Upgrader(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger logger) : UpgradeTask(console, options, logger), IUpgrader
+    ILogger logger) : UpgradeTask(console, environment, options, logger), IUpgrader
 {
     public virtual async Task<ProcessingResult> UpgradeAsync(
         UpgradeInfo upgrade,

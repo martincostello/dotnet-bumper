@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.Json;
-using Microsoft.Extensions.Options;
 using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
@@ -232,10 +231,12 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
-    private AwsLambdaToolsUpgrader CreateTarget(UpgraderFixture fixture)
+    private static AwsLambdaToolsUpgrader CreateTarget(UpgraderFixture fixture)
     {
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<AwsLambdaToolsUpgrader>();
-        return new AwsLambdaToolsUpgrader(fixture.Console, options, logger);
+        return new(
+            fixture.Console,
+            fixture.Environment,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<AwsLambdaToolsUpgrader>());
     }
 }

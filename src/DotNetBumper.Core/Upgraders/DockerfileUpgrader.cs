@@ -12,8 +12,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class DockerfileUpgrader(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<DockerfileUpgrader> logger) : FileUpgrader(console, options, logger)
+    ILogger<DockerfileUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
     protected override string Action => "Upgrading Dockerfiles";
 

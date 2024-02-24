@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.Json;
-using Microsoft.Extensions.Options;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
@@ -304,10 +303,12 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
-    private VisualStudioCodeUpgrader CreateTarget(UpgraderFixture fixture)
+    private static VisualStudioCodeUpgrader CreateTarget(UpgraderFixture fixture)
     {
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<VisualStudioCodeUpgrader>();
-        return new VisualStudioCodeUpgrader(fixture.Console, options, logger);
+        return new(
+            fixture.Console,
+            fixture.Environment,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<VisualStudioCodeUpgrader>());
     }
 }

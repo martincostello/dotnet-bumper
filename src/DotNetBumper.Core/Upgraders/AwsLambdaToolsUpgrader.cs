@@ -12,8 +12,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class AwsLambdaToolsUpgrader(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<AwsLambdaToolsUpgrader> logger) : FileUpgrader(console, options, logger)
+    ILogger<AwsLambdaToolsUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
     protected override string Action => "Upgrading AWS Lambda Tools defaults";
 

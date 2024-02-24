@@ -12,8 +12,9 @@ namespace MartinCostello.DotNetBumper.PostProcessors;
 
 internal sealed partial class LeftoverReferencesPostProcessor(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<LeftoverReferencesPostProcessor> logger) : PostProcessor(console, options, logger)
+    ILogger<LeftoverReferencesPostProcessor> logger) : PostProcessor(console, environment, options, logger)
 {
     protected override string Action => "Find leftover references";
 
@@ -85,15 +86,13 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
         if (references.Count > 0)
         {
-            RenderTable(Console, references);
+            RenderTable(references);
         }
 
         return ProcessingResult.Success;
     }
 
-    private static void RenderTable(
-        IAnsiConsole console,
-        Dictionary<ProjectFile, List<PotentialFileEdit>> references)
+    private void RenderTable(Dictionary<ProjectFile, List<PotentialFileEdit>> references)
     {
         var table = new Table
         {
@@ -107,19 +106,24 @@ internal sealed partial class LeftoverReferencesPostProcessor(
         {
             foreach (var item in values)
             {
-                table.AddRow(Location(file, item), Match(item.Text));
+                table.AddRow(Location(file, item, TaskEnvironment), Match(item.Text));
             }
         }
 
-        console.WriteLine();
-        console.Write(table);
+        Console.WriteLine();
+        Console.Write(table);
 
-        static Markup Location(ProjectFile file, PotentialFileEdit edit)
+        static Markup Location(ProjectFile file, PotentialFileEdit edit, IEnvironment environment)
         {
-            string location = VisualStudioCodeLink(file, edit);
             string path = $"{file.RelativePath.EscapeMarkup()}:{edit.Line}";
 
-            return new Markup($"[link={location}]{path}[/]");
+            if (environment.SupportsLinks)
+            {
+                string location = VisualStudioCodeLink(file, edit);
+                path = $"[link={location}]{path}[/]";
+            }
+
+            return new Markup(path);
         }
 
         static Markup Match(string text) => new($"[{Color.Yellow}]{text.EscapeMarkup()}[/]");
