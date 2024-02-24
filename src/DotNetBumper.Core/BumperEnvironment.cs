@@ -3,7 +3,4 @@
 
 namespace MartinCostello.DotNetBumper;
 
-internal static class EnvironmentHelpers
-{
-    public static bool IsGitHubActions { get; } = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") is "true";
-}
+internal sealed class BumperEnvironment : IEnvironment;

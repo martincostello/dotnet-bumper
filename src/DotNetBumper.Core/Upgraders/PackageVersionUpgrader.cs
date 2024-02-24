@@ -11,8 +11,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 internal sealed partial class PackageVersionUpgrader(
     DotNetProcess dotnet,
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<PackageVersionUpgrader> logger) : Upgrader(console, options, logger)
+    ILogger<PackageVersionUpgrader> logger) : Upgrader(console, environment, options, logger)
 {
     public override int Order => int.MaxValue; // Packages need to be updated after the TFM so the packages relate to the update
 

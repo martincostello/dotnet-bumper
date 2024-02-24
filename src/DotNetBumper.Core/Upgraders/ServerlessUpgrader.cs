@@ -12,8 +12,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class ServerlessUpgrader(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<ServerlessUpgrader> logger) : FileUpgrader(console, options, logger)
+    ILogger<ServerlessUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
     private static readonly Version MinimumVersion = new(6, 0);
 

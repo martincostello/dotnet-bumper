@@ -9,8 +9,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal abstract class FileUpgrader(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger logger) : Upgrader(console, options, logger)
+    ILogger logger) : Upgrader(console, environment, options, logger)
 {
     protected abstract IReadOnlyList<string> Patterns { get; }
 

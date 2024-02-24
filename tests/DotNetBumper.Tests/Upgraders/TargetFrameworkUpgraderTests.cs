@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Xml.Linq;
-using Microsoft.Extensions.Options;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
@@ -210,10 +209,12 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
-    private TargetFrameworkUpgrader CreateTarget(UpgraderFixture fixture)
+    private static TargetFrameworkUpgrader CreateTarget(UpgraderFixture fixture)
     {
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<TargetFrameworkUpgrader>();
-        return new TargetFrameworkUpgrader(fixture.Console, options, logger);
+        return new(
+            fixture.Console,
+            fixture.Environment,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<TargetFrameworkUpgrader>());
     }
 }

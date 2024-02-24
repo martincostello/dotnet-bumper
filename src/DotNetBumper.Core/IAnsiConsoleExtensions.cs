@@ -14,8 +14,12 @@ public static class IAnsiConsoleExtensions
     /// Writes a disclaimer to the console.
     /// </summary>
     /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
+    /// <param name="environment">The current <see cref="IEnvironment"/>.</param>
     /// <param name="channel">The version of .NET that the project was upgraded to.</param>
-    public static void WriteDisclaimer(this IAnsiConsole console, Version channel)
+    public static void WriteDisclaimer(
+        this IAnsiConsole console,
+        IEnvironment environment,
+        Version channel)
     {
         List<string> disclaimer =
         [
@@ -27,7 +31,7 @@ public static class IAnsiConsoleExtensions
         var breakingChangesTitle = $"Breaking changes in .NET {channel.Major}";
         var breakingChangesUrl = BreakingChangesUrl(channel);
 
-        if (EnvironmentHelpers.IsGitHubActions)
+        if (environment.IsGitHubActions)
         {
             disclaimer.Add($"{breakingChangesEmoji} [bold]{breakingChangesTitle}[/] - {breakingChangesUrl}");
         }
@@ -53,9 +57,14 @@ public static class IAnsiConsoleExtensions
     /// Writes a message about use of a .NET runtime whose support period ends soon to the console.
     /// </summary>
     /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
+    /// <param name="environment">The current <see cref="IEnvironment"/>.</param>
     /// <param name="upgrade">The <see cref="UpgradeInfo"/> that is nearing the end of support.</param>
     /// <param name="daysRemaining">The number of days remaining until support ends.</param>
-    public static void WriteRuntimeNearingEndOfSupportWarning(this IAnsiConsole console, UpgradeInfo upgrade, double daysRemaining)
+    public static void WriteRuntimeNearingEndOfSupportWarning(
+        this IAnsiConsole console,
+        IEnvironment environment,
+        UpgradeInfo upgrade,
+        double daysRemaining)
     {
         var eolUtc = upgrade.EndOfLife.GetValueOrDefault().ToDateTime(TimeOnly.MinValue);
         console.WriteWarningLine($"Support for .NET {upgrade.Channel} ends in {daysRemaining:N0} days on {eolUtc:D}.");
@@ -63,7 +72,7 @@ public static class IAnsiConsoleExtensions
         var supportPolicyTitle = ".NET and .NET Core Support Policy";
         var supportPolicyUrl = SupportPolicyUrl(upgrade.Channel);
 
-        if (EnvironmentHelpers.IsGitHubActions)
+        if (environment.IsGitHubActions)
         {
             console.WriteWarningLine($"See [bold]{supportPolicyTitle}[/] for more information: {supportPolicyUrl}");
         }

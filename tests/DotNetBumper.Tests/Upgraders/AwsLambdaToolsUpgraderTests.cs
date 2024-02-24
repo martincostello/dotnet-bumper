@@ -232,10 +232,12 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
-    private AwsLambdaToolsUpgrader CreateTarget(UpgraderFixture fixture)
+    private static AwsLambdaToolsUpgrader CreateTarget(UpgraderFixture fixture)
     {
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<AwsLambdaToolsUpgrader>();
-        return new AwsLambdaToolsUpgrader(fixture.Console, options, logger);
+        return new(
+            fixture.Console,
+            fixture.Environment,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<AwsLambdaToolsUpgrader>());
     }
 }

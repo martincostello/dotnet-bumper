@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using Microsoft.Extensions.Options;
-
 namespace MartinCostello.DotNetBumper.Upgraders;
 
 public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
@@ -82,10 +80,12 @@ public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
-    private GlobalJsonUpgrader CreateTarget(UpgraderFixture fixture)
+    private static GlobalJsonUpgrader CreateTarget(UpgraderFixture fixture)
     {
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<GlobalJsonUpgrader>();
-        return new GlobalJsonUpgrader(fixture.Console, options, logger);
+        return new(
+            fixture.Console,
+            fixture.Environment,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<GlobalJsonUpgrader>());
     }
 }

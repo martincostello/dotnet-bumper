@@ -12,8 +12,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class GlobalJsonUpgrader(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<GlobalJsonUpgrader> logger) : FileUpgrader(console, options, logger)
+    ILogger<GlobalJsonUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
     public override int Order => -1;
 

@@ -284,10 +284,12 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
-    private ServerlessUpgrader CreateTarget(UpgraderFixture fixture)
+    private static ServerlessUpgrader CreateTarget(UpgraderFixture fixture)
     {
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<ServerlessUpgrader>();
-        return new ServerlessUpgrader(fixture.Console, options, logger);
+        return new(
+            fixture.Console,
+            fixture.Environment,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<ServerlessUpgrader>());
     }
 }

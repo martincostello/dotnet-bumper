@@ -35,16 +35,33 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
 
         var options = Options.Create(upgradeOptions);
 
+        var environment = Substitute.For<IEnvironment>();
+
+        // Return the opposite of the real environment for coverage
+        environment.IsGitHubActions
+                   .Returns(Environment.GetEnvironmentVariable("GITHUB_ACTIONS") != "true");
+
         var finder = new DotNetUpgradeFinder(
             new HttpClient(),
             options,
             outputHelper.ToLogger<DotNetUpgradeFinder>());
 
+        var upgrader = Substitute.For<IUpgrader>();
+
+        upgrader.UpgradeAsync(Arg.Any<UpgradeInfo>(), Arg.Any<CancellationToken>())
+                .Returns(ProcessingResult.Success);
+
+        var postProcessor = Substitute.For<IPostProcessor>();
+
+        postProcessor.PostProcessAsync(Arg.Any<UpgradeInfo>(), Arg.Any<CancellationToken>())
+                     .Returns(ProcessingResult.Success);
+
         return new ProjectUpgrader(
             fixture.Console,
+            environment,
             finder,
-            [Substitute.For<IUpgrader>()],
-            [Substitute.For<IPostProcessor>()],
+            [upgrader],
+            [postProcessor],
             TimeProvider.System,
             options,
             outputHelper.ToLogger<ProjectUpgrader>());

@@ -371,10 +371,12 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
-    private DockerfileUpgrader CreateTarget(UpgraderFixture fixture)
+    private static DockerfileUpgrader CreateTarget(UpgraderFixture fixture)
     {
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<DockerfileUpgrader>();
-        return new DockerfileUpgrader(fixture.Console, options, logger);
+        return new(
+            fixture.Console,
+            fixture.Environment,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<DockerfileUpgrader>());
     }
 }

@@ -304,10 +304,12 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
-    private VisualStudioCodeUpgrader CreateTarget(UpgraderFixture fixture)
+    private static VisualStudioCodeUpgrader CreateTarget(UpgraderFixture fixture)
     {
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<VisualStudioCodeUpgrader>();
-        return new VisualStudioCodeUpgrader(fixture.Console, options, logger);
+        return new(
+            fixture.Console,
+            fixture.Environment,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<VisualStudioCodeUpgrader>());
     }
 }

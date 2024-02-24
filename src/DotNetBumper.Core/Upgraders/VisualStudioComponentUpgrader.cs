@@ -12,8 +12,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class VisualStudioComponentUpgrader(
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<VisualStudioComponentUpgrader> logger) : FileUpgrader(console, options, logger)
+    ILogger<VisualStudioComponentUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
     protected override string Action => "Upgrading Visual Studio configuration";
 

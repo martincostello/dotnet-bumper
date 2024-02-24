@@ -10,8 +10,9 @@ namespace MartinCostello.DotNetBumper.PostProcessors;
 internal sealed partial class DotNetTestPostProcessor(
     DotNetProcess dotnet,
     IAnsiConsole console,
+    IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<DotNetTestPostProcessor> logger) : PostProcessor(console, options, logger)
+    ILogger<DotNetTestPostProcessor> logger) : PostProcessor(console, environment, options, logger)
 {
     protected override string Action => "Running tests";
 
@@ -187,7 +188,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
                 string idMarkup = entries.Key.EscapeMarkup();
 
-                if (!string.IsNullOrEmpty(helpLink) && !EnvironmentHelpers.IsGitHubActions)
+                if (!string.IsNullOrEmpty(helpLink) && !TaskEnvironment.IsGitHubActions)
                 {
                     string linkEscaped = helpLink.EscapeMarkup();
                     idMarkup = $"[link={linkEscaped}]{idMarkup}[/]";

@@ -14,6 +14,7 @@ namespace MartinCostello.DotNetBumper;
 /// A class that upgrades a project  to a newer version of .NET.
 /// </summary>
 /// <param name="console">The <see cref="IAnsiConsole"/> to use.</param>
+/// <param name="environment">The current <see cref="IEnvironment"/>.</param>
 /// <param name="upgradeFinder">The <see cref="DotNetUpgradeFinder"/> to use.</param>
 /// <param name="upgraders">The <see cref="IUpgrader"/> implementations to use.</param>
 /// <param name="postProcessors">The <see cref="IPostProcessor"/> implementations to use.</param>
@@ -22,6 +23,7 @@ namespace MartinCostello.DotNetBumper;
 /// <param name="logger">The <see cref="ILogger{ProjectUpgrader}"/> to use.</param>
 public partial class ProjectUpgrader(
     IAnsiConsole console,
+    IEnvironment environment,
     DotNetUpgradeFinder upgradeFinder,
     IEnumerable<IUpgrader> upgraders,
     IEnumerable<IPostProcessor> postProcessors,
@@ -76,7 +78,7 @@ public partial class ProjectUpgrader(
                 var eolUtc = value.ToDateTime(TimeOnly.MinValue);
                 var days = (eolUtc - utcNow).TotalDays;
 
-                console.WriteRuntimeNearingEndOfSupportWarning(upgrade, days);
+                console.WriteRuntimeNearingEndOfSupportWarning(environment, upgrade, days);
                 console.WriteLine();
             }
         }
@@ -153,7 +155,7 @@ public partial class ProjectUpgrader(
         {
             console.MarkupLine($"[aqua]{name}[/] upgrade to [white on purple].NET {upgrade.Channel}[/] [green]successful[/]! :rocket:");
             console.WriteLine();
-            console.WriteDisclaimer(upgrade.Channel);
+            console.WriteDisclaimer(environment, upgrade.Channel);
         }
         else if (result is ProcessingResult.None)
         {

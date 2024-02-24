@@ -2,17 +2,23 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using MartinCostello.Logging.XUnit;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Spectre.Console;
 using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper;
 
-internal sealed class UpgraderFixture(ITestOutputHelper outputHelper) : IDisposable, ITestOutputHelperAccessor
+internal sealed class UpgraderFixture(
+    ITestOutputHelper outputHelper,
+    IEnvironment? environment = null) : IDisposable, ITestOutputHelperAccessor
 {
     private readonly TestConsole _console = new();
     private readonly Project _project = new();
 
     public IAnsiConsole Console => _console;
+
+    public IEnvironment Environment { get; } = environment ??= new BumperEnvironment();
 
     public Project Project => _project;
 
@@ -21,6 +27,12 @@ internal sealed class UpgraderFixture(ITestOutputHelper outputHelper) : IDisposa
         get => outputHelper;
         set => throw new NotSupportedException();
     }
+
+    public ILogger<T> CreateLogger<T>()
+        => outputHelper.ToLogger<T>();
+
+    public IOptions<UpgradeOptions> CreateOptions()
+        => Options.Create(new UpgradeOptions() { ProjectPath = Project.DirectoryName });
 
     public void Dispose()
     {

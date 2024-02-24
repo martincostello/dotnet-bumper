@@ -180,10 +180,12 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         actual.ShouldBe(ProcessingResult.Success);
     }
 
-    private LeftoverReferencesPostProcessor CreateTarget(UpgraderFixture fixture)
+    private static LeftoverReferencesPostProcessor CreateTarget(UpgraderFixture fixture)
     {
-        var options = Options.Create(new UpgradeOptions() { ProjectPath = fixture.Project.DirectoryName });
-        var logger = outputHelper.ToLogger<LeftoverReferencesPostProcessor>();
-        return new LeftoverReferencesPostProcessor(fixture.Console, options, logger);
+        return new(
+            fixture.Console,
+            fixture.Environment,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<LeftoverReferencesPostProcessor>());
     }
 }
