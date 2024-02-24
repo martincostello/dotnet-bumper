@@ -3,6 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -13,6 +14,7 @@ namespace MartinCostello.DotNetBumper.PostProcessors;
 internal sealed partial class LeftoverReferencesPostProcessor(
     IAnsiConsole console,
     IEnvironment environment,
+    BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<LeftoverReferencesPostProcessor> logger) : PostProcessor(console, environment, options, logger)
 {
@@ -115,6 +117,8 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
     private void RenderTable(Dictionary<ProjectFile, List<PotentialFileEdit>> references)
     {
+        logContext.PotentialEdits = references;
+
         var table = new Table
         {
             Title = new TableTitle($"Remaining References - {references.Sum((p) => p.Value.Count)}"),

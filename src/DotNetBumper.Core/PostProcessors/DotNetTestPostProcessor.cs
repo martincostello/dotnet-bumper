@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -9,6 +10,7 @@ namespace MartinCostello.DotNetBumper.PostProcessors;
 
 internal sealed partial class DotNetTestPostProcessor(
     DotNetProcess dotnet,
+    BumperLogContext logContext,
     IAnsiConsole console,
     IEnvironment environment,
     IOptions<UpgradeOptions> options,
@@ -172,6 +174,11 @@ internal sealed partial class DotNetTestPostProcessor(
 
     private void WriteBuildLogs(IList<BumperLogEntry> logs)
     {
+        logContext.BuildLogs = new BumperLog()
+        {
+            Entries = logs,
+        };
+
         var table = new Table
         {
             Title = new TableTitle("Errors and warnings"),
@@ -193,8 +200,12 @@ internal sealed partial class DotNetTestPostProcessor(
             var typeEscaped = group.Key.EscapeMarkup();
             var type = new Markup($"[{color}]{typeEscaped}[/]");
 
+            logContext.BuildSummary[group.Key] = new Dictionary<string, long>();
+
             foreach (var entries in group.GroupBy((p) => p.Id).OrderBy((p) => p.Key))
             {
+                logContext.BuildSummary[group.Key][entries.Key ?? "default"] = entries.Count();
+
                 var helpLink = entries
                     .Where((p) => !string.IsNullOrWhiteSpace(p.HelpLink))
                     .Select((p) => p.HelpLink)
@@ -221,6 +232,8 @@ internal sealed partial class DotNetTestPostProcessor(
 
     private void WriteTestResults(BumperTestLog logs)
     {
+        logContext.TestLogs = logs;
+
         var table = new Table
         {
             Title = new TableTitle("dotnet test"),

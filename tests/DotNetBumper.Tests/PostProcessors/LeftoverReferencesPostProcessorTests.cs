@@ -195,6 +195,7 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         return new(
             fixture.Console,
             environment,
+            new(),
             fixture.CreateOptions(),
             fixture.CreateLogger<LeftoverReferencesPostProcessor>());
     }

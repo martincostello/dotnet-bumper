@@ -22,6 +22,8 @@ internal abstract class FileLogWriter(string fileName) : IBumperLogWriter
         await WriteLogAsync(context, stream, cancellationToken);
 
         await stream.FlushAsync(cancellationToken);
+
+        stream.SetLength(stream.Position);
     }
 
     /// <summary>
