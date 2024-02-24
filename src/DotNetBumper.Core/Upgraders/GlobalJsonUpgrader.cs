@@ -79,14 +79,23 @@ internal sealed partial class GlobalJsonUpgrader(
     {
         sdkVersion = null;
 
-        using var globalJson = JsonDocument.Parse(json, JsonHelpers.DocumentOptions);
-
-        if (globalJson.RootElement.TryGetProperty("sdk", out var sdk) &&
-            sdk.TryGetProperty("version", out var version) &&
-            version.ValueKind == JsonValueKind.String &&
-            NuGetVersion.TryParse(version.GetString(), out sdkVersion))
+        try
         {
-            return true;
+            using var globalJson = JsonDocument.Parse(json, JsonHelpers.DocumentOptions);
+
+            if (globalJson.RootElement.ValueKind == JsonValueKind.Object &&
+                globalJson.RootElement.TryGetProperty("sdk", out var sdk) &&
+                sdk.ValueKind == JsonValueKind.Object &&
+                sdk.TryGetProperty("version", out var version) &&
+                version.ValueKind == JsonValueKind.String &&
+                NuGetVersion.TryParse(version.GetString(), out sdkVersion))
+            {
+                return true;
+            }
+        }
+        catch (JsonException)
+        {
+            // Ignore
         }
 
         return false;

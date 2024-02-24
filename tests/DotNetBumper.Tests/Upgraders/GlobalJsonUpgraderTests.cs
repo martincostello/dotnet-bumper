@@ -80,6 +80,43 @@ public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
+    [Theory]
+    [InlineData("Not JSON")]
+    [InlineData("[]")]
+    [InlineData("[]]")]
+    [InlineData("\"value\"")]
+    [InlineData("{}")]
+    [InlineData("{\"sdk\":1}")]
+    [InlineData("{\"sdk\":null}")]
+    [InlineData("{\"sdk\":true}")]
+    [InlineData("{\"sdk\":\"bar\"}")]
+    [InlineData("{\"sdk\":{}}")]
+    [InlineData("{\"sdk\":[]}")]
+    public async Task UpgradeAsync_Handles_Invalid_Json(string content)
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string globalJson = await fixture.Project.AddFileAsync("global.json", content);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.201"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.Warning);
+    }
+
     private static GlobalJsonUpgrader CreateTarget(UpgraderFixture fixture)
     {
         return new(
