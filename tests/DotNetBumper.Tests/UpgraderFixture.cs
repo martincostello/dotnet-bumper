@@ -4,6 +4,7 @@
 using MartinCostello.Logging.XUnit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NSubstitute;
 using Spectre.Console;
 using Spectre.Console.Testing;
 
@@ -18,7 +19,7 @@ internal sealed class UpgraderFixture(
 
     public IAnsiConsole Console => _console;
 
-    public IEnvironment Environment => environment ??= new BumperEnvironment(_console);
+    public IEnvironment Environment => environment ??= CreateEnvironment();
 
     public Project Project => _project;
 
@@ -44,5 +45,16 @@ internal sealed class UpgraderFixture(
         }
 
         _project?.Dispose();
+    }
+
+    private static IEnvironment CreateEnvironment()
+    {
+        var environment = Substitute.For<IEnvironment>();
+
+        // Use values that give the most coverage
+        environment.IsGitHubActions.Returns(false);
+        environment.SupportsLinks.Returns(true);
+
+        return environment;
     }
 }
