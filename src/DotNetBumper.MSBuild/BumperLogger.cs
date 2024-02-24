@@ -17,6 +17,8 @@ public sealed class BumperLogger : Logger
     /// </summary>
     public const string LoggerFilePathVariableName = "MartinCostello_DotNetBumper_LogFilePath";
 
+    private const string UnknownId = "Unknown";
+
     private readonly List<BumperLogEntry> _logEntries = [];
     private string? _logFilePath;
 
@@ -68,7 +70,7 @@ public sealed class BumperLogger : Logger
         var entry = new BumperLogEntry()
         {
             HelpLink = args.HelpLink,
-            Id = args.Code,
+            Id = args.Code ?? UnknownId,
             Message = args.Message,
             Type = "Warning",
         };
@@ -81,7 +83,7 @@ public sealed class BumperLogger : Logger
         var entry = new BumperLogEntry()
         {
             HelpLink = args.HelpLink,
-            Id = args.Code,
+            Id = args.Code ?? UnknownId,
             Message = args.Message,
             Type = "Error",
         };
