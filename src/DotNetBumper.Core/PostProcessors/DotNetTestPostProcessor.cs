@@ -92,10 +92,23 @@ internal sealed partial class DotNetTestPostProcessor(
         }
     }
 
-    private static string GetTestAdapterPath()
+    private static TemporaryDirectory GetTestAdapter()
     {
         var loggerAssembly = typeof(BumperTestLogger).Assembly.Location;
-        return Path.GetDirectoryName(loggerAssembly) ?? Environment.CurrentDirectory;
+        var copyFileName = Path.GetFileName(loggerAssembly);
+
+        var directory = new TemporaryDirectory();
+
+        try
+        {
+            File.Copy(loggerAssembly, Path.Combine(directory.Path, copyFileName), overwrite: true);
+            return directory;
+        }
+        catch (Exception)
+        {
+            directory.Dispose();
+            throw;
+        }
     }
 
     private async Task<DotNetResult> RunTestsAsync(
@@ -110,21 +123,22 @@ internal sealed partial class DotNetTestPostProcessor(
             string name = ProjectHelpers.RelativeName(Options.ProjectPath, project);
             context.Status = StatusMessage($"Running tests for {name}...");
 
-            using var temporaryDirectory = new TemporaryDirectory();
+            using var adapterDirectory = GetTestAdapter();
+            using var logsDirectory = new TemporaryDirectory();
 
             var environmentVariables = new Dictionary<string, string?>(1)
             {
-                [BumperTestLogger.LoggerDirectoryPathVariableName] = temporaryDirectory.Path,
+                [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
             };
 
             // See https://learn.microsoft.com/dotnet/core/tools/dotnet-test
             var result = await dotnet.RunWithLoggerAsync(
                 project,
-                ["test", "--nologo", "--verbosity", "quiet", "--logger", BumperTestLogger.ExtensionUri, "--test-adapter-path", GetTestAdapterPath()],
+                ["test", "--nologo", "--verbosity", "quiet", "--logger", BumperTestLogger.ExtensionUri, "--test-adapter-path", adapterDirectory.Path],
                 environmentVariables,
                 cancellationToken);
 
-            result.TestLogs = await LogReader.GetTestLogsAsync(temporaryDirectory.Path, Logger, cancellationToken);
+            result.TestLogs = await LogReader.GetTestLogsAsync(logsDirectory.Path, Logger, cancellationToken);
 
             if (!result.Success)
             {
