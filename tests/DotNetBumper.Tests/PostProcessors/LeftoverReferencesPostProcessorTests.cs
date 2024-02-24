@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using Microsoft.Extensions.Options;
+using NSubstitute;
 
 namespace MartinCostello.DotNetBumper.PostProcessors;
 
@@ -182,9 +182,12 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
 
     private static LeftoverReferencesPostProcessor CreateTarget(UpgraderFixture fixture)
     {
+        var environment = Substitute.For<IEnvironment>();
+        environment.SupportsLinks.Returns(true);
+
         return new(
             fixture.Console,
-            fixture.Environment,
+            environment,
             fixture.CreateOptions(),
             fixture.CreateLogger<LeftoverReferencesPostProcessor>());
     }

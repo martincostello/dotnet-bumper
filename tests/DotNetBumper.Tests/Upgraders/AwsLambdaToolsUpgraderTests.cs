@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.Json;
-using Microsoft.Extensions.Options;
 using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
