@@ -109,7 +109,7 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
     }
 
     [Theory]
-    [InlineData(false, new[] { "file.txt", "src/Program.cs", "src/Project.csproj", "src/bin/Project.dll", "src/bin/Project.pdb" })]
+    [InlineData(false, new[] { ".idea/config", ".vs/config", "file.txt", "src/Program.cs", "src/Project.csproj" })]
     [InlineData(true, new[] { ".gitignore", "file.txt", "src/Program.cs", "src/Project.csproj" })]
     public async Task EnumerateProjectFilesAsync_With_Git_Repository(
         bool hasGitIgnore,
@@ -124,7 +124,13 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
             await fixture.Project.AddGitIgnoreAsync();
         }
 
+        await fixture.Project.AddFileAsync("demo.mp4", "<A video>");
         await fixture.Project.AddFileAsync("file.txt", "Hello, World!");
+        await fixture.Project.AddFileAsync("logo.png", "<An image>");
+
+        await fixture.Project.AddFileAsync(".idea/config", "<Some Rider config>");
+        await fixture.Project.AddFileAsync(".vs/config", "<Some Visual Studio config>");
+
         await fixture.Project.AddFileAsync("src/Program.cs", "Console.WriteLine(\"Hello, World!\"");
         await fixture.Project.AddFileAsync("src/Project.csproj", "<Project/>");
 

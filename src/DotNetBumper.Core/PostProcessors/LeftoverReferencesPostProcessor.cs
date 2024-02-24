@@ -16,6 +16,11 @@ internal sealed partial class LeftoverReferencesPostProcessor(
     IOptions<UpgradeOptions> options,
     ILogger<LeftoverReferencesPostProcessor> logger) : PostProcessor(console, environment, options, logger)
 {
+    static LeftoverReferencesPostProcessor()
+    {
+        MimeTypes.FallbackMimeType = string.Empty;
+    }
+
     protected override string Action => "Find leftover references";
 
     protected override string InitialStatus => "Search files";
@@ -56,7 +61,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
             var relativePath = RelativeName(path).Replace('\\', '/');
 
-            if (gitignore?.IsIgnored(relativePath) is true)
+            if (gitignore?.IsIgnored(relativePath) is true || IsIgnoredFileType(path))
             {
                 continue;
             }
@@ -90,6 +95,27 @@ internal sealed partial class LeftoverReferencesPostProcessor(
         }
 
         return ProcessingResult.Success;
+    }
+
+    private static bool IsIgnoredFileType(string path)
+    {
+        if (!MimeTypes.TryGetMimeType(path, out var mimeType))
+        {
+            return false;
+        }
+
+        var segments = mimeType.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (segments.Length < 1)
+        {
+            return false;
+        }
+
+        return segments[0] switch
+        {
+            "application" or "font" or "image" or "video" => true,
+            _ => false,
+        };
     }
 
     private void RenderTable(Dictionary<ProjectFile, List<PotentialFileEdit>> references)

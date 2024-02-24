@@ -44,6 +44,8 @@ internal sealed class Project : IDisposable
     {
         gitignore ??=
             """
+            .idea
+            .vs
             bin
             obj
             """;
