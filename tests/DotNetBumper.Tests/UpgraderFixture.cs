@@ -18,7 +18,7 @@ internal sealed class UpgraderFixture(
 
     public IAnsiConsole Console => _console;
 
-    public IEnvironment Environment { get; } = environment ??= new BumperEnvironment();
+    public IEnvironment Environment => environment ??= new BumperEnvironment(_console);
 
     public Project Project => _project;
 

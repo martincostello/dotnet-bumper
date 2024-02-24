@@ -11,5 +11,10 @@ public interface IEnvironment
     /// <summary>
     /// Gets a value indicating whether the application is running in GitHub Actions.
     /// </summary>
-    bool IsGitHubActions => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") is "true";
+    bool IsGitHubActions { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the environment supports rendering links.
+    /// </summary>
+    bool SupportsLinks { get; }
 }

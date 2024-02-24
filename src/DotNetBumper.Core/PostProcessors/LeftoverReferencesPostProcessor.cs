@@ -117,7 +117,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
         {
             string path = $"{file.RelativePath.EscapeMarkup()}:{edit.Line}";
 
-            if (!environment.IsGitHubActions)
+            if (environment.SupportsLinks)
             {
                 string location = VisualStudioCodeLink(file, edit);
                 path = $"[link={location}]{path}[/]";

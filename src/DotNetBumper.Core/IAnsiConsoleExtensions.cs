@@ -1,4 +1,4 @@
-// Copyright (c) Martin Costello, 2024. All rights reserved.
+﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using Spectre.Console;
@@ -31,13 +31,13 @@ public static class IAnsiConsoleExtensions
         var breakingChangesTitle = $"Breaking changes in .NET {channel.Major}";
         var breakingChangesUrl = BreakingChangesUrl(channel);
 
-        if (environment.IsGitHubActions)
+        if (environment.SupportsLinks)
         {
-            disclaimer.Add($"{breakingChangesEmoji} [bold]{breakingChangesTitle}[/] - {breakingChangesUrl}");
+            disclaimer.Add($"{breakingChangesEmoji} [link={breakingChangesUrl}]{breakingChangesTitle}[/]");
         }
         else
         {
-            disclaimer.Add($"{breakingChangesEmoji} [link={breakingChangesUrl}]{breakingChangesTitle}[/]");
+            disclaimer.Add($"{breakingChangesEmoji} [bold]{breakingChangesTitle}[/] - {breakingChangesUrl}");
         }
 
         var panel = new Panel(string.Join(Environment.NewLine, disclaimer))
@@ -72,13 +72,13 @@ public static class IAnsiConsoleExtensions
         var supportPolicyTitle = ".NET and .NET Core Support Policy";
         var supportPolicyUrl = SupportPolicyUrl(upgrade.Channel);
 
-        if (environment.IsGitHubActions)
+        if (environment.SupportsLinks)
         {
-            console.WriteWarningLine($"See [bold]{supportPolicyTitle}[/] for more information: {supportPolicyUrl}");
+            console.WriteWarningLine($"See [link={supportPolicyUrl}]{supportPolicyTitle}[/] for more information.");
         }
         else
         {
-            console.WriteWarningLine($"See [link={supportPolicyUrl}]{supportPolicyTitle}[/] for more information.");
+            console.WriteWarningLine($"See [bold]{supportPolicyTitle}[/] for more information: {supportPolicyUrl}");
         }
 
         static string SupportPolicyUrl(Version channel)

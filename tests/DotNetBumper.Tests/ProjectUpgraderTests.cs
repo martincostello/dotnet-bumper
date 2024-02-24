@@ -5,6 +5,7 @@ using MartinCostello.DotNetBumper.PostProcessors;
 using MartinCostello.DotNetBumper.Upgraders;
 using Microsoft.Extensions.Options;
 using NSubstitute;
+using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper;
 
@@ -40,6 +41,9 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
         // Return the opposite of the real environment for coverage
         environment.IsGitHubActions
                    .Returns(Environment.GetEnvironmentVariable("GITHUB_ACTIONS") != "true");
+
+        environment.SupportsLinks
+                   .Returns(!AnsiConsole.Profile.Capabilities.Links);
 
         var finder = new DotNetUpgradeFinder(
             new HttpClient(),

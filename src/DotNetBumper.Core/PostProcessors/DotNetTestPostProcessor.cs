@@ -188,7 +188,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
                 string idMarkup = entries.Key.EscapeMarkup();
 
-                if (!string.IsNullOrEmpty(helpLink) && !TaskEnvironment.IsGitHubActions)
+                if (!string.IsNullOrEmpty(helpLink) && TaskEnvironment.SupportsLinks)
                 {
                     string linkEscaped = helpLink.EscapeMarkup();
                     idMarkup = $"[link={linkEscaped}]{idMarkup}[/]";
