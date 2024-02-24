@@ -5,7 +5,7 @@ namespace MartinCostello.DotNetBumper.Logging;
 
 internal class MarkdownLogWriter(string fileName) : FileLogWriter(fileName)
 {
-    protected override Task WriteLogAsync(BumperLogContext context, TextWriter writer, CancellationToken cancellationToken)
+    protected override Task WriteLogAsync(BumperLogContext context, Stream stream, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

@@ -18,21 +18,20 @@ internal abstract class FileLogWriter(string fileName) : IBumperLogWriter
     public virtual async Task WriteAsync(BumperLogContext context, CancellationToken cancellationToken)
     {
         await using var stream = File.OpenWrite(FullName);
-        await using var writer = new StreamWriter(stream);
 
-        await WriteLogAsync(context, writer, cancellationToken);
+        await WriteLogAsync(context, stream, cancellationToken);
 
-        await writer.FlushAsync(cancellationToken);
+        await stream.FlushAsync(cancellationToken);
     }
 
     /// <summary>
     /// Writes the log for the specified context.
     /// </summary>
     /// <param name="context">The <see cref="BumperLogContext"/> to generate the log from.</param>
-    /// <param name="writer">The <see cref="TextWriter"/> to write the log content to.</param>
+    /// <param name="stream">The <see cref="Stream"/> to write the log content to.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to use.</param>
     /// <returns>
     /// A <see cref="Task"/> representing the asynchronous operation to generate the log.
     /// </returns>
-    protected abstract Task WriteLogAsync(BumperLogContext context, TextWriter writer, CancellationToken cancellationToken);
+    protected abstract Task WriteLogAsync(BumperLogContext context, Stream stream, CancellationToken cancellationToken);
 }

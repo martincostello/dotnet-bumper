@@ -56,6 +56,8 @@ public partial class ProjectUpgrader(
     /// </returns>
     public virtual async Task<int> UpgradeAsync(CancellationToken cancellationToken = default)
     {
+        logContext.StartedAt = timeProvider.GetUtcNow();
+
         var upgrade = await upgradeFinder.GetUpgradeAsync(cancellationToken);
 
         if (upgrade is null)
@@ -200,6 +202,8 @@ public partial class ProjectUpgrader(
             BumperLogFormat.Markdown => new JsonLogFormatter(options.Value.LogPath ?? "dotnet-bumper.md"),
             _ => new NullLogWriter(),
         };
+
+        logContext.FinishedAt = timeProvider.GetUtcNow();
 
         await writer.WriteAsync(logContext, cancellationToken);
     }

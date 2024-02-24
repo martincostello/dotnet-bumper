@@ -8,4 +8,13 @@ namespace MartinCostello.DotNetBumper.Logging;
 /// </summary>
 public sealed class BumperLogContext
 {
+    /// <summary>
+    /// Gets or sets the date and time the upgrade started.
+    /// </summary>
+    public DateTimeOffset StartedAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the date and time the upgrade finished.
+    /// </summary>
+    public DateTimeOffset FinishedAt { get; set; }
 }
