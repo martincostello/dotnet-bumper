@@ -246,7 +246,7 @@ internal sealed partial class DockerfileUpgrader(
 
             buffered.Seek(0, SeekOrigin.Begin);
 
-            using var output = File.OpenWrite(path);
+            await using var output = File.OpenWrite(path);
 
             await buffered.CopyToAsync(output, cancellationToken);
             await buffered.FlushAsync(cancellationToken);
