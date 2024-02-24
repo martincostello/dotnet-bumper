@@ -154,7 +154,8 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         using var fixture = new UpgraderFixture(outputHelper);
         fixture.Project.AddGitRepository();
 
-        await fixture.Project.AddFileAsync("file.txt", "Hello, World!");
+        await fixture.Project.AddFileAsync("file.txt", "net6.0");
+        await fixture.Project.AddFileAsync("README.md", "Hello World!");
         await fixture.Project.AddFileAsync("src/Program.cs", "Console.WriteLine(\"Hello, World!\"");
         await fixture.Project.AddFileAsync("src/Project.csproj", "<Project/>");
 
