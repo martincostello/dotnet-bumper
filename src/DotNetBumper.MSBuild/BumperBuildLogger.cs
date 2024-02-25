@@ -108,8 +108,10 @@ public sealed class BumperBuildLogger : Logger
                 grouped[entries.Key!] = entries.Count();
             }
 
-            summary[group.Key!] = new Dictionary<string, long>();
+            summary[group.Key!] = grouped;
         }
+
+        log.Summary = summary;
 
         return log;
     }
