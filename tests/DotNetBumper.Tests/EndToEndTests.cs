@@ -148,14 +148,20 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData(false, false, 0)]
-    [InlineData(false, true, 0)]
-    [InlineData(true, false, 0)]
-    [InlineData(true, true, 1)]
+    [InlineData(false, false, null, 0, null)]
+    [InlineData(false, false, "Json", 0, "dotnet-bumper.json")]
+    [InlineData(false, true, null, 0, null)]
+    [InlineData(false, true, "Json", 0, "dotnet-bumper.json")]
+    [InlineData(true, false, null, 0, null)]
+    [InlineData(true, false, "Json", 0, "dotnet-bumper.json")]
+    [InlineData(true, true, null, 1, null)]
+    [InlineData(true, true, "Json", 1, "dotnet-bumper.json")]
     public async Task Application_Behaves_Correctly_If_Tests_Fail(
         bool runTests,
         bool treatWarningsAsErrors,
-        int expected)
+        string? logFormat,
+        int expectedResult,
+        string? expectedLogFile)
     {
         // Arrange
         string sdkVersion = "6.0.100";
@@ -181,6 +187,16 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             args.Add("--warnings-as-errors");
         }
 
+        if (logFormat is not null)
+        {
+            args.AddRange(["--log-format", logFormat]);
+        }
+
+        if (expectedLogFile is not null)
+        {
+            args.AddRange(["--log-path", Path.Combine(fixture.Project.DirectoryName, expectedLogFile)]);
+        }
+
         // Act
         int actual = await Bumper.RunAsync(
             fixture.Console,
@@ -189,7 +205,23 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             CancellationToken.None);
 
         // Assert
-        actual.ShouldBe(expected);
+        actual.ShouldBe(expectedResult);
+
+        if (expectedLogFile is not null)
+        {
+            var logFile = Path.Combine(fixture.Project.DirectoryName, expectedLogFile);
+            File.Exists(logFile).ShouldBeTrue();
+
+            string logContent = await File.ReadAllTextAsync(logFile);
+
+            logContent.ShouldNotBeNullOrWhiteSpace();
+
+            if (runTests)
+            {
+                logContent.ShouldContain("Always_Fails_Test");
+                logContent.ShouldContain("Failed");
+            }
+        }
     }
 
     [Fact]
