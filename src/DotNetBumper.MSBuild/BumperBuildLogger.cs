@@ -17,8 +17,6 @@ public sealed class BumperBuildLogger : Logger
     /// </summary>
     public const string LoggerFilePathVariableName = "MartinCostello_DotNetBumper_BuildLogPath";
 
-    private const string NoIdLabel = "None";
-
     private readonly List<BumperBuildLogEntry> _logEntries = [];
     private string? _logFilePath;
 
@@ -62,7 +60,7 @@ public sealed class BumperBuildLogger : Logger
         _logEntries.Clear();
     }
 
-    private static string Id(string? code) => code ?? NoIdLabel;
+    private static string Id(string? code) => code ?? "None";
 
     private void OnWarningRaised(object sender, BuildWarningEventArgs args)
     {
