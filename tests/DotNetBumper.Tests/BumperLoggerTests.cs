@@ -16,7 +16,7 @@ public class BumperLoggerTests
         var eventSource = Substitute.For<IEventSource>();
         var logFilePath = Path.GetTempFileName();
 
-        var logger = new BumperLogger();
+        var logger = new BumperBuildLogger();
 
         // Act
         logger.Initialize(eventSource, logFilePath);
@@ -26,7 +26,7 @@ public class BumperLoggerTests
         File.Exists(logFilePath).ShouldBeTrue();
 
         using var stream = File.OpenRead(logFilePath);
-        var actual = await JsonSerializer.DeserializeAsync<BumperLog>(stream);
+        var actual = await JsonSerializer.DeserializeAsync<BumperBuildLog>(stream);
 
         actual.ShouldNotBeNull();
         actual.Entries.ShouldNotBeNull();
@@ -64,7 +64,7 @@ public class BumperLoggerTests
         var eventSource = Substitute.For<IEventSource>();
 
         var logFilePath = Path.GetTempFileName();
-        var logger = new BumperLogger();
+        var logger = new BumperBuildLogger();
 
         // Act
         logger.Initialize(eventSource, logFilePath);
@@ -78,7 +78,7 @@ public class BumperLoggerTests
         File.Exists(logFilePath).ShouldBeTrue();
 
         using var stream = File.OpenRead(logFilePath);
-        var actual = await JsonSerializer.DeserializeAsync<BumperLog>(stream);
+        var actual = await JsonSerializer.DeserializeAsync<BumperBuildLog>(stream);
 
         actual.ShouldNotBeNull();
         actual.Entries.ShouldNotBeNull();
@@ -100,7 +100,7 @@ public class BumperLoggerTests
         var eventSource = Substitute.For<IEventSource>();
         var logFilePath = string.Empty;
 
-        var logger = new BumperLogger();
+        var logger = new BumperBuildLogger();
 
         // Act and Assert
         Should.Throw<InvalidOperationException>(

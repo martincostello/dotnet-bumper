@@ -10,16 +10,16 @@ namespace MartinCostello.DotNetBumper;
 /// <summary>
 /// A class representing a custom .NET Bumper logger for MSBuild.
 /// </summary>
-public sealed class BumperLogger : Logger
+public sealed class BumperBuildLogger : Logger
 {
     /// <summary>
     /// The name of the environment variable that specifies the path to the log file.
     /// </summary>
-    public const string LoggerFilePathVariableName = "MartinCostello_DotNetBumper_LogFilePath";
+    public const string LoggerFilePathVariableName = "MartinCostello_DotNetBumper_BuildLogPath";
 
     private const string UnknownId = "Unknown";
 
-    private readonly List<BumperLogEntry> _logEntries = [];
+    private readonly List<BumperBuildLogEntry> _logEntries = [];
     private string? _logFilePath;
 
     /// <inheritdoc />
@@ -49,12 +49,9 @@ public sealed class BumperLogger : Logger
     {
         try
         {
-            var output = new BumperLog()
-            {
-                Entries = [.._logEntries],
-            };
+            BumperBuildLog log = CreateBuildLog();
+            string json = JsonSerializer.Serialize(log);
 
-            string json = JsonSerializer.Serialize(output);
             File.WriteAllText(_logFilePath, json);
         }
         catch (Exception)
@@ -65,14 +62,14 @@ public sealed class BumperLogger : Logger
         _logEntries.Clear();
     }
 
-    private static string Code(string? code) => code ?? UnknownId;
+    private static string Id(string? code) => code ?? UnknownId;
 
     private void OnWarningRaised(object sender, BuildWarningEventArgs args)
     {
-        var entry = new BumperLogEntry()
+        var entry = new BumperBuildLogEntry()
         {
             HelpLink = args.HelpLink,
-            Id = Code(args.Code),
+            Id = Id(args.Code),
             Message = args.Message,
             Type = "Warning",
         };
@@ -82,14 +79,38 @@ public sealed class BumperLogger : Logger
 
     private void OnErrorRaised(object sender, BuildErrorEventArgs args)
     {
-        var entry = new BumperLogEntry()
+        var entry = new BumperBuildLogEntry()
         {
             HelpLink = args.HelpLink,
-            Id = Code(args.Code),
+            Id = Id(args.Code),
             Message = args.Message,
             Type = "Error",
         };
 
         _logEntries.Add(entry);
+    }
+
+    private BumperBuildLog CreateBuildLog()
+    {
+        var log = new BumperBuildLog()
+        {
+            Entries = [.. _logEntries],
+        };
+
+        var summary = new Dictionary<string, IDictionary<string, long>>();
+
+        foreach (var group in log.Entries.GroupBy((p) => p.Type).OrderBy((p) => p.Key))
+        {
+            var grouped = new Dictionary<string, long>();
+
+            foreach (var entries in group.GroupBy((p) => p.Id).OrderBy((p) => p.Key))
+            {
+                grouped[entries.Key!] = entries.Count();
+            }
+
+            summary[group.Key!] = new Dictionary<string, long>();
+        }
+
+        return log;
     }
 }

@@ -8,7 +8,7 @@ namespace MartinCostello.DotNetBumper;
 /// <summary>
 /// A class representing a log entry from .NET Bumper. This class cannot be inherited.
 /// </summary>
-public sealed class BumperLogEntry
+public sealed class BumperBuildLogEntry
 {
     /// <summary>
     /// Gets or sets the ID of the log entry.

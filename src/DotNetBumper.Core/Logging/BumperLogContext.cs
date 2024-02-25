@@ -28,17 +28,17 @@ public sealed class BumperLogContext
     /// <summary>
     /// Gets or sets the build logs, if any.
     /// </summary>
-    public IDictionary<string, IDictionary<string, long>> BuildSummary { get; set; } = new Dictionary<string, IDictionary<string, long>>();
-
-    /// <summary>
-    /// Gets or sets the build logs, if any.
-    /// </summary>
-    public BumperLog? BuildLogs { get; set; }
+    public BumperBuildLog? BuildLogs { get; set; }
 
     /// <summary>
     /// Gets or sets the test logs, if any.
     /// </summary>
     public BumperTestLog? TestLogs { get; set; }
+
+    /// <summary>
+    /// Gets or sets any warnings encountered during the upgrade.
+    /// </summary>
+    public IList<string> Warnings { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the potential file edits, if any.

@@ -8,13 +8,16 @@ namespace MartinCostello.DotNetBumper.Logging;
 
 internal sealed class JsonLogFormatter(string fileName) : FileLogWriter(fileName)
 {
+    private static readonly JsonSerializerOptions DocumentOptions = new() { WriteIndented = true };
+    private static readonly JsonWriterOptions WriterOptions = new() { Indented = true };
+
     protected override async Task WriteLogAsync(BumperLogContext context, Stream stream, CancellationToken cancellationToken)
     {
         var document = CreateDocument(context);
 
-        var writer = new Utf8JsonWriter(stream);
+        await using var writer = new Utf8JsonWriter(stream, WriterOptions);
 
-        document.WriteTo(writer);
+        document.WriteTo(writer, DocumentOptions);
 
         await writer.FlushAsync(cancellationToken);
         await stream.FlushAsync(cancellationToken);
@@ -29,9 +32,9 @@ internal sealed class JsonLogFormatter(string fileName) : FileLogWriter(fileName
             ["sdkVersion"] = JsonValue.Create(context.DotNetSdkVersion),
         };
 
-        if (context.BuildSummary is not null || context.BuildLogs is not null)
+        if (context.BuildLogs is not null)
         {
-            WriteBuild(root, context.BuildSummary, context.BuildLogs);
+            WriteBuild(root, context.BuildLogs);
         }
 
         if (context.TestLogs is not null)
@@ -70,12 +73,11 @@ internal sealed class JsonLogFormatter(string fileName) : FileLogWriter(fileName
 
     private static void WriteBuild(
         JsonObject root,
-        IDictionary<string, IDictionary<string, long>>? summary,
-        BumperLog? logs)
+        BumperBuildLog? logs)
     {
         var build = new JsonObject();
 
-        if (summary is not null)
+        if (logs?.Summary is { } summary)
         {
             var summarized = new JsonObject();
 
