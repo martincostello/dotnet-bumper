@@ -14,7 +14,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     {
         var testCases = new TheoryData<BumperTestCase>
         {
-            new("6.0.100", ["net6.0"]),
             new("7.0.100", ["net6.0", "net7.0"]),
             new("6.0.100", ["net6.0"], ["--channel=7.0"]),
             new("6.0.100", ["net6.0"], ["--channel=8.0"]),
@@ -26,6 +25,18 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             new("7.0.100", ["net7.0"], [], Packages(("System.Text.Json", "7.0.0"))),
             new("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("System.Text.Json", "8.0.0"))),
         };
+
+        List<string> formats = ["Json", "Markdown"];
+
+        if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") is "true")
+        {
+            formats.Add("GitHubActions");
+        }
+
+        foreach (string format in formats)
+        {
+            testCases.Add(new("6.0.100", ["net6.0"], ["--log-format", format]));
+        }
 
         return testCases;
     }

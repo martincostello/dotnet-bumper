@@ -106,5 +106,8 @@ internal class MarkdownLogWriter(string fileName) : FileLogWriter(fileName)
 
             await writer.WriteLineAsync();
         }
+
+        await writer.WriteLineAsync();
+        await writer.WriteLineAsync();
     }
 }
