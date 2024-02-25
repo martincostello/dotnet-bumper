@@ -283,6 +283,34 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(1);
     }
 
+    [Fact]
+    public async Task Application_Validates_Log_Format()
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        // Act
+        int actual = await RunAsync(fixture, ["--log-format=foo"]);
+
+        // Assert
+        actual.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData("None")]
+    [InlineData("GitHubActions")]
+    public async Task Application_Validates_Log_Path(string format)
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        // Act
+        int actual = await RunAsync(fixture, ["--log-format", format, "--log-path", "foo"]);
+
+        // Assert
+        actual.ShouldBe(1);
+    }
+
     [Theory]
     [InlineData("--help")]
     [InlineData("--version")]
