@@ -75,7 +75,7 @@ internal class MarkdownLogWriter(string fileName) : FileLogWriter(fileName)
             await writer.WriteLineAsync("## Test Summary");
             await writer.WriteLineAsync();
             await writer.WriteLineAsync("| **Container** | **Passed** :white_check_mark: | **Failed** :x: | **Skipped** :zzz: |");
-            await writer.WriteLineAsync("|:--|--:|--:|--:|");
+            await writer.WriteLineAsync("|:--------------|------------------------------:|---------------:|------------------:|");
 
             foreach ((var container, var entries) in context.TestLogs.Summary)
             {
