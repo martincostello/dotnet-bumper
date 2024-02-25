@@ -108,9 +108,9 @@ internal class MarkdownLogWriter(string fileName) : FileLogWriter(fileName)
             await writer.WriteLineAsync("| **Location** | **Text** |");
             await writer.WriteLineAsync("|:-------------|:---------|");
 
-            foreach (var (project, edits) in context.RemainingReferences)
+            foreach (var (project, edits) in context.RemainingReferences.OrderBy((p) => p.Key.RelativePath))
             {
-                foreach (var edit in edits)
+                foreach (var edit in edits.OrderBy((p) => p.Line).ThenBy((p) => p.Column))
                 {
                     await writer.WriteLineAsync($"| `{project.RelativePath}:{edit.Line}` | `{edit.Text}` |");
                 }

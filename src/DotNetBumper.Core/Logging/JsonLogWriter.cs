@@ -58,11 +58,11 @@ internal sealed class JsonLogWriter(string fileName) : FileLogWriter(fileName)
         {
             var references = new JsonObject();
 
-            foreach ((var file, var remaining) in context.RemainingReferences)
+            foreach ((var file, var remaining) in context.RemainingReferences.OrderBy((p) => p.Key.RelativePath))
             {
                 var items = new JsonArray();
 
-                foreach (var edit in remaining)
+                foreach (var edit in remaining.OrderBy((p) => p.Line).ThenBy((p) => p.Column))
                 {
                     var item = new JsonObject()
                     {

@@ -129,7 +129,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
         foreach ((var file, var values) in references.OrderBy((p) => p.Key.RelativePath))
         {
-            foreach (var item in values)
+            foreach (var item in values.OrderBy((p) => p.Line).ThenBy((p) => p.Column))
             {
                 table.AddRow(Location(file, item, TaskEnvironment), Match(item.Text));
             }
