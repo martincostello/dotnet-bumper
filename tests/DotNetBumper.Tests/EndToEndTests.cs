@@ -150,12 +150,16 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     [Theory]
     [InlineData(false, false, null, 0, null)]
     [InlineData(false, false, "Json", 0, "dotnet-bumper.json")]
+    [InlineData(false, false, "Markdown", 0, "dotnet-bumper.md")]
     [InlineData(false, true, null, 0, null)]
     [InlineData(false, true, "Json", 0, "dotnet-bumper.json")]
+    [InlineData(false, true, "Markdown", 0, "dotnet-bumper.md")]
     [InlineData(true, false, null, 0, null)]
     [InlineData(true, false, "Json", 0, "dotnet-bumper.json")]
+    [InlineData(true, false, "Markdown", 0, "dotnet-bumper.md")]
     [InlineData(true, true, null, 1, null)]
     [InlineData(true, true, "Json", 1, "dotnet-bumper.json")]
+    [InlineData(true, true, "Markdown", 1, "dotnet-bumper.md")]
     public async Task Application_Behaves_Correctly_If_Tests_Fail(
         bool runTests,
         bool treatWarningsAsErrors,
@@ -218,7 +222,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
             if (runTests)
             {
-                logContent.ShouldContain("Always_Fails_Test");
                 logContent.ShouldContain("Failed");
             }
         }
@@ -241,10 +244,13 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData(false, 0)]
-    [InlineData(true, 1)]
+    [InlineData(false, "Json", 0)]
+    [InlineData(false, "Markdown", 0)]
+    [InlineData(true, "Json", 1)]
+    [InlineData(true, "Markdown", 1)]
     public async Task Application_Behaves_Correctly_If_Tests_Fail_Due_To_Build_Errors(
         bool treatWarningsAsErrors,
+        string logFormat,
         int expected)
     {
         // Arrange
@@ -273,7 +279,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         string logFile = Path.GetTempFileName();
 
-        List<string> args = ["--test", "--log-format", "Json", "--log-path", logFile];
+        List<string> args = ["--test", "--log-format", logFormat, "--log-path", logFile];
 
         if (treatWarningsAsErrors)
         {

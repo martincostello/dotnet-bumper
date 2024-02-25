@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 
 namespace MartinCostello.DotNetBumper.Logging;
 
-internal sealed class JsonLogFormatter(string fileName) : FileLogWriter(fileName)
+internal sealed class JsonLogWriter(string fileName) : FileLogWriter(fileName)
 {
     private static readonly JsonSerializerOptions DocumentOptions = new() { WriteIndented = true };
     private static readonly JsonWriterOptions WriterOptions = new() { Indented = true };

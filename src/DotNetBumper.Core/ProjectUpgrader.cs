@@ -200,8 +200,8 @@ public partial class ProjectUpgrader(
         IBumperLogWriter writer = options.Value.LogFormat switch
         {
             BumperLogFormat.GitHubActions => new GitHubActionsLogWriter(),
-            BumperLogFormat.Json => new JsonLogFormatter(options.Value.LogPath ?? "dotnet-bumper.json"),
-            BumperLogFormat.Markdown => new JsonLogFormatter(options.Value.LogPath ?? "dotnet-bumper.md"),
+            BumperLogFormat.Json => new JsonLogWriter(options.Value.LogPath ?? "dotnet-bumper.json"),
+            BumperLogFormat.Markdown => new MarkdownLogWriter(options.Value.LogPath ?? "dotnet-bumper.md"),
             _ => new NullLogWriter(),
         };
 
