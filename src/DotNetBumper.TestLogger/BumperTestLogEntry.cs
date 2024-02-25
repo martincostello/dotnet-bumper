@@ -23,4 +23,11 @@ public sealed class BumperTestLogEntry
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     [JsonPropertyName("outcome")]
     public string? Outcome { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error message associated with the test, if any.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [JsonPropertyName("error")]
+    public string? ErrorMessage { get; set; }
 }

@@ -80,6 +80,7 @@ public sealed class BumperTestLogger : ITestLogger
         {
             Id = args.Result.DisplayName,
             Outcome = args.Result.Outcome.ToString(),
+            ErrorMessage = args.Result.ErrorMessage,
         };
 
         entries.Add(entry);

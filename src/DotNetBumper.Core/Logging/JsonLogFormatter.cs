@@ -155,6 +155,7 @@ internal sealed class JsonLogFormatter(string fileName) : FileLogWriter(fileName
                     {
                         ["id"] = JsonValue.Create(entry.Id),
                         ["message"] = JsonValue.Create(entry.Outcome),
+                        ["error"] = JsonValue.Create(entry.ErrorMessage),
                     };
 
                     results.Add(test);
