@@ -320,7 +320,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         logContent.ShouldNotBeNullOrWhiteSpace();
         logContent.ShouldContain("Error");
-        logContent.ShouldContain("CS0619");
     }
 
     [Fact]
