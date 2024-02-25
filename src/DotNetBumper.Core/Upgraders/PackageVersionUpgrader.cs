@@ -145,9 +145,19 @@ internal sealed partial class PackageVersionUpgrader(
 
         if (!result.Success)
         {
+            string[] warnings =
+            [
+                $"Failed to upgrade NuGet packages for {RelativeName(directory)}.",
+                $"dotnet outdated exited with code {result.ExitCode}.",
+            ];
+
             Console.WriteLine();
-            Console.WriteWarningLine($"Failed to upgrade NuGet packages for {RelativeName(directory)}.");
-            Console.WriteWarningLine($"dotnet outdated exited with code {result.ExitCode}.");
+
+            foreach (var warning in warnings)
+            {
+                Console.WriteWarningLine(warning);
+                logContext.Warnings.Add(warning);
+            }
 
             return ProcessingResult.Warning;
         }
