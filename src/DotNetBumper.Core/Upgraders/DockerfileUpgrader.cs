@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
+using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -13,6 +14,7 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 internal sealed partial class DockerfileUpgrader(
     IAnsiConsole console,
     IEnvironment environment,
+    BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<DockerfileUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
@@ -320,6 +322,7 @@ internal sealed partial class DockerfileUpgrader(
 
             if (portsUpdated)
             {
+                logContext.Changelog.Add("Update exposed Docker container ports");
                 Console.WriteWarningLine($"The exposed port(s) in {name} were updated to match .NET {EightPointZero}+ conventions.");
             }
 

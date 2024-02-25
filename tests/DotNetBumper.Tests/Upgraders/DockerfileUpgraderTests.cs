@@ -457,6 +457,8 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actualUpdated.ShouldBe(expectedResult);
 
+        fixture.LogContext.Changelog.Add("Update exposed Docker container ports");
+
         string actualContent = await File.ReadAllTextAsync(dockerfile);
         actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
 
@@ -472,6 +474,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         return new(
             fixture.Console,
             fixture.Environment,
+            fixture.LogContext,
             fixture.CreateOptions(),
             fixture.CreateLogger<DockerfileUpgrader>());
     }
