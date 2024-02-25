@@ -41,9 +41,9 @@ public sealed class BumperLogContext
     public IList<string> Warnings { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the potential file edits, if any.
+    /// Gets or sets the remanining references, if any.
     /// </summary>
-    internal IDictionary<ProjectFile, List<PotentialFileEdit>> PotentialEdits { get; set; } = new Dictionary<ProjectFile, List<PotentialFileEdit>>();
+    internal IDictionary<ProjectFile, List<PotentialFileEdit>> RemainingReferences { get; set; } = new Dictionary<ProjectFile, List<PotentialFileEdit>>();
 
     /// <summary>
     /// Adds the logs from the specified <see cref="DotNetResult"/> to the logging context.

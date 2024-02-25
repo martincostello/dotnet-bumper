@@ -42,30 +42,30 @@ internal sealed class JsonLogFormatter(string fileName) : FileLogWriter(fileName
             WriteTests(root, context.TestLogs);
         }
 
-        if (context.PotentialEdits is not null)
+        if (context.RemainingReferences is not null)
         {
-            var edits = new JsonObject();
+            var references = new JsonObject();
 
-            foreach ((var file, var potentialEdits) in context.PotentialEdits)
+            foreach ((var file, var remaining) in context.RemainingReferences)
             {
-                var fileEdits = new JsonArray();
+                var items = new JsonArray();
 
-                foreach (var edit in potentialEdits)
+                foreach (var edit in remaining)
                 {
-                    var fileEdit = new JsonObject()
+                    var item = new JsonObject()
                     {
                         ["line"] = JsonValue.Create(edit.Line),
                         ["column"] = JsonValue.Create(edit.Column),
                         ["text"] = JsonValue.Create(edit.Text),
                     };
 
-                    fileEdits.Add(fileEdit);
+                    items.Add(item);
                 }
 
-                edits[file.RelativePath] = fileEdits;
+                references[file.RelativePath] = items;
             }
 
-            root["potentialEdits"] = edits;
+            root["remainingReferences"] = references;
         }
 
         return root;

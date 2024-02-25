@@ -117,7 +117,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
     private void RenderTable(Dictionary<ProjectFile, List<PotentialFileEdit>> references)
     {
-        logContext.PotentialEdits = references;
+        logContext.RemainingReferences = references;
 
         var table = new Table
         {
