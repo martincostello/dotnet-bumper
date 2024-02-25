@@ -102,6 +102,8 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
+
+        fixture.LogContext.Changelog.ShouldContain($"Update target framework to `net{channel}`");
     }
 
     [Theory]
@@ -214,6 +216,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         return new(
             fixture.Console,
             fixture.Environment,
+            fixture.LogContext,
             fixture.CreateOptions(),
             fixture.CreateLogger<TargetFrameworkUpgrader>());
     }

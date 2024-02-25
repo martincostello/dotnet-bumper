@@ -32,6 +32,18 @@ internal sealed class JsonLogWriter(string fileName) : FileLogWriter(fileName)
             ["sdkVersion"] = JsonValue.Create(context.DotNetSdkVersion),
         };
 
+        if (context.Changelog.Count > 0)
+        {
+            var changelog = new JsonArray();
+
+            foreach (var entry in context.Changelog)
+            {
+                changelog.Add(JsonValue.Create(entry));
+            }
+
+            root["changelog"] = changelog;
+        }
+
         if (context.BuildLogs is not null)
         {
             WriteBuild(root, context.BuildLogs);

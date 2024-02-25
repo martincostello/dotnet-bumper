@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -13,6 +14,7 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 internal sealed partial class ServerlessUpgrader(
     IAnsiConsole console,
     IEnvironment environment,
+    BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<ServerlessUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
@@ -73,6 +75,11 @@ internal sealed partial class ServerlessUpgrader(
 
                 result = result.Max(ProcessingResult.Success);
             }
+        }
+
+        if (runtime is { })
+        {
+            logContext.Changelog.Add($"Update AWS Lambda runtime to `{runtime}`");
         }
 
         return result;

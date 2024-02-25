@@ -3,6 +3,7 @@
 
 using System.Xml;
 using System.Xml.Linq;
+using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -12,6 +13,7 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 internal sealed partial class TargetFrameworkUpgrader(
     IAnsiConsole console,
     IEnvironment environment,
+    BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<TargetFrameworkUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
@@ -30,6 +32,7 @@ internal sealed partial class TargetFrameworkUpgrader(
         Log.UpgradingTargetFramework(logger);
 
         var result = ProcessingResult.None;
+        var newTfm = upgrade.Channel.ToTargetFramework();
 
         foreach (var filePath in fileNames)
         {
@@ -46,7 +49,6 @@ internal sealed partial class TargetFrameworkUpgrader(
             }
 
             bool edited = false;
-            string newTfm = upgrade.Channel.ToTargetFramework();
 
             foreach (var property in project.Root.Elements("PropertyGroup").Elements())
             {
@@ -85,6 +87,11 @@ internal sealed partial class TargetFrameworkUpgrader(
 
                 result = result.Max(ProcessingResult.Success);
             }
+        }
+
+        if (result is ProcessingResult.Success)
+        {
+            logContext.Changelog.Add($"Update target framework to `{newTfm}`");
         }
 
         return result;

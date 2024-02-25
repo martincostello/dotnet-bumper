@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Versioning;
@@ -13,6 +14,7 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 internal sealed partial class GlobalJsonUpgrader(
     IAnsiConsole console,
     IEnvironment environment,
+    BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<GlobalJsonUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
@@ -68,6 +70,11 @@ internal sealed partial class GlobalJsonUpgrader(
 
                 result = result.Max(ProcessingResult.Success);
             }
+        }
+
+        if (result is ProcessingResult.Success)
+        {
+            logContext.Changelog.Add($"Update .NET SDK to `{upgrade.SdkVersion}`");
         }
 
         return result;
