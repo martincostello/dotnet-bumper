@@ -94,7 +94,7 @@ public sealed class BumperBuildLogger : Logger
     {
         var log = new BumperBuildLog()
         {
-            Entries = [.. _logEntries],
+            Entries = [.._logEntries],
         };
 
         var summary = new Dictionary<string, IDictionary<string, long>>();
