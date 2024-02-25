@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.Json;
+using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -12,6 +13,7 @@ internal sealed partial class PackageVersionUpgrader(
     DotNetProcess dotnet,
     IAnsiConsole console,
     IEnvironment environment,
+    BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<PackageVersionUpgrader> logger) : Upgrader(console, environment, options, logger)
 {
@@ -88,6 +90,8 @@ internal sealed partial class PackageVersionUpgrader(
             ["restore", "--verbosity", "quiet"],
             cancellationToken);
 
+        logContext.Add(result);
+
         if (result.Success)
         {
             Log.RestoredPackages(logger, directory);
@@ -136,6 +140,8 @@ internal sealed partial class PackageVersionUpgrader(
         };
 
         var result = await dotnet.RunAsync(directory, ["outdated", ..arguments], environmentVariables, cancellationToken);
+
+        logContext.Add(result);
 
         if (!result.Success)
         {

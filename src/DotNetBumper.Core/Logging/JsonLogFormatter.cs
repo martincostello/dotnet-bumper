@@ -159,6 +159,8 @@ internal sealed class JsonLogFormatter(string fileName) : FileLogWriter(fileName
 
                     results.Add(test);
                 }
+
+                outcomes[container] = results;
             }
 
             tests["results"] = outcomes;

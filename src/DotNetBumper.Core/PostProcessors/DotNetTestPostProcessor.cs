@@ -10,9 +10,9 @@ namespace MartinCostello.DotNetBumper.PostProcessors;
 
 internal sealed partial class DotNetTestPostProcessor(
     DotNetProcess dotnet,
-    BumperLogContext logContext,
     IAnsiConsole console,
     IEnvironment environment,
+    BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<DotNetTestPostProcessor> logger) : PostProcessor(console, environment, options, logger)
 {
@@ -53,6 +53,8 @@ internal sealed partial class DotNetTestPostProcessor(
         else
         {
             var result = await RunTestsAsync(projects, context, cancellationToken);
+
+            logContext.Add(result);
 
             Console.WriteLine();
 
@@ -212,8 +214,6 @@ internal sealed partial class DotNetTestPostProcessor(
 
     private void WriteTestResults(BumperTestLog logs)
     {
-        logContext.TestLogs = logs;
-
         var table = new Table
         {
             Title = new TableTitle("dotnet test"),
