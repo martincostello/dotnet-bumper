@@ -68,6 +68,18 @@ internal sealed class JsonLogWriter(string fileName) : FileLogWriter(fileName)
             root["remainingReferences"] = references;
         }
 
+        if (context.Warnings is not null)
+        {
+            var items = new JsonArray();
+
+            foreach (var warning in context.Warnings)
+            {
+                items.Add(JsonValue.Create(warning));
+            }
+
+            root["warnings"] = items;
+        }
+
         return root;
     }
 
