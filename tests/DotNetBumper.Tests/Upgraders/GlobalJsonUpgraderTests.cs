@@ -59,6 +59,8 @@ public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
+        fixture.LogContext.Changelog.ShouldContain($"Update .NET SDK to `{upgrade.SdkVersion}`");
+
         string actualContent = await File.ReadAllTextAsync(dockerfile);
         actualContent.ShouldBe(expectedContent);
 
@@ -122,6 +124,7 @@ public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
         return new(
             fixture.Console,
             fixture.Environment,
+            fixture.LogContext,
             fixture.CreateOptions(),
             fixture.CreateLogger<GlobalJsonUpgrader>());
     }

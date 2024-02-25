@@ -275,6 +275,8 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
             actualBytes.ShouldNotStartWithUTF8Bom();
         }
 
+        fixture.LogContext.Changelog.ShouldContain($"Update AWS Lambda runtime to `dotnet{upgrade.Channel.Major}`");
+
         // Act
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
@@ -287,6 +289,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         return new(
             fixture.Console,
             fixture.Environment,
+            fixture.LogContext,
             fixture.CreateOptions(),
             fixture.CreateLogger<ServerlessUpgrader>());
     }

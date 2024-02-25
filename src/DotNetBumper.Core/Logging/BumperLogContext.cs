@@ -36,9 +36,14 @@ public sealed class BumperLogContext
     public BumperTestLog? TestLogs { get; private set; }
 
     /// <summary>
-    /// Gets or sets any warnings encountered during the upgrade.
+    /// Gets the changelog entries for the changes made by the upgrade.
     /// </summary>
-    public IList<string> Warnings { get; set; } = [];
+    public IList<string> Changelog { get; } = [];
+
+    /// <summary>
+    /// Gets any warnings encountered during the upgrade.
+    /// </summary>
+    public IList<string> Warnings { get; } = [];
 
     /// <summary>
     /// Gets or sets the remanining references, if any.

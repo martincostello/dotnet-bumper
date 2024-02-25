@@ -12,7 +12,19 @@ internal class MarkdownLogWriter(string fileName) : FileLogWriter(fileName)
         await writer.WriteLineAsync("# .NET Bumper");
         await writer.WriteLineAsync();
 
-        if (context.DotNetSdkVersion is not null)
+        if (context.Changelog.Count > 0)
+        {
+            await writer.WriteLineAsync("## Changelog :memo:");
+            await writer.WriteLineAsync();
+
+            foreach (string entry in context.Changelog)
+            {
+                await writer.WriteLineAsync($"- {entry}");
+            }
+
+            await writer.WriteLineAsync();
+        }
+        else if (context.DotNetSdkVersion is not null)
         {
             await writer.WriteLineAsync($"Project upgraded to .NET SDK `{context.DotNetSdkVersion}`.");
             await writer.WriteLineAsync();
@@ -20,7 +32,7 @@ internal class MarkdownLogWriter(string fileName) : FileLogWriter(fileName)
 
         if (context.Warnings.Count > 0)
         {
-            await writer.WriteLineAsync("## Warnings");
+            await writer.WriteLineAsync("## Warnings :warning:");
             await writer.WriteLineAsync();
 
             await writer.WriteLineAsync("<details>");
@@ -44,7 +56,7 @@ internal class MarkdownLogWriter(string fileName) : FileLogWriter(fileName)
         if (context.BuildLogs is not null &&
             context.BuildLogs.Summary.Sum((p) => p.Value.Count) > 0)
         {
-            await writer.WriteLineAsync("## Build Summary");
+            await writer.WriteLineAsync("## Build Summary :wrench:");
             await writer.WriteLineAsync();
             await writer.WriteLineAsync("| **Type** | **ID** | **Count** |");
             await writer.WriteLineAsync("|:---------|:-------|----------:|");
@@ -72,7 +84,7 @@ internal class MarkdownLogWriter(string fileName) : FileLogWriter(fileName)
         if (context.TestLogs is not null &&
             context.TestLogs.Summary.Sum((p) => p.Value.Count) > 0)
         {
-            await writer.WriteLineAsync("## Test Summary");
+            await writer.WriteLineAsync("## Test Summary :test_tube:");
             await writer.WriteLineAsync();
             await writer.WriteLineAsync("| **Container** | **Passed** :white_check_mark: | **Failed** :x: | **Skipped** :zzz: |");
             await writer.WriteLineAsync("|:--------------|------------------------------:|---------------:|------------------:|");
@@ -91,7 +103,7 @@ internal class MarkdownLogWriter(string fileName) : FileLogWriter(fileName)
 
         if (context.RemainingReferences.Count > 0)
         {
-            await writer.WriteLineAsync("## Remaining References");
+            await writer.WriteLineAsync("## Remaining References :grey_question:");
             await writer.WriteLineAsync();
             await writer.WriteLineAsync("| **Location** | **Text** |");
             await writer.WriteLineAsync("|:-------------|:---------|");

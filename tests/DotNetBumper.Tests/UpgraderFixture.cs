@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using MartinCostello.DotNetBumper.Logging;
 using MartinCostello.Logging.XUnit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,6 +21,8 @@ internal sealed class UpgraderFixture(
     public IAnsiConsole Console => _console;
 
     public IEnvironment Environment => environment ??= CreateEnvironment();
+
+    public BumperLogContext LogContext { get; } = new();
 
     public Project Project => _project;
 

@@ -53,6 +53,11 @@ internal sealed partial class PackageVersionUpgrader(
             }
         }
 
+        if (result is ProcessingResult.Success)
+        {
+            logContext.Changelog.Add($"Update NuGet package versions for .NET {upgrade.Channel}");
+        }
+
         return result;
     }
 
