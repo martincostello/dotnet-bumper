@@ -8,11 +8,17 @@ namespace MartinCostello.DotNetBumper;
 /// <summary>
 /// A class representing the .NET Bumper log output for MSBuild.
 /// </summary>
-public sealed class BumperLog
+public sealed class BumperBuildLog
 {
     /// <summary>
-    /// Gets or sets the log entries.
+    /// Gets or sets the build log entries.
     /// </summary>
     [JsonPropertyName("entries")]
-    public IList<BumperLogEntry> Entries { get; set; } = [];
+    public IList<BumperBuildLogEntry> Entries { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the build summary for each log type.
+    /// </summary>
+    [JsonPropertyName("summary")]
+    public IDictionary<string, IDictionary<string, long>> Summary { get; set; } = new Dictionary<string, IDictionary<string, long>>();
 }

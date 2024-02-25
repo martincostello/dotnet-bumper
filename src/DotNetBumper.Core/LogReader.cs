@@ -8,29 +8,11 @@ namespace MartinCostello.DotNetBumper;
 
 internal static partial class LogReader
 {
-    public static async Task<IList<BumperLogEntry>> GetBuildLogsAsync(
+    public static async Task<BumperBuildLog> GetBuildLogsAsync(
         string logFilePath,
         ILogger logger,
         CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var stream = File.OpenRead(logFilePath);
-
-            if (stream.Length is 0)
-            {
-                return [];
-            }
-
-            var logs = await JsonSerializer.DeserializeAsync<BumperLog>(stream, cancellationToken: cancellationToken);
-            return logs?.Entries ?? [];
-        }
-        catch (Exception ex)
-        {
-            Log.ReadMSBuildLogsFailed(logger, ex);
-            return [];
-        }
-    }
+        => await DeserializeAsync<BumperBuildLog>(logFilePath, (ex) => Log.ReadMSBuildLogsFailed(logger, ex), cancellationToken);
 
     public static async Task<BumperTestLog> GetTestLogsAsync(
         string path,
@@ -45,21 +27,16 @@ internal static partial class LogReader
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                using var stream = File.OpenRead(fileName);
+                var logs = await DeserializeAsync<BumperTestLog>(fileName, (ex) => Log.ReadTestLogsFailed(logger, ex), cancellationToken);
 
-                if (stream.Length > 0)
+                if (logs.Outcomes.Count > 0)
                 {
-                    var logs = await JsonSerializer.DeserializeAsync<BumperTestLog>(stream, cancellationToken: cancellationToken) ?? new();
+                    result.Outcomes = result.Outcomes.Concat(logs.Outcomes).ToDictionary();
+                }
 
-                    if (logs.Outcomes.Count > 0)
-                    {
-                        result.Outcomes = result.Outcomes.Concat(logs.Outcomes).ToDictionary();
-                    }
-
-                    if (logs.Summary.Count > 0)
-                    {
-                        result.Summary = result.Summary.Concat(logs.Summary).ToDictionary();
-                    }
+                if (logs.Summary.Count > 0)
+                {
+                    result.Summary = result.Summary.Concat(logs.Summary).ToDictionary();
                 }
             }
         }
@@ -69,6 +46,28 @@ internal static partial class LogReader
         }
 
         return result;
+    }
+
+    private static async Task<T> DeserializeAsync<T>(string path, Action<Exception> onException, CancellationToken cancellationToken)
+        where T : class, new()
+    {
+        T? result = null;
+
+        try
+        {
+            using var stream = File.OpenRead(path);
+
+            if (stream.Length > 0)
+            {
+                result = await JsonSerializer.DeserializeAsync<T>(stream, cancellationToken: cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            onException(ex);
+        }
+
+        return result ?? new();
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]

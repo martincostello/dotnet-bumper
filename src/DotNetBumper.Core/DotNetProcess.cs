@@ -81,7 +81,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             {
                 ["DOTNET_ROLL_FORWARD"] = "Major",
                 ["MSBuildSDKsPath"] = null,
-                [BumperLogger.LoggerFilePathVariableName] = customLoggerFileName,
+                [BumperBuildLogger.LoggerFilePathVariableName] = customLoggerFileName,
             },
             RedirectStandardError = true,
             RedirectStandardOutput = true,
@@ -112,7 +112,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
     {
         if (logFilePath is not null)
         {
-            string loggerPath = typeof(BumperLogger).Assembly.Location;
+            string loggerPath = typeof(BumperBuildLogger).Assembly.Location;
             string customLogger = $"-logger:{loggerPath}";
 
             arguments = [..arguments, customLogger];
@@ -147,21 +147,16 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 
         (string error, string output) = await readOutput;
 
-        IList<BumperLogEntry> buildLogs = [];
-
-        if (logFilePath is not null)
-        {
-            buildLogs = await LogReader.GetBuildLogsAsync(logFilePath, logger, CancellationToken.None);
-        }
-
         var result = new DotNetResult(
             process.ExitCode == 0,
             process.ExitCode,
             output,
-            error)
+            error);
+
+        if (logFilePath is not null)
         {
-            BuildLogs = buildLogs,
-        };
+            result.BuildLogs = await LogReader.GetBuildLogsAsync(logFilePath, logger, CancellationToken.None);
+        }
 
         if (!result.Success)
         {

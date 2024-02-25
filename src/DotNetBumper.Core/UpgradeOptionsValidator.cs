@@ -25,6 +25,12 @@ internal sealed class UpgradeOptionsValidator : IValidateOptions<UpgradeOptions>
             return ValidateOptionsResult.Fail($"The project path '{options.ProjectPath}' could not be found.");
         }
 
+        if (options.LogPath is { Length: > 0 } &&
+            options.LogFormat is BumperLogFormat.None or BumperLogFormat.GitHubActions)
+        {
+            return ValidateOptionsResult.Fail($"The log path option is not valid for use with the \"{options.LogFormat}\" log format.");
+        }
+
         return ValidateOptionsResult.Success;
     }
 }

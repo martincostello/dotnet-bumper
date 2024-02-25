@@ -28,14 +28,23 @@ internal partial class Bumper(ProjectUpgrader upgrader)
     public string? DotNetChannel { get; set; }
 
     [Option(
+        "-lf|--log-format <FORMAT>",
+        Description = "The log format to use.")]
+    public BumperLogFormat LogFormat { get; set; }
+
+    [Option(
+        "-lp|--log-path <PATH>",
+        Description = "The path to write the log file to, if any.")]
+    public string? LogPath { get; set; }
+
+    [Option(
         "-q|--no-logo",
         Description = "Do not display the startup banner.")]
     public bool NoLogo { get; set; }
 
     [Option(
         "-t|--upgrade-type <TYPE>",
-        Description = "The type of upgrade to perform.",
-        ValueName = "TYPE")]
+        Description = "The type of upgrade to perform.")]
     public UpgradeType? UpgradeType { get; set; }
 
     [Option(
@@ -78,7 +87,7 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         {
             return await app.ExecuteAsync(args, cancellationToken);
         }
-        catch (UnrecognizedCommandParsingException ex)
+        catch (CommandParsingException ex)
         {
             console.WriteLine();
             console.WriteWarningLine(ex.Message);

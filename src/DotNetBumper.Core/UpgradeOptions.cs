@@ -16,6 +16,16 @@ public sealed class UpgradeOptions
     public string? DotNetChannel { get; set; }
 
     /// <summary>
+    /// Gets or sets the log format to use.
+    /// </summary>
+    public BumperLogFormat LogFormat { get; set; }
+
+    /// <summary>
+    /// Gets or sets the path to write log files to, if any.
+    /// </summary>
+    public string? LogPath { get; set; }
+
+    /// <summary>
     /// Gets or sets the path of the project to upgrade.
     /// </summary>
     [Required]

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -11,6 +12,7 @@ internal sealed partial class DotNetTestPostProcessor(
     DotNetProcess dotnet,
     IAnsiConsole console,
     IEnvironment environment,
+    BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<DotNetTestPostProcessor> logger) : PostProcessor(console, environment, options, logger)
 {
@@ -52,6 +54,8 @@ internal sealed partial class DotNetTestPostProcessor(
         {
             var result = await RunTestsAsync(projects, context, cancellationToken);
 
+            logContext.Add(result);
+
             Console.WriteLine();
 
             if (result.Success)
@@ -75,9 +79,9 @@ internal sealed partial class DotNetTestPostProcessor(
                     Console.WriteProgressLine(TaskEnvironment, result.StandardOutput);
                 }
 
-                if (result.BuildLogs.Count > 0)
+                if (result.BuildLogs?.Summary.Count > 0)
                 {
-                    WriteBuildLogs(result.BuildLogs);
+                    WriteBuildLogs(result.BuildLogs.Summary);
                 }
             }
 
@@ -170,7 +174,7 @@ internal sealed partial class DotNetTestPostProcessor(
         return overall;
     }
 
-    private void WriteBuildLogs(IList<BumperLogEntry> logs)
+    private void WriteBuildLogs(IDictionary<string, IDictionary<string, long>> summary)
     {
         var table = new Table
         {
@@ -181,35 +185,24 @@ internal sealed partial class DotNetTestPostProcessor(
         table.AddColumn("[bold]Id[/]");
         table.AddColumn("[bold]Count[/]");
 
-        foreach (var group in logs.GroupBy((p) => p.Type).OrderBy((p) => p.Key))
+        foreach ((var logType, var entriesById) in summary)
         {
-            var color = group.Key switch
+            var color = logType switch
             {
                 "Error" => Color.Red,
                 "Warning" => Color.Yellow,
                 _ => Color.Blue,
             };
 
-            var typeEscaped = group.Key.EscapeMarkup();
+            var typeEscaped = logType.EscapeMarkup();
             var type = new Markup($"[{color}]{typeEscaped}[/]");
 
-            foreach (var entries in group.GroupBy((p) => p.Id).OrderBy((p) => p.Key))
+            foreach ((var logId, var logCount) in entriesById)
             {
-                var helpLink = entries
-                    .Where((p) => !string.IsNullOrWhiteSpace(p.HelpLink))
-                    .Select((p) => p.HelpLink)
-                    .FirstOrDefault();
-
-                string idMarkup = entries.Key.EscapeMarkup();
-
-                if (!string.IsNullOrEmpty(helpLink) && TaskEnvironment.SupportsLinks)
-                {
-                    string linkEscaped = helpLink.EscapeMarkup();
-                    idMarkup = $"[link={linkEscaped}]{idMarkup}[/]";
-                }
+                string idMarkup = logId.EscapeMarkup();
 
                 var id = new Markup(idMarkup);
-                var count = new Markup(entries.Count().ToString(CultureInfo.CurrentCulture)).RightJustified();
+                var count = new Markup(logCount.ToString(CultureInfo.CurrentCulture)).RightJustified();
 
                 table.AddRow(type, id, count);
             }

@@ -51,7 +51,7 @@ internal static class JsonExtensions
                 stream.Write(metadata.Encoding.Preamble);
             }
 
-            using var writer = new Utf8JsonWriter(stream, options);
+            await using var writer = new Utf8JsonWriter(stream, options);
 
             node.WriteTo(writer);
 
@@ -88,7 +88,7 @@ internal static class JsonExtensions
 
         buffered.Seek(0, SeekOrigin.Begin);
 
-        using var output = File.OpenWrite(path);
+        await using var output = File.OpenWrite(path);
 
         await buffered.CopyToAsync(output, cancellationToken);
         await buffered.FlushAsync(cancellationToken);

@@ -14,7 +14,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     {
         var testCases = new TheoryData<BumperTestCase>
         {
-            new("6.0.100", ["net6.0"]),
             new("7.0.100", ["net6.0", "net7.0"]),
             new("6.0.100", ["net6.0"], ["--channel=7.0"]),
             new("6.0.100", ["net6.0"], ["--channel=8.0"]),
@@ -26,6 +25,18 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             new("7.0.100", ["net7.0"], [], Packages(("System.Text.Json", "7.0.0"))),
             new("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("System.Text.Json", "8.0.0"))),
         };
+
+        List<string> formats = ["Json", "Markdown"];
+
+        if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") is "true")
+        {
+            formats.Add("GitHubActions");
+        }
+
+        foreach (string format in formats)
+        {
+            testCases.Add(new("6.0.100", ["net6.0"], ["--log-format", format]));
+        }
 
         return testCases;
     }
@@ -148,14 +159,24 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData(false, false, 0)]
-    [InlineData(false, true, 0)]
-    [InlineData(true, false, 0)]
-    [InlineData(true, true, 1)]
+    [InlineData(false, false, null, 0, null)]
+    [InlineData(false, false, "Json", 0, "dotnet-bumper.json")]
+    [InlineData(false, false, "Markdown", 0, "dotnet-bumper.md")]
+    [InlineData(false, true, null, 0, null)]
+    [InlineData(false, true, "Json", 0, "dotnet-bumper.json")]
+    [InlineData(false, true, "Markdown", 0, "dotnet-bumper.md")]
+    [InlineData(true, false, null, 0, null)]
+    [InlineData(true, false, "Json", 0, "dotnet-bumper.json")]
+    [InlineData(true, false, "Markdown", 0, "dotnet-bumper.md")]
+    [InlineData(true, true, null, 1, null)]
+    [InlineData(true, true, "Json", 1, "dotnet-bumper.json")]
+    [InlineData(true, true, "Markdown", 1, "dotnet-bumper.md")]
     public async Task Application_Behaves_Correctly_If_Tests_Fail(
         bool runTests,
         bool treatWarningsAsErrors,
-        int expected)
+        string? logFormat,
+        int expectedResult,
+        string? expectedLogFile)
     {
         // Arrange
         string sdkVersion = "6.0.100";
@@ -181,6 +202,16 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             args.Add("--warnings-as-errors");
         }
 
+        if (logFormat is not null)
+        {
+            args.AddRange(["--log-format", logFormat]);
+        }
+
+        if (expectedLogFile is not null)
+        {
+            args.AddRange(["--log-path", Path.Combine(fixture.Project.DirectoryName, expectedLogFile)]);
+        }
+
         // Act
         int actual = await Bumper.RunAsync(
             fixture.Console,
@@ -189,7 +220,22 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             CancellationToken.None);
 
         // Assert
-        actual.ShouldBe(expected);
+        actual.ShouldBe(expectedResult);
+
+        if (expectedLogFile is not null)
+        {
+            var logFile = Path.Combine(fixture.Project.DirectoryName, expectedLogFile);
+            File.Exists(logFile).ShouldBeTrue();
+
+            string logContent = await File.ReadAllTextAsync(logFile);
+
+            logContent.ShouldNotBeNullOrWhiteSpace();
+
+            if (runTests)
+            {
+                logContent.ShouldContain("Failed");
+            }
+        }
     }
 
     [Fact]
@@ -209,10 +255,13 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData(false, 0)]
-    [InlineData(true, 1)]
+    [InlineData(false, "Json", 0)]
+    [InlineData(false, "Markdown", 0)]
+    [InlineData(true, "Json", 1)]
+    [InlineData(true, "Markdown", 1)]
     public async Task Application_Behaves_Correctly_If_Tests_Fail_Due_To_Build_Errors(
         bool treatWarningsAsErrors,
+        string logFormat,
         int expected)
     {
         // Arrange
@@ -230,8 +279,15 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         string brokenCode =
             """
-            // Missing using System;
-            Console.WriteLine("Hello, World!");
+            using System;
+
+            class Program
+            {
+                static void Main() => Console.WriteLine(Greeting());
+
+                [Obsolete("This method is obsolete.", true)]
+                static string Greeting() => "Hello, World!";
+            }
             """;
 
         await fixture.Project.AddFileAsync("src/Project/Program.cs", brokenCode);
@@ -239,7 +295,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         await fixture.Project.AddTestProjectAsync(targetFrameworks, projectReferences: [project]);
         await fixture.Project.AddUnitTestsAsync();
 
-        List<string> args = ["--test"];
+        string logFile = Path.GetTempFileName();
+
+        List<string> args = ["--test", "--log-format", logFormat, "--log-path", logFile];
 
         if (treatWarningsAsErrors)
         {
@@ -255,6 +313,13 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         // Assert
         actual.ShouldBe(expected);
+
+        File.Exists(logFile).ShouldBeTrue();
+
+        string logContent = await File.ReadAllTextAsync(logFile);
+
+        logContent.ShouldNotBeNullOrWhiteSpace();
+        logContent.ShouldContain("Error");
     }
 
     [Fact]
@@ -278,6 +343,34 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         // Act
         int actual = await RunAsync(fixture, ["--channel=foo"]);
+
+        // Assert
+        actual.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Application_Validates_Log_Format()
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        // Act
+        int actual = await RunAsync(fixture, ["--log-format=foo"]);
+
+        // Assert
+        actual.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData("None")]
+    [InlineData("GitHubActions")]
+    public async Task Application_Validates_Log_Path(string format)
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        // Act
+        int actual = await RunAsync(fixture, ["--log-format", format, "--log-path", "foo"]);
 
         // Assert
         actual.ShouldBe(1);

@@ -17,9 +17,9 @@ public sealed record DotNetResult(
     string StandardError)
 {
     /// <summary>
-    /// Gets or sets the build errors and warnings logged by the process, if any.
+    /// Gets or sets the build log from the process, if any.
     /// </summary>
-    public IList<BumperLogEntry> BuildLogs { get; set; } = [];
+    public BumperBuildLog? BuildLogs { get; set; }
 
     /// <summary>
     /// Gets or sets the test logs from the process, if any.
