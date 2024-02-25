@@ -279,8 +279,15 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         string brokenCode =
             """
-            // Missing using System;
-            Console.WriteLine("Hello, World!");
+            using System;
+
+            class Program
+            {
+                static void Main() => Console.WriteLine(Greeting());
+
+                [Obsolete("This method is obsolete.", true)]
+                static string Greeting() => "Hello, World!";
+            }
             """;
 
         await fixture.Project.AddFileAsync("src/Project/Program.cs", brokenCode);
@@ -313,7 +320,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         logContent.ShouldNotBeNullOrWhiteSpace();
         logContent.ShouldContain("Error");
-        logContent.ShouldContain("CS0103");
+        logContent.ShouldContain("CS0619");
     }
 
     [Fact]
