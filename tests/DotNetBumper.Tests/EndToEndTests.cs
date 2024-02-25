@@ -271,7 +271,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         await fixture.Project.AddTestProjectAsync(targetFrameworks, projectReferences: [project]);
         await fixture.Project.AddUnitTestsAsync();
 
-        List<string> args = ["--test"];
+        string logFile = Path.GetTempFileName();
+
+        List<string> args = ["--test", "--log-format", "Json", "--log-path", logFile];
 
         if (treatWarningsAsErrors)
         {
@@ -287,6 +289,14 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         // Assert
         actual.ShouldBe(expected);
+
+        File.Exists(logFile).ShouldBeTrue();
+
+        string logContent = await File.ReadAllTextAsync(logFile);
+
+        logContent.ShouldNotBeNullOrWhiteSpace();
+        logContent.ShouldContain("Error");
+        logContent.ShouldContain("CS0103");
     }
 
     [Fact]
