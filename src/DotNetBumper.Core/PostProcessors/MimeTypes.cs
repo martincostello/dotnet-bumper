@@ -36,7 +36,7 @@ public static class MimeTypes
     {
         s_fallbackMimeType = DefaultFallbackMimeType;
 
-        s_typeMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        s_typeMap = new Dictionary<string, string>(1180, StringComparer.OrdinalIgnoreCase)
         {
             { "123", "application/vnd.lotus-1-2-3" },
             { "1km", "application/vnd.1000minds.decision-model+xml" },
@@ -1219,8 +1219,6 @@ public static class MimeTypes
             { "zirz", "application/vnd.zul" },
             { "zmm", "application/vnd.handheld-entertainment+xml" },
         };
-
-        s_typeMap.TrimExcess();
     }
 
     /// <summary>
