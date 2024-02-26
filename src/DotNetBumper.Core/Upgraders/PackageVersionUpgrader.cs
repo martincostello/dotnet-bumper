@@ -124,13 +124,18 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.Add("--pre-release:Always");
         }
 
-        string[] packages =
+        List<string> packages =
         [
             "Microsoft.AspNetCore.",
             "Microsoft.EntityFrameworkCore.",
             "Microsoft.Extensions.",
             "System.Text.Json",
         ];
+
+        if (Options.UpgradeType is not UpgradeType.Preview)
+        {
+            packages.Add("Microsoft.NET.Test.Sdk");
+        }
 
         foreach (string package in packages)
         {
