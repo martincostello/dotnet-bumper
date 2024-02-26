@@ -105,6 +105,7 @@ internal sealed partial class TargetFrameworkUpgrader(
         var remaining = property;
 
         int validTfms = 0;
+        int updateableTfms = 0;
 
         while (!remaining.IsEmpty)
         {
@@ -115,14 +116,22 @@ internal sealed partial class TargetFrameworkUpgrader(
             {
                 if (!part.IsTargetFrameworkMoniker())
                 {
-                    return false;
+                    if (!part.StartsWith("net4") &&
+                        !part.StartsWith("netstandard"))
+                    {
+                        return false;
+                    }
                 }
-
-                var version = part.ToVersionFromTargetFramework();
-
-                if (version is null || version >= channel)
+                else
                 {
-                    return false;
+                    var version = part.ToVersionFromTargetFramework();
+
+                    if (version is null || version >= channel)
+                    {
+                        return false;
+                    }
+
+                    updateableTfms++;
                 }
 
                 validTfms++;
@@ -137,7 +146,7 @@ internal sealed partial class TargetFrameworkUpgrader(
         }
 
         append = validTfms > 1;
-        return validTfms > 0;
+        return updateableTfms > 0;
     }
 
     private async Task<(XDocument? Project, FileMetadata? Metadata)> LoadProjectAsync(
