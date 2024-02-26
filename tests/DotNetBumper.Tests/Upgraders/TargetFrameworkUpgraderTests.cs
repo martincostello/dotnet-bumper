@@ -24,6 +24,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
                     testCases.Add(channel, fileName, hasByteOrderMark, "TargetFramework", "net6.0", $"net{channel}");
                     testCases.Add(channel, fileName, hasByteOrderMark, "TargetFrameworks", "net5.0;net6.0", $"net5.0;net6.0;net{channel}");
                     testCases.Add(channel, fileName, hasByteOrderMark, "TargetFrameworks", "net5.0;;;;net6.0", $"net5.0;;;;net6.0;net{channel}");
+                    testCases.Add(channel, fileName, hasByteOrderMark, "TargetFrameworks", "netstandard2.0;net462;net6.0", $"netstandard2.0;net462;net6.0;net{channel}");
                 }
             }
         }
@@ -115,6 +116,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("<Project><PropertyGroup><SomeProperty>;;</SomeProperty></PropertyGroup></Project>", ProcessingResult.None)]
     [InlineData("<Project><PropertyGroup><SomeProperty>8.0</SomeProperty></PropertyGroup></Project>", ProcessingResult.None)]
     [InlineData("<Project><PropertyGroup><SomeProperty>SomeValue</SomeProperty></PropertyGroup></Project>", ProcessingResult.None)]
+    [InlineData("<Project><PropertyGroup><SomeProperty>net462</SomeProperty></PropertyGroup></Project>", ProcessingResult.None)]
     public async Task UpgradeAsync_Handles_Invalid_Xml(string content, ProcessingResult expected)
     {
         // Arrange
