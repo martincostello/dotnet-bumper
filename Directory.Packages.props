@@ -21,7 +21,7 @@
     <PackageVersion Include="MimeTypes" Version="2.4.1" />
     <PackageVersion Include="NSubstitute" Version="5.1.0" />
     <PackageVersion Include="NuGet.Versioning" Version="6.9.1" />
-    <PackageVersion Include="ReportGenerator" Version="5.2.1" />
+    <PackageVersion Include="ReportGenerator" Version="5.2.2" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <PackageVersion Include="Spectre.Console" Version="0.48.0" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.48.0" />
