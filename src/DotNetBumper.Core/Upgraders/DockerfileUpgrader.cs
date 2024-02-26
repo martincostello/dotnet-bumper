@@ -324,6 +324,7 @@ internal sealed partial class DockerfileUpgrader(
             {
                 logContext.Changelog.Add("Update exposed Docker container ports");
                 Console.WriteWarningLine($"The exposed port(s) in {name} were updated to match .NET {EightPointZero}+ conventions.");
+                Console.WriteWarningLine("Review whether any container orchestration configuration is compatible with the changes.");
             }
 
             return ProcessingResult.Success;
