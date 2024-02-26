@@ -29,6 +29,8 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
             ```
 
             It supports AWS Lambda for the `dotnet6` runtimes and `dotnet8` runtimes.
+
+            It also multi-targets `net6.0` and `net8.0`.
             """;
 
         var fixture = new UpgraderFixture(outputHelper);
