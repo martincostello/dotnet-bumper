@@ -34,10 +34,16 @@ internal sealed partial class LeftoverReferencesPostProcessor(
     {
         int lineNumber = 0;
         var result = new List<PotentialFileEdit>();
+        var expectedTfm = channel.ToTargetFramework();
 
         foreach (var line in await File.ReadAllLinesAsync(file.FullPath, cancellationToken))
         {
             lineNumber++;
+
+            if (line.Contains(expectedTfm, StringComparison.Ordinal))
+            {
+                continue;
+            }
 
             IList<Match> matches = line.MatchTargetFrameworkMonikers();
 
