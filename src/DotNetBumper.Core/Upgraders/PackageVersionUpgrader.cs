@@ -13,6 +13,7 @@ internal sealed partial class PackageVersionUpgrader(
     DotNetProcess dotnet,
     IAnsiConsole console,
     IEnvironment environment,
+    BumperConfigurationProvider configurationProvider,
     BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<PackageVersionUpgrader> logger) : Upgrader(console, environment, options, logger)
@@ -124,30 +125,26 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.Add("--pre-release:Always");
         }
 
-        List<string> packages =
-        [
-            "Microsoft.AspNetCore.",
-            "Microsoft.EntityFrameworkCore.",
-            "Microsoft.Extensions.",
-            "System.Text.Json",
-        ];
+        var configuration = await configurationProvider.GetAsync(cancellationToken);
 
-        if (Options.UpgradeType is not UpgradeType.Preview)
+        foreach (string package in configuration.IncludeNuGetPackages)
         {
-            packages.Add("Microsoft.NET.Test.Sdk");
-        }
-
-        foreach (string package in packages)
-        {
-            arguments.Add($"--include");
+            arguments.Add("--include");
             arguments.Add(package);
         }
 
-        // HACK See https://github.com/dotnet-outdated/dotnet-outdated/pull/516
-        var environmentVariables = new Dictionary<string, string?>(1)
+        foreach (string package in configuration.ExcludeNuGetPackages)
         {
-            ["NoWarn"] = "NU1605",
-        };
+            arguments.Add("--exclude");
+            arguments.Add(package);
+        }
+
+        var environmentVariables = new Dictionary<string, string?>(1);
+
+        if (configuration.NoWarn.Count > 0)
+        {
+            environmentVariables["NoWarn"] = string.Join(";", configuration.NoWarn);
+        }
 
         var result = await dotnet.RunAsync(directory, ["outdated", ..arguments], environmentVariables, cancellationToken);
 

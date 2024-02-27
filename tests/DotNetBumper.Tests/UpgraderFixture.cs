@@ -32,6 +32,8 @@ internal sealed class UpgraderFixture(
         set => throw new NotSupportedException();
     }
 
+    public BumperConfiguration UserConfiguration { get; } = new();
+
     public ILogger<T> CreateLogger<T>()
         => outputHelper.ToLogger<T>();
 

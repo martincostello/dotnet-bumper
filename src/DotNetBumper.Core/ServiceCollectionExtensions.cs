@@ -43,6 +43,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton(configuration)
                 .AddSingleton<DotNetProcess>()
+                .AddSingleton<BumperConfigurationLoader>()
+                .AddSingleton<BumperConfigurationProvider>()
                 .AddSingleton<BumperLogContext>()
                 .AddSingleton<IAnsiConsole>(console)
                 .AddSingleton<IEnvironment, BumperEnvironment>()
