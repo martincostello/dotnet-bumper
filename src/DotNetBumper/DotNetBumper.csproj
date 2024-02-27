@@ -7,7 +7,7 @@
     <PackageId>MartinCostello.DotNetBumper</PackageId>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
     <Summary>$(Description)</Summary>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <Title>DotNetBumper</Title>
     <ToolCommandName>dotnet-bumper</ToolCommandName>
     <UserSecretsId>MartinCostello.DotNetBumper</UserSecretsId>
