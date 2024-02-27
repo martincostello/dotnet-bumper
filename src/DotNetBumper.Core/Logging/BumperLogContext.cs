@@ -21,6 +21,11 @@ public sealed class BumperLogContext
     public DateTimeOffset FinishedAt { get; set; }
 
     /// <summary>
+    /// Gets or sets the overall result of the upgrade.
+    /// </summary>
+    public string? Result { get; set; }
+
+    /// <summary>
     /// Gets or sets the version of the .NET SDK that was found to upgrade to, if any.
     /// </summary>
     public string? DotNetSdkVersion { get; set; }

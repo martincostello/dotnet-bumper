@@ -156,6 +156,8 @@ public partial class ProjectUpgrader(
             }
         }
 
+        logContext.Result = result.ToString();
+
         console.WriteLine();
 
         if (result is ProcessingResult.Success)

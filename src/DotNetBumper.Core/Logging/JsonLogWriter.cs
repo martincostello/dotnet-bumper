@@ -29,6 +29,7 @@ internal sealed class JsonLogWriter(string fileName) : FileLogWriter(fileName)
         {
             ["startedAt"] = JsonValue.Create(context.StartedAt),
             ["finishedAt"] = JsonValue.Create(context.FinishedAt),
+            ["result"] = JsonValue.Create(context.Result),
             ["sdkVersion"] = JsonValue.Create(context.DotNetSdkVersion),
         };
 
