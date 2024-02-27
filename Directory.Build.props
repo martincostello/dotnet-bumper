@@ -28,6 +28,7 @@
     <LangVersion>latest</LangVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <NeutralLanguage>en-US</NeutralLanguage>
+    <NoWarn>$(NoWarn);CA1515</NoWarn>
     <Nullable>enable</Nullable>
     <PackageIcon></PackageIcon>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
