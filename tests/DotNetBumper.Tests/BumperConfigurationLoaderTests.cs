@@ -160,7 +160,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData(".dotnet-bumper.json", "Not JSON")]
+    [InlineData(".dotnet-bumper.json", "<NotJson/>")]
     [InlineData(".dotnet-bumper.yml", "Not YAML")]
     public async Task LoadAsync_Handles_Invalid_Content(string fileName, string content)
     {
