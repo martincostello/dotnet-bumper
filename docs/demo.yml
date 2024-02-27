@@ -1,3 +1,14 @@
+# See https://github.com/faressoft/terminalizer
+#
+# 1. terminalizer record demo
+# 2. Commands:
+#    - dotnet --version
+#    - dotnet bumper .
+#    - dotnet --version
+#    - git --no-pager diff
+# 3. terminalizer play demo
+# 4. terminalizer render demo
+
 config:
 
   command: pwsh.exe -NoExit -NoLogo -NoProfile -Command "Set-PSReadLineOption -PredictionSource None"
