@@ -4,6 +4,7 @@
     "System.Text.Json"
   ],
   "remainingReferencesIgnore": [
+    "docs/demo.yml",
     "tests/DotNetBumper.Tests/**/*.cs"
   ]
 }
