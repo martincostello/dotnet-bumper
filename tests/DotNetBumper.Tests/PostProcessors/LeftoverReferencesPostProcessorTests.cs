@@ -75,6 +75,11 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
     {
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
+
+        fixture.UserConfiguration.RemainingReferencesIgnore.Add("tests\\fixtures\\*");
+
+        await fixture.Project.AddFileAsync("tests/fixtures/testdata.txt", "net6.0");
+
         var target = CreateTarget(fixture);
 
         // Act
