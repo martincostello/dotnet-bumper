@@ -90,18 +90,24 @@ Upgrades projects to a newer version of .NET.
 Usage: dotnet bumper [options] <ProjectPath>
 
 Arguments:
-  ProjectPath               The path to directory containing a .NET 6+ project to be upgraded. If not specified, the
-                            current directory will be used.
+  ProjectPath                      The path to directory containing a .NET 6+ project to be upgraded. If not specified,
+                                   the current directory will be used.
 
 Options:
-  -v|--verbose              Show verbose output
-  --version                 Show version information.
-  -?|-h|--help              Show help information.
-  -c|--channel <CHANNEL>    The .NET release channel to upgrade to in the format "major.minor".
-  -t|--upgrade-type <TYPE>  The type of upgrade to perform.
-                            Allowed values are: Lts, Latest, Preview.
-  -test|--test              Test the upgrade by running dotnet test on completion.
-  -e|--warnings-as-errors   Treat any warnings encountered during the upgrade as errors.
+  -v|--verbose                     Show verbose output
+  --version                        Show version information.
+  -?|-h|--help                     Show help information.
+  -cf|--configuration-file <PATH>  The path to a custom JSON or YAML configuration file to use, if any.
+  -c|--channel <CHANNEL>           The .NET release channel to upgrade to in the format "major.minor".
+  -lf|--log-format <FORMAT>        The log format to use.
+                                   Allowed values are: None, Json, Markdown, GitHubActions.
+                                   Default value is: None.
+  -lp|--log-path <PATH>            The path to write the log file to, if any.
+  -q|--no-logo                     Do not display the startup banner.
+  -t|--upgrade-type <TYPE>         The type of upgrade to perform.
+                                   Allowed values are: Lts, Latest, Preview.
+  -test|--test                     Test the upgrade by running dotnet test on completion.
+  -e|--warnings-as-errors          Treat any warnings encountered during the upgrade as errors.
 ```
 
 ## Pre-requisites
