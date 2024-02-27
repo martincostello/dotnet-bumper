@@ -23,14 +23,14 @@ internal sealed class BumperConfiguration
     public HashSet<string> IncludeNuGetPackages { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the path(s) to ignore from searching for remaining references.
-    /// </summary>
-    [JsonPropertyName("remainingReferencesIgnore")]
-    public HashSet<string> RemainingReferencesIgnore { get; set; } = [];
-
-    /// <summary>
     /// Gets or sets any MSBuild warnings to ignore.
     /// </summary>
     [JsonPropertyName("noWarn")]
     public HashSet<string> NoWarn { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the path(s) to ignore from searching for remaining references.
+    /// </summary>
+    [JsonPropertyName("remainingReferencesIgnore")]
+    public HashSet<string> RemainingReferencesIgnore { get; set; } = [];
 }

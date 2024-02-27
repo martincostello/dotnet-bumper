@@ -24,7 +24,7 @@ internal partial class BumperConfigurationLoader(
             configuration = isJson ? await DeserializeJsonAsync(fileName, cancellationToken) : DeserializeYaml(fileName);
         }
 
-        return configuration ?? new();
+        return configuration;
     }
 
     private (string? Path, bool IsJson) FindConfiguration()
