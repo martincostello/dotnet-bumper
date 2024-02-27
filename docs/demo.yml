@@ -21,7 +21,7 @@ config:
   cols: 120
   rows: 30
   repeat: 0
-  quality: 100
+  quality: 50
   frameDelay: auto
   maxIdleTime: 2000
 
