@@ -1,16 +1,27 @@
+# See https://github.com/faressoft/terminalizer
+#
+# 1. terminalizer record demo --skip-sharing --command "pwsh.exe -NoExit -NoLogo -NoProfile -Command 'Set-PSReadLineOption -PredictionSource None'"
+# 2. Commands:
+#    - dotnet --version
+#    - dotnet bumper . --test
+#    - dotnet --version
+#    - git --no-pager diff
+# 3. terminalizer play demo
+# 4. terminalizer render demo
+
 config:
 
-  command: pwsh.exe -NoLogo -NoProfile
+  command: pwsh.exe -NoExit -NoLogo -NoProfile -Command "Set-PSReadLineOption -PredictionSource None"
 
   cwd: C:\Coding\martincostello\MyApplication
 
   env:
     recording: true
 
-  cols: 120
-  rows: 30
+  cols: 115
+  rows: 29
   repeat: 0
-  quality: 100
+  quality: 50
   frameDelay: auto
   maxIdleTime: 2000
 
@@ -57,459 +68,744 @@ config:
     brightWhite: "#f9f9f4"
 
 records:
-  - delay: 0
+  - delay: 1700
     content: "\e[?25l\e[2J\e[m\e[HPS C:\\Coding\\martincostello\\MyApplication>\e[1C\e]0;C:\\Program Files\\PowerShell\\7\\pwsh.exe\a\e[?25h"
-  - delay: 0
-    content: "\r\n"
-  - delay: 31
-    content: 'PS C:\Coding\martincostello\MyApplication> '
-  - delay: 1000
+  - delay: 977
     content: "\e[93md"
-  - delay: 16
-    content: "\e[m"
-  - delay: 123
-    content: "\e[?25l\e[91m\e[2;42H> \e[92mdo\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 62
-    content: "\e[?25l\e[2;42H> \e[93mdot\e[?25h"
   - delay: 15
     content: "\e[m"
+  - delay: 171
+    content: "\e[?25l\e[91m\e[1;42H> \e[92mdo\e[?25h"
+  - delay: 15
+    content: "\e[m"
+  - delay: 31
+    content: "\e[?25l\e[1;42H> \e[93mdot\e[?25h"
+  - delay: 17
+    content: "\e[m"
   - delay: 107
-    content: "\e[?25l\e[93m\e[2;44Hdotn\e[?25h"
+    content: "\e[?25l\e[93m\e[1;44Hdotn\e[?25h"
   - delay: 16
     content: "\e[m"
   - delay: 47
-    content: "\e[?25l\e[93m\e[2;44Hdotne\e[?25h"
-  - delay: 15
-    content: "\e[m"
-  - delay: 63
-    content: "\e[?25l\e[93m\e[2;44Hdotnet\e[?25h"
-  - delay: 15
-    content: "\e[m"
-  - delay: 108
-    content: "\e[?25l\e[93m\e[2;44Hdotnet \e[?25h"
-  - delay: 15
-    content: "\e[m"
-  - delay: 217
-    content: "\e[?25l\e[93m\e[2;44Hdotnet \e[m-\e[?25h"
-  - delay: 156
-    content: "\e[?25l\e[93m\e[2;44Hdotnet \e[90m--\e[?25h"
+    content: "\e[?25l\e[93m\e[1;44Hdotne\e[?25h"
   - delay: 16
     content: "\e[m"
+  - delay: 62
+    content: "\e[?25l\e[93m\e[1;44Hdotnet\e[?25h"
+  - delay: 15
+    content: "\e[m"
+  - delay: 95
+    content: "\e[?25l\e[93m\e[1;44Hdotnet \e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 202
+    content: "\e[?25l\e[93m\e[1;44Hdotnet \e[m-\e[?25h"
+  - delay: 142
+    content: "\e[?25l\e[93m\e[1;44Hdotnet \e[90m--\e[?25h"
+  - delay: 14
+    content: "\e[m"
   - delay: 109
-    content: "\e[?25l\e[93m\e[2;44Hdotnet \e[90m--v\e[?25h"
+    content: "\e[?25l\e[93m\e[1;44Hdotnet \e[90m--v\e[?25h"
   - delay: 16
     content: "\e[m"
   - delay: 93
-    content: "\e[?25l\e[93m\e[2;44Hdotnet \e[90m--ve\e[?25h"
+    content: "\e[?25l\e[93m\e[1;44Hdotnet \e[90m--ve\e[?25h"
   - delay: 16
     content: "\e[m"
   - delay: 94
-    content: "\e[?25l\e[93m\e[2;44Hdotnet \e[90m--ver\e[?25h"
+    content: "\e[?25l\e[93m\e[1;44Hdotnet \e[90m--ver\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 78
+    content: "\e[?25l\e[93m\e[1;44Hdotnet \e[90m--vers\e[?25h"
   - delay: 15
     content: "\e[m"
-  - delay: 79
-    content: "\e[?25l\e[93m\e[2;44Hdotnet \e[90m--vers\e[?25h"
+  - delay: 77
+    content: "\e[?25l\e[93m\e[1;44Hdotnet \e[90m--versi\e[?25h"
   - delay: 15
     content: "\e[m"
-  - delay: 94
-    content: "\e[?25l\e[93m\e[2;44Hdotnet \e[90m--versi\e[?25h"
-  - delay: 15
-    content: "\e[m"
-  - delay: 47
-    content: "\e[?25l\e[93m\e[2;44Hdotnet \e[90m--versio\e[?25h"
+  - delay: 31
+    content: "\e[?25l\e[93m\e[1;44Hdotnet \e[90m--versio\e[?25h"
   - delay: 16
     content: "\e[m"
   - delay: 62
-    content: "\e[?25l\e[93m\e[2;44Hdotnet \e[90m--version\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 371
-    content: "\r\n"
-  - delay: 170
-    content: "6.0.321\r\nPS C:\\Coding\\martincostello\\MyApplication> "
-  - delay: 729
-    content: "\e[93md"
+    content: "\e[?25l\e[93m\e[1;44Hdotnet \e[90m--version\e[?25h"
   - delay: 15
     content: "\e[m"
-  - delay: 125
-    content: "\e[?25l\e[91m\e[4;42H> \e[92mdo\e[?25h"
+  - delay: 299
+    content: "\r\n"
+  - delay: 171
+    content: "6.0.321\r\nPS C:\\Coding\\martincostello\\MyApplication> "
+  - delay: 877
+    content: "\e[93md"
   - delay: 16
     content: "\e[m"
-  - delay: 76
-    content: "\e[?25l\e[4;42H> \e[93mdot\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 107
-    content: "\e[?25l\e[93m\e[4;44Hdotn\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 127
-    content: "\e[?25l\e[93m\e[4;44Hdotne\e[?25h"
+  - delay: 63
+    content: "\e[?25l\e[91m\e[3;42H> \e[92mdo\e[?25h"
   - delay: 15
     content: "\e[m"
   - delay: 46
-    content: "\e[?25l\e[93m\e[4;44Hdotnet\e[?25h"
-  - delay: 16
+    content: "\e[?25l\e[3;42H> \e[93mdot\e[?25h"
+  - delay: 15
     content: "\e[m"
   - delay: 93
-    content: "\e[?25l\e[93m\e[4;44Hdotnet \e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 227
-    content: "\e[?25l\e[93m\e[4;44Hdotnet \e[mb\e[?25h"
-  - delay: 194
-    content: "\e[?25l\e[93m\e[4;44Hdotnet \e[mbu\e[?25h"
-  - delay: 243
-    content: "\e[?25l\e[93m\e[4;44Hdotnet \e[mbum\e[?25h"
-  - delay: 113
-    content: "\e[?25l\e[93m\e[4;44Hdotnet \e[mbump\e[?25h"
-  - delay: 109
-    content: "\e[?25l\e[93m\e[4;44Hdotnet \e[mbumpe\e[?25h"
-  - delay: 95
-    content: "\e[?25l\e[93m\e[4;44Hdotnet \e[mbumper\e[?25h"
-  - delay: 154
-    content: "\e[?25l\e[93m\e[4;44Hdotnet \e[mbumper \e[?25h"
-  - delay: 153
-    content: "\e[?25l\e[93m\e[4;44Hdotnet \e[mbumper .\e[?25h"
-  - delay: 309
-    content: "\r\n"
-  - delay: 289
-    content: "\e]9;4;3;0\a"
-  - delay: 790
-    content: "\e[?25lUpgrading project \e[38;5;14mMyApplication \e[mto .NET \e[38;5;5m8.0\e[m...\e[38;5;8m\e[7;1HUpgrading .NET SDK..."
+    content: "\e[?25l\e[93m\e[3;44Hdotn\e[?25h"
   - delay: 15
     content: "\e[m"
-  - delay: 31
-    content: "\e[38;5;8m\r\nUpgrading AWS Lambda Tools defaults...\e[K\r\nUpgrading Dockerfiles...\e[K\r\nUpgrading Serverless...\e[K\e[m\r\n\e[K\r\n\e[K\e[120C"
-  - delay: 17
-    content: "\e[38;5;8m\e[11;1HUpgrading target frameworks...\e[K\e[m\r\n\e[K\r\n\e[K\e[120C"
-  - delay: 45
-    content: "\e[38;5;8m\e[12;1HUpgrading Visual Studio Code configuration...\e[K\r\nUpgrading Visual Studio configuration...\e[K\e[m\r\n\e[K\r\n\e[K\e[120C"
-  - delay: 16
-    content: "\e[38;5;8m\e[14;1HUpgrading NuGet packages...\e[K\e[m\r\n\e[K\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[m\r\n\e[45X\e[45C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 107
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 107
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 107
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 107
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 111
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 106
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 108
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 110
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 109
-    content: "\e[15;1H\e[45X\e[38;5;11m\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[120C"
-  - delay: 95
-    content: "\e]9;4;0;0\a"
-  - delay: 12
-    content: "\e[15;1H\e[K\e[38;5;14m\r\nMyApplication \e[mupgrade to \e[38;5;15m\e[48;5;5m.NET 8.0\e[m \e[38;5;2msuccessful\e[m!\e[K\r\n\e[K\r\nDuration: \e[38;5;2m00:00:10.2998708.\r\n\e[?25h"
+  - delay: 576
+    content: "\e[?25l\e[93m\e[3;44Hdotne\e[?25h"
   - delay: 16
     content: "\e[m"
-  - delay: 16
-    content: 'PS C:\Coding\martincostello\MyApplication> '
-  - delay: 1042
-    content: "\e[93md"
+  - delay: 79
+    content: "\e[?25l\e[93m\e[3;44Hdotnet\e[?25h"
   - delay: 15
     content: "\e[m"
-  - delay: 140
-    content: "\e[?25l\e[91m\e[19;42H> \e[92mdo\e[?25h"
-  - delay: 15
-    content: "\e[m"
-  - delay: 94
-    content: "\e[?25l\e[19;42H> \e[93mdot\e[?25h"
-  - delay: 15
-    content: "\e[m"
-  - delay: 78
-    content: "\e[?25l\e[93m\e[19;44Hdotn\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 47
-    content: "\e[?25l\e[93m\e[19;44Hdotne\e[?25h"
-  - delay: 15
-    content: "\e[m"
-  - delay: 62
-    content: "\e[?25l\e[93m\e[19;44Hdotnet\e[?25h"
-  - delay: 15
-    content: "\e[m"
-  - delay: 62
-    content: "\e[?25l\e[93m\e[19;44Hdotnet \e[?25h"
-  - delay: 17
-    content: "\e[m"
-  - delay: 201
-    content: "\e[?25l\e[93m\e[19;44Hdotnet \e[m-\e[?25h"
-  - delay: 140
-    content: "\e[?25l\e[93m\e[19;44Hdotnet \e[90m--\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 93
-    content: "\e[?25l\e[93m\e[19;44Hdotnet \e[90m--v\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 93
-    content: "\e[?25l\e[93m\e[19;44Hdotnet \e[90m--ve\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 77
-    content: "\e[?25l\e[93m\e[19;44Hdotnet \e[90m--ver\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 92
-    content: "\e[?25l\e[93m\e[19;44Hdotnet \e[90m--vers\e[?25h"
-  - delay: 15
-    content: "\e[m"
-  - delay: 78
-    content: "\e[?25l\e[93m\e[19;44Hdotnet \e[90m--versi\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 62
-    content: "\e[?25l\e[93m\e[19;44Hdotnet \e[90m--versio\e[?25h"
+  - delay: 124
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[?25h"
   - delay: 14
     content: "\e[m"
-  - delay: 31
-    content: "\e[?25l\e[93m\e[19;44Hdotnet \e[90m--version\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 373
-    content: "\r\n"
-  - delay: 204
-    content: "8.0.201\r\nPS C:\\Coding\\martincostello\\MyApplication> "
-  - delay: 1333
-    content: "\e[93mg"
-  - delay: 16
-    content: "\e[m"
+  - delay: 249
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mb\e[?25h"
+  - delay: 251
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbu\e[?25h"
+  - delay: 173
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbum\e[?25h"
+  - delay: 110
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbump\e[?25h"
+  - delay: 78
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbumpe\e[?25h"
+  - delay: 64
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbumper\e[?25h"
+  - delay: 140
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbumper \e[?25h"
+  - delay: 280
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbumper .\e[?25h"
+  - delay: 188
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbumper . \e[?25h"
+  - delay: 186
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbumper . -\e[?25h"
   - delay: 156
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbumper . \e[90m--\e[?25h"
+  - delay: 15
+    content: "\e[m"
+  - delay: 123
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbumper . \e[90m--t\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 62
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbumper . \e[90m--te\e[?25h"
+  - delay: 15
+    content: "\e[m"
+  - delay: 188
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbumper . \e[90m--tes\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 31
+    content: "\e[?25l\e[93m\e[3;44Hdotnet \e[mbumper . \e[90m--test\e[?25h"
+  - delay: 15
+    content: "\e[m"
+  - delay: 233
+    content: "\r\n"
+  - delay: 306
+    content: "\e]9;4;3;0\a"
+  - delay: 378
+    content: "\e[38;5;5m      _   _   _____   _____     ____\e[44X\r\n     | \\ | | | ____| |_   _|   | __ )   _   _   _ __ ___    _ __     ___   _ __ \r\n     |  \\| | |  _|     | |     |  _ \\  | | | | | '_ ` _ \\  | '_ \\   / _ \\ | '__|\r\n  _  | |\\  | | |___    | |     | |_) | | |_| | | | | | | | | |_) | |  __/ | |   \r\n (_) |_| \\_| |_____|   |_|     |____/   \\__,_| |_| |_| |_| | .__/   \\___| |_|   \r\n                                                           |_|\e[18X\r\n"
+  - delay: 15
+    content: "\e[?25l\e[m\e[38;5;12m0.2.0-beta.240+d7224a307fb3e77df199e5cbe57c458badfa0179\e[12;1H\e[?25h"
+  - delay: 15
+    content: "\e[m"
+  - delay: 420
+    content: "\e[?25lUpgrading project \e[38;5;14mMyApplication \e[mto .NET \e[38;5;5m8.0\e[m...\e[38;5;8m\e[14;1HUpgrading .NET SDK...\r\n\e[?25h"
+  - delay: 16
+    content: "\e[m\e[?25l"
+  - delay: 62
+    content: "\e[38;5;8mUpgrading AWS Lambda Tools defaults...\e[K\r\nUpgrading Dockerfiles...\e[K\r\nUpgrading Serverless...\e[K\e[m\r\n\e[K\r\n\e[K\e[115C"
+  - delay: 16
+    content: "\e[38;5;8m\e[18;1HUpgrading target frameworks...\e[K\e[m\r\n\e[K\r\n\e[K\e[115C"
+  - delay: 61
+    content: "\e[38;5;8m\e[19;1HUpgrading Visual Studio Code configuration...\e[K\r\nUpgrading Visual Studio configuration...\e[K\e[m\r\n\e[K\r\n\e[K\e[115C"
+  - delay: 16
+    content: "\e[38;5;8m\e[21;1HUpgrading NuGet packages...\e[K\e[m\r\n\e[K\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[m\r\n\e[45X\e[45C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 106
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 106
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mRestore NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 111
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 106
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 111
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n| \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n/ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[22;1H\e[45X\r\n- \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[22;1H\e[45X\r\n\\ \e[38;5;7mUpdate NuGet packages for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 46
+    content: "\e[38;5;8m\e[22;1HRunning tests...\e[K\e[m\r\n\e[K\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[m\r\n\e[36X\e[36C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 111
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 111
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 106
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 111
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 107
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 111
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n| \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n/ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n- \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[23;1H\e[36X\e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 37
+    content: "\e[38;5;2m\e[24;1H? Upgrade successfully tested.\e[K\e[m\r\n\e[K\r\n\e[20X\e[38;5;7m\e[20Cdotnet test\e[K\e[m\r\n┌─────────────────────┬────────┬────────┬─────────┐\e[K\r\n│ \e[1mContainer\e[22m           │ \e[1mPassed\e[22m │ \e[1mFailed\e[22m │ \e[1mSkipped\e[22m │\e[K\r\n├─────────────────────┼────────┼────────┼─────────┤\r\n│ \e[38;5;12mMyApplication.Tests \e[m│ \e[38;5;2m1      \e[m│ \e[38;5;9m0      \e[m│ \e[38;5;11m0       \e[m│\e[K\e[64C\r\n└─────────────────────┴────────┴────────┴─────────┘\e[64C\r\n\e[115C\r\n\e[38;5;2m\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[79C\e[m\r\n\e[28;1H                                                                                                                   \e[38;5;2m\r\n\\ \e[38;5;6mRunning tests for MyApplication...\e[K\e[79C"
+  - delay: 8
+    content: "\e[m\r\n\e[38;5;8m\e[27;1HFind leftover references...                                                                                        \e[m\r\n                                                                                                                   \r\n\e[115C"
+  - delay: 109
+    content: "\e[28;1H\e[17X\r\n- \e[38;5;7mSearch files..."
+  - delay: 16
+    content: "\e[m\r\n\e[115C"
+  - delay: 111
+    content: "\e[27;1H\e[17X\r\n\\ \e[38;5;7mSearch files...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[27;1H\e[17X\r\n| \e[38;5;7mSearch files...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[27;1H\e[17X\r\n/ \e[38;5;7mSearch files...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 110
+    content: "\e[27;1H\e[23X\r\n- \e[38;5;7mSearching demo.yml...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 108
+    content: "\e[27;1H\e[32X\r\n\\ \e[38;5;7mSearching MyApplication.sln...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 109
+    content: "\e[27;1H\e[32X\r\n| \e[38;5;7mSearching MyApplication.sln...\e[K\e[m\r\n\e[K\e[115C"
+  - delay: 48
+    content: "\e[27;1H\e[K\e[38;5;14m\r\nMyApplication \e[mupgrade to \e[38;5;15m\e[48;5;5m.NET 8.0\e[m \e[38;5;2msuccessful\e[m! ??\e[K\r\n\e[K\e[?25h\n┌───────────────────────────────────────────────────\e[38;5;11mDisclaimer\e[m────────────────────────────────────────────────────┐\e[29;1H\n│ ?? .NET Bumper upgrades are made on a best-effort basis.                                                        │\e[29;1H\n│ ?? You should \e[1malways\e[22m review the changes and test your project to validate the upgrade.                          │\e[29;1H\n│ ?? \e]8;id=u-672105364%11233981848349019374;https://learn.microsoft.com/dotnet/core/compatibility/8.0\e\\Breaking changes in .NET 8\e]8;;\e\\                                                                                   │\e[29;1H\n└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘\e[29;1H\n\nDuration: \e[38;5;2m00:00:23.7396416.\e[K\r"
+  - delay: 5
+    content: "\e[m\n"
+  - delay: 8
+    content: "\e]9;4;0;0\a"
+  - delay: 71
+    content: 'PS C:\Coding\martincostello\MyApplication> '
+  - delay: 1498
+    content: "\e[93md"
+  - delay: 16
+    content: "\e[m"
+  - delay: 174
+    content: "\e[?25l\e[91m\e[29;42H> \e[92mdo\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 31
+    content: "\e[?25l\e[29;42H> \e[93mdot\e[?25h"
+  - delay: 15
+    content: "\e[m"
+  - delay: 155
+    content: "\e[?25l\e[93m\e[29;44Hdotn\e[?25h"
+  - delay: 15
+    content: "\e[m"
+  - delay: 126
+    content: "\e[?25l\e[93m\e[29;44Hdotne\e[?25h"
+  - delay: 15
+    content: "\e[m"
+  - delay: 78
+    content: "\e[?25l\e[93m\e[29;44Hdotnet\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 108
+    content: "\e[?25l\e[93m\e[29;44Hdotnet \e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 282
+    content: "\e[?25l\e[93m\e[29;44Hdotnet \e[m-\e[?25h"
+  - delay: 138
+    content: "\e[?25l\e[93m\e[29;44Hdotnet \e[90m--\e[?25h"
+  - delay: 17
+    content: "\e[m"
+  - delay: 182
+    content: "\e[?25l\e[93m\e[29;44Hdotnet \e[90m--v\e[?25h"
+  - delay: 15
+    content: "\e[m"
+  - delay: 158
+    content: "\e[?25l\e[93m\e[29;44Hdotnet \e[90m--ve\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 94
+    content: "\e[?25l\e[93m\e[29;44Hdotnet \e[90m--ver\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 93
+    content: "\e[?25l\e[93m\e[29;44Hdotnet \e[90m--vers\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 137
+    content: "\e[?25l\e[93m\e[29;44Hdotnet \e[90m--versi\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 31
+    content: "\e[?25l\e[93m\e[29;44Hdotnet \e[90m--versio\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 93
+    content: "\e[?25l\e[93m\e[29;44Hdotnet \e[90m--version\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 966
+    content: "\r\n"
+  - delay: 207
+    content: "8.0.201\r"
+  - delay: 10
+    content: |+
+
+  - delay: 16
+    content: 'PS C:\Coding\martincostello\MyApplication> '
+  - delay: 1804
+    content: "\e[93mg"
+  - delay: 15
+    content: "\e[m"
+  - delay: 187
     content: "\e[93m\bgi"
   - delay: 15
     content: "\e[m"
   - delay: 62
-    content: "\e[?25l\e[93m\e[21;44Hgit\e[?25h"
+    content: "\e[?25l\e[93m\e[29;44Hgit\e[?25h"
+  - delay: 14
+    content: "\e[m"
+  - delay: 79
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[?25h"
   - delay: 16
     content: "\e[m"
-  - delay: 80
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[?25h"
-  - delay: 13
-    content: "\e[m"
-  - delay: 372
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[m-\e[?25h"
-  - delay: 155
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--\e[?25h"
+  - delay: 263
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[m-\e[?25h"
+  - delay: 108
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--\e[?25h"
   - delay: 16
     content: "\e[m"
-  - delay: 162
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--n\e[?25h"
-  - delay: 23
-    content: "\e[m"
-  - delay: 110
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no\e[?25h"
+  - delay: 218
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--n\e[?25h"
   - delay: 15
     content: "\e[m"
-  - delay: 215
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no-\e[?25h"
+  - delay: 126
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no\e[?25h"
+  - delay: 17
+    content: "\e[m"
+  - delay: 358
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no-\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 233
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no-p\e[?25h"
+  - delay: 16
+    content: "\e[m"
+  - delay: 169
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no-pa\e[?25h"
   - delay: 15
     content: "\e[m"
-  - delay: 262
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no-p\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 171
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no-pa\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 105
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no-pag\e[?25h"
-  - delay: 22
-    content: "\e[m"
-  - delay: 109
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no-page\e[?25h"
-  - delay: 16
-    content: "\e[m"
-  - delay: 110
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no-pager\e[?25h"
+  - delay: 48
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no-pag\e[?25h"
   - delay: 15
     content: "\e[m"
-  - delay: 326
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no-pager \e[?25h"
-  - delay: 16
+  - delay: 124
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no-page\e[?25h"
+  - delay: 15
     content: "\e[m"
-  - delay: 100
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no-pager \e[md\e[?25h"
-  - delay: 172
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no-pager \e[mdi\e[?25h"
-  - delay: 202
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no-pager \e[mdif\e[?25h"
-  - delay: 125
-    content: "\e[?25l\e[93m\e[21;44Hgit \e[90m--no-pager \e[mdiff\e[?25h"
-  - delay: 100
+  - delay: 79
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no-pager\e[?25h"
+  - delay: 14
+    content: "\e[m"
+  - delay: 280
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no-pager \e[?25h"
+  - delay: 15
+    content: "\e[m"
+  - delay: 345
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no-pager \e[md\e[?25h"
+  - delay: 264
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no-pager \e[mdi\e[?25h"
+  - delay: 220
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no-pager \e[mdif\e[?25h"
+  - delay: 157
+    content: "\e[?25l\e[93m\e[29;44Hgit \e[90m--no-pager \e[mdiff\e[?25h"
+  - delay: 971
     content: "\r\n"
-  - delay: 70
-    content: "\e[38;5;15mdiff --git a/MyApplication.Tests/MyApplication.Tests.csproj b/MyApplication.Tests/MyApplication.Tests.csproj\r\nindex 589ae9d..934e431 100644\r\n--- a/MyApplication.Tests/MyApplication.Tests.csproj\r\n+++ b/MyApplication.Tests/MyApplication.Tests.csproj\e[38;5;6m\r\n@@ -1,7 +1,7 @@\e[m\r\n \uFEFF<Project Sdk=\"Microsoft.NET.Sdk\">\r\n \r\n   <PropertyGroup>\e[38;5;1m\r\n-    <TargetFramework>net6.0</TargetFramework>\e[m\r\n\e[38;5;2m+    <TargetFramework>net8.0</TargetFramework>\e[m\r\n     <ImplicitUsings>enable</ImplicitUsings>\r\n     <Nullable>enable</Nullable>\r\n\e[1C\r\n\e[38;5;6m@@ -9,7 +9,7 @@\e[m\r\n   </PropertyGroup>\r\n\e[1C\r\n   <ItemGroup>\r\n\e[38;5;1m-    <PackageReference Include=\"Microsoft.AspNetCore.Mvc.Testing\" Version=\"6.0.0\" />\e[m\r\n\e[38;5;2m+    <PackageReference Include=\"Microsoft.AspNetCore.Mvc.Testing\" Version=\"8.0.2\" />\e[m\r\n     <PackageReference Include=\"Microsoft.NET.Test.Sdk\" Version=\"17.1.0\" />\r\n     <PackageReference Include=\"xunit\" Version=\"2.4.1\" />\r\n     <PackageReference Include=\"xunit.runner.visualstudio\" Version=\"2.4.3\">\r\n\e[38;5;15mdiff --git a/MyApplication/MyApplication.csproj b/MyApplication/MyApplication.csproj\e[m\r\n\e[38;5;15mindex ece4a4b..099e4bd 100644\e[m\r\n\e[38;5;15m--- a/MyApplication/MyApplication.csproj\e[m\r\n\e[38;5;15m+++ b/MyApplication/MyApplication.csproj\e[m\r\n\e[38;5;6m@@ -1,7 +1,7 @@\e[m\r\n \uFEFF<Project Sdk=\"Microsoft.NET.Sdk.Web\">\r\n\e[1C\r\n   <PropertyGroup>\r\n\e[38;5;1m-    <TargetFramework>net6.0</TargetFramework>\e[m\r\n\e[38;5;2m+    <TargetFramework>net8.0</TargetFramework>\e[m\r\n     <Nullable>enable</Nullable>\r\n     <ImplicitUsings>enable</ImplicitUsings>\r\n   </PropertyGroup>\r\n\e[38;5;15mdiff --git a/global.json b/global.json\e[m\r\n\e[38;5;15mindex 0731590..e72335a 100644\e[m\r\n\e[38;5;15m--- a/global.json\e[m\r\n\e[38;5;15m+++ b/global.json\e[m\r\n\e[38;5;6m@@ -1,5 +1,5 @@\e[m\r\n {\r\n   \"sdk\": {\r\n\e[38;5;1m-    \"version\": \"6.0.321\"\e[m\r\n\e[38;5;2m+    \"version\": \"8.0.201\"\e[m\r\n   }\r\n }"
-  - delay: 5
-    content: "\r\n"
-  - delay: 15
-    content: 'PS C:\Coding\martincostello\MyApplication> '
+  - delay: 78
+    content: "\e[38;5;15mdiff --git a/MyApplication.Tests/MyApplication.Tests.csproj b/MyApplication.Tests/MyApplication.Tests.csproj\e[m\r\n\e[38;5;15mindex 589ae9d..ef2f6d0 100644\e[m\r\n\e[38;5;15m--- a/MyApplication.Tests/MyApplication.Tests.csproj\e[m\r\n\e[38;5;15m+++ b/MyApplication.Tests/MyApplication.Tests.csproj\e[m\r\n\e[38;5;6m@@ -1,7 +1,7 @@\e[m\r\n \uFEFF<Project Sdk=\"Microsoft.NET.Sdk\">\r\n\e[1C\r\n   <PropertyGroup>\r\n\e[38;5;1m-    <TargetFramework>net6.0</TargetFramework>\e[m\r\n\e[38;5;2m+    <TargetFramework>net8.0</TargetFramework>\e[m\r\n     <ImplicitUsings>enable</ImplicitUsings>\r\n     <Nullable>enable</Nullable>\r\n\e[1C\r\n\e[38;5;6m@@ -9,8 +9,8 @@\e[m\r\n   </PropertyGroup>\r\n\e[1C\r\n   <ItemGroup>\r\n\e[38;5;1m-    <PackageReference Include=\"Microsoft.AspNetCore.Mvc.Testing\" Version=\"6.0.0\" />\e[m\r\n\e[38;5;1m-    <PackageReference Include=\"Microsoft.NET.Test.Sdk\" Version=\"17.1.0\" />\e[m\r\n\e[38;5;2m+    <PackageReference Include=\"Microsoft.AspNetCore.Mvc.Testing\" Version=\"8.0.2\" />\e[m\r\n\e[38;5;2m+    <PackageReference Include=\"Microsoft.NET.Test.Sdk\" Version=\"17.9.0\" />\e[m\r\n     <PackageReference Include=\"xunit\" Version=\"2.4.1\" />\r\n     <PackageReference Include=\"xunit.runner.visualstudio\" Version=\"2.4.3\">\r\n       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>\r\n\e[38;5;15mdiff --git a/MyApplication/MyApplication.csproj b/MyApplication/MyApplication.csproj\e[m\r\n\e[38;5;15mindex ece4a4b..099e4bd 100644\e[m\r\n\e[38;5;15m--- a/MyApplication/MyApplication.csproj\e[m\r\n\e[38;5;15m+++ b/MyApplication/MyApplication.csproj\e[m\r\n\e[38;5;6m@@ -1,7 +1,7 @@\e[m\r\n \uFEFF<Project Sdk=\"Microsoft.NET.Sdk.Web\">\r\n\e[1C\r\n   <PropertyGroup>\r\n\e[38;5;1m-    <TargetFramework>net6.0</TargetFramework>\e[m\r\n\e[38;5;2m+    <TargetFramework>net8.0</TargetFramework>\e[m\r\n     <Nullable>enable</Nullable>\r\n     <ImplicitUsings>enable</ImplicitUsings>\r\n   </PropertyGroup>\r\n\e[38;5;15mdiff --git a/global.json b/global.json\e[m\r\n\e[38;5;15mindex 0731590..e72335a 100644\e[m\r\n\e[38;5;15m--- a/global.json\e[m\r\n\e[38;5;15m+++ b/global.json\e[m\r\n\e[38;5;6m@@ -1,5 +1,5 @@\e[m\r\n {\r\n   \"sdk\": {\r\n\e[38;5;1m-    \"version\": \"6.0.321\"\e[m\r\n\e[38;5;2m+    \"version\": \"8.0.201\"\e[m\r\n   }\r\n }"
+  - delay: 8
+    content: "\r\nPS C:\\Coding\\martincostello\\MyApplication>\e[1C"
+  - delay: 6401
+    content: "\e[93m"
