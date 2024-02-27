@@ -12,6 +12,7 @@ internal sealed partial class DotNetTestPostProcessor(
     DotNetProcess dotnet,
     IAnsiConsole console,
     IEnvironment environment,
+    BumperConfigurationProvider configurationProvider,
     BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<DotNetTestPostProcessor> logger) : PostProcessor(console, environment, options, logger)
@@ -122,6 +123,8 @@ internal sealed partial class DotNetTestPostProcessor(
     {
         var results = new List<DotNetResult>(projects.Count);
 
+        var configuration = await configurationProvider.GetAsync(cancellationToken);
+
         foreach (var project in projects)
         {
             string name = ProjectHelpers.RelativeName(Options.ProjectPath, project);
@@ -130,10 +133,15 @@ internal sealed partial class DotNetTestPostProcessor(
             using var adapterDirectory = GetTestAdapter();
             using var logsDirectory = new TemporaryDirectory();
 
-            var environmentVariables = new Dictionary<string, string?>(1)
+            var environmentVariables = new Dictionary<string, string?>(2)
             {
                 [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
             };
+
+            if (configuration.NoWarn.Count > 0)
+            {
+                environmentVariables["NoWarn"] = string.Join(";", configuration.NoWarn);
+            }
 
             // See https://learn.microsoft.com/dotnet/core/tools/dotnet-test
             var result = await dotnet.RunWithLoggerAsync(
