@@ -1,6 +1,6 @@
 config:
 
-  command: pwsh.exe -NoLogo -NoProfile
+  command: pwsh.exe -NoExit -NoLogo -NoProfile -Command "Set-PSReadLineOption -PredictionSource None"
 
   cwd: C:\Coding\martincostello\MyApplication
 
