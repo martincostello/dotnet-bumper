@@ -9,6 +9,12 @@ internal sealed class UpgradeOptionsValidator : IValidateOptions<UpgradeOptions>
 {
     public ValidateOptionsResult Validate(string? name, UpgradeOptions options)
     {
+        if (options.ConfigurationPath is { Length: > 0 } &&
+            !File.Exists(options.ConfigurationPath))
+        {
+            return ValidateOptionsResult.Fail($"The specified configuration file \"{options.ConfigurationPath}\" cannot be found.");
+        }
+
         if (options.DotNetChannel is { Length: > 0 } version &&
             !Version.TryParse(version, out _))
         {

@@ -438,6 +438,23 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     }
 
     [Fact]
+    public async Task Application_Validates_Configuration_File_Exists()
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        // Act
+        int actual = await Bumper.RunAsync(
+            fixture.Console,
+            [fixture.Project.DirectoryName, "--configuration-file", "foo.txt"],
+            (builder) => builder.AddXUnit(outputHelper),
+            CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task Application_Handles_Unknown_Options()
     {
         // Arrange

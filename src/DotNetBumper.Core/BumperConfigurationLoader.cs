@@ -15,20 +15,36 @@ internal partial class BumperConfigurationLoader(
 {
     public virtual async Task<BumperConfiguration?> LoadAsync(CancellationToken cancellationToken)
     {
-        (var fileName, bool isJson) = FindConfiguration();
+        (var fileName, bool isJson, bool isRequired) = FindConfiguration();
 
         BumperConfiguration? configuration = null;
 
         if (fileName is not null)
         {
             configuration = isJson ? await DeserializeJsonAsync(fileName, cancellationToken) : DeserializeYaml(fileName);
+
+            if (configuration is null && isRequired)
+            {
+                throw new InvalidOperationException($"The configuration file '{fileName}' could not be loaded. Is the file valid JSON or YAML?");
+            }
         }
 
         return configuration;
     }
 
-    private (string? Path, bool IsJson) FindConfiguration()
+    private (string? Path, bool IsJson, bool IsRequired) FindConfiguration()
     {
+        if (options.Value.ConfigurationPath is { } userConfig)
+        {
+            if (!File.Exists(userConfig))
+            {
+                throw new FileNotFoundException("The specified custom configuration file could not be found.", userConfig);
+            }
+
+            bool isJson = string.Equals(Path.GetExtension(userConfig) ?? "json", "json", StringComparison.Ordinal);
+            return (userConfig, isJson, true);
+        }
+
         var path = options.Value.ProjectPath;
 
         var fileNames = new[]
@@ -42,11 +58,11 @@ internal partial class BumperConfigurationLoader(
         {
             if (File.Exists(fileName))
             {
-                return (fileName, isJson);
+                return (fileName, isJson, false);
             }
         }
 
-        return (null, true);
+        return (null, true, false);
     }
 
     private async Task<BumperConfiguration?> DeserializeJsonAsync(string fileName, CancellationToken cancellationToken)

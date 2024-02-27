@@ -11,6 +11,11 @@ namespace MartinCostello.DotNetBumper;
 public sealed class UpgradeOptions
 {
     /// <summary>
+    /// Gets or sets the path of a custom JSON or YAML configuration file, if any.
+    /// </summary>
+    public string? ConfigurationPath { get; set; }
+
+    /// <summary>
     /// Gets or sets a specific .NET release channel to upgrade to.
     /// </summary>
     public string? DotNetChannel { get; set; }

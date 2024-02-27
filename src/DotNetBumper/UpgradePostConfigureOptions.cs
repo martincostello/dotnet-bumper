@@ -17,6 +17,11 @@ internal sealed class UpgradePostConfigureOptions(IModelAccessor accessor) : IPo
         options.TestUpgrade = command.TestUpgrade;
         options.TreatWarningsAsErrors = command.WarningsAsErrors;
 
+        if (command.ConfigurationFile is not null)
+        {
+            options.ConfigurationPath = Path.GetFullPath(command.ConfigurationFile);
+        }
+
         if (!string.IsNullOrWhiteSpace(command.ProjectPath))
         {
             options.ProjectPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(command.ProjectPath));

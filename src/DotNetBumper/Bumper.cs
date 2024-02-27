@@ -23,6 +23,11 @@ internal partial class Bumper(ProjectUpgrader upgrader)
     public string? ProjectPath { get; set; }
 
     [Option(
+        "-cf|--configuration-file <PATH>",
+        Description = "The path to a custom JSON or YAML configuration file to use, if any.")]
+    public string? ConfigurationFile { get; set; }
+
+    [Option(
         "-c|--channel <CHANNEL>",
         Description = "The .NET release channel to upgrade to in the format \"major.minor\".")]
     public string? DotNetChannel { get; set; }

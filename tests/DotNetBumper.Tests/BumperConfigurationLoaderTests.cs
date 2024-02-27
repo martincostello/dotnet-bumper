@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using Microsoft.Extensions.Options;
+
 namespace MartinCostello.DotNetBumper;
 
 public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
@@ -18,6 +20,79 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actual.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task LoadAsync_When_Custom_Configuration_Not_Found()
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+        await CreateJsonConfigurationAsync(fixture);
+
+        var options = new UpgradeOptions()
+        {
+            ConfigurationPath = Path.Combine(fixture.Project.DirectoryName, "custom.json"),
+            ProjectPath = fixture.Project.DirectoryName,
+        };
+
+        var target = CreateTarget(fixture, options);
+
+        // Act and Assert
+        await Should.ThrowAsync<FileNotFoundException>(() => target.LoadAsync(CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("custom.json")]
+    [InlineData("custom.JSON")]
+    [InlineData("custom.yml")]
+    [InlineData("custom.YML")]
+    [InlineData("custom.yaml")]
+    public async Task LoadAsync_When_Custom_Configuration_Invalid(string fileName)
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+        await CreateJsonConfigurationAsync(fixture);
+
+        var configurationPath = await fixture.Project.AddFileAsync(fileName, "Invalid");
+
+        var options = new UpgradeOptions()
+        {
+            ConfigurationPath = configurationPath,
+            ProjectPath = fixture.Project.DirectoryName,
+        };
+
+        var target = CreateTarget(fixture, options);
+
+        // Act and Assert
+        await Should.ThrowAsync<InvalidOperationException>(() => target.LoadAsync(CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("custom.json", @"{""noWarn"":[""warning-42""]}")]
+    [InlineData("CUSTOM.JSON", @"{""noWarn"":[""warning-42""]}")]
+    [InlineData("custom.yml", "noWarn:\n- warning-42")]
+    [InlineData("custom.YML", "noWarn:\n- warning-42")]
+    public async Task LoadAsync_When_Custom_Configuration(string fileName, string content)
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        var configurationPath = await fixture.Project.AddFileAsync(fileName, content);
+
+        var options = new UpgradeOptions()
+        {
+            ConfigurationPath = configurationPath,
+            ProjectPath = fixture.Project.DirectoryName,
+        };
+
+        var target = CreateTarget(fixture, options);
+
+        // Act
+        var actual = await target.LoadAsync(CancellationToken.None);
+
+        // Assert
+        actual.ShouldNotBeNull();
+        actual.NoWarn.ShouldBe(["warning-42"]);
     }
 
     [Fact]
@@ -157,8 +232,9 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
         await File.WriteAllTextAsync(path, content);
     }
 
-    private static BumperConfigurationLoader CreateTarget(UpgraderFixture fixture)
+    private static BumperConfigurationLoader CreateTarget(UpgraderFixture fixture, UpgradeOptions? options = null)
     {
-        return new(fixture.CreateOptions(), fixture.CreateLogger<BumperConfigurationLoader>());
+        var fixtureOptions = options is not null ? Options.Create(options) : fixture.CreateOptions();
+        return new(fixtureOptions, fixture.CreateLogger<BumperConfigurationLoader>());
     }
 }
