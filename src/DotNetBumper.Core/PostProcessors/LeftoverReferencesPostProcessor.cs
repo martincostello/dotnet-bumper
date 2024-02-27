@@ -14,6 +14,7 @@ namespace MartinCostello.DotNetBumper.PostProcessors;
 internal sealed partial class LeftoverReferencesPostProcessor(
     IAnsiConsole console,
     IEnvironment environment,
+    BumperConfigurationProvider configurationProvider,
     BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<LeftoverReferencesPostProcessor> logger) : PostProcessor(console, environment, options, logger)
@@ -67,7 +68,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var relativePath = RelativeName(path).Replace('\\', '/');
+            var relativePath = NormalizePath(RelativeName(path));
 
             if (gitignore?.IsIgnored(relativePath) is true || IsIgnoredFileType(path))
             {
@@ -120,6 +121,8 @@ internal sealed partial class LeftoverReferencesPostProcessor(
             _ => false,
         };
     }
+
+    private static string NormalizePath(string path) => path.Replace('\\', '/');
 
     private void RenderTable(Dictionary<ProjectFile, List<PotentialFileEdit>> references)
     {
@@ -179,31 +182,34 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
     private async Task<GitIgnore?> LoadGitIgnoreAsync(CancellationToken cancellationToken)
     {
+        var ignore = new GitIgnore();
+        var config = await configurationProvider.GetAsync(cancellationToken);
+
+        if (config.RemainingReferencesIgnore.Count > 0)
+        {
+            ignore.Add(config.RemainingReferencesIgnore.Select(NormalizePath));
+        }
+
         const string GitDirectory = ".git";
         const string GitIgnoreFile = ".gitignore";
 
         var gitDirectory = FileHelpers.FindDirectoryInProject(Options.ProjectPath, GitDirectory);
 
-        if (gitDirectory is null)
+        if (gitDirectory is not null)
         {
-            return null;
+            var gitignore = Path.GetFullPath(Path.Combine(gitDirectory, "..", GitIgnoreFile));
+
+            if (File.Exists(gitignore))
+            {
+                ignore.Add(GitDirectory);
+
+                foreach (var rule in await File.ReadAllLinesAsync(gitignore, cancellationToken))
+                {
+                    ignore.Add(rule);
+                }
+            }
         }
 
-        var gitignore = Path.GetFullPath(Path.Combine(gitDirectory, "..", GitIgnoreFile));
-
-        if (!File.Exists(gitignore))
-        {
-            return null;
-        }
-
-        var ignore = new GitIgnore();
-        ignore.Add(GitDirectory);
-
-        foreach (var rule in await File.ReadAllLinesAsync(gitignore, cancellationToken))
-        {
-            ignore.Add(rule);
-        }
-
-        return ignore;
+        return ignore.OriginalRules.Count is 0 ? null : ignore;
     }
 }

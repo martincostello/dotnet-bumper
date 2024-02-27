@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "https://github.com/martincostello/dotnet-bumper/blob/main/dotnet-bumper-schema.json",
+  "title": "JSON Schema for configuring .NET Bumper",
+  "type": "object",
+  "properties": {
+    "excludeNuGetPackages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Any NuGet packages to exclude from updating."
+    },
+    "includeNuGetPackages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Any NuGet packages to include when updating."
+    },
+    "noWarn": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Any MSBuild warnings to ignore."
+    },
+    "remainingReferencesIgnore": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "The project-relative path(s) to ignore from searching for remaining references."
+    }
+  }
+}

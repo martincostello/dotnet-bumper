@@ -75,6 +75,11 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
     {
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
+
+        fixture.UserConfiguration.RemainingReferencesIgnore.Add("tests\\fixtures\\*");
+
+        await fixture.Project.AddFileAsync("tests/fixtures/testdata.txt", "net6.0");
+
         var target = CreateTarget(fixture);
 
         // Act
@@ -194,9 +199,24 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         var environment = Substitute.For<IEnvironment>();
         environment.SupportsLinks.Returns(true);
 
+        var options = fixture.CreateOptions();
+
+        var configurationLoader = Substitute.For<BumperConfigurationLoader>(
+            options,
+            fixture.CreateLogger<BumperConfigurationLoader>());
+
+        configurationLoader.LoadAsync(Arg.Any<CancellationToken>())
+                           .Returns(fixture.UserConfiguration);
+
+        var configurationProvider = new BumperConfigurationProvider(
+            configurationLoader,
+            options,
+            fixture.CreateLogger<BumperConfigurationProvider>());
+
         return new(
             fixture.Console,
             environment,
+            configurationProvider,
             fixture.LogContext,
             fixture.CreateOptions(),
             fixture.CreateLogger<LeftoverReferencesPostProcessor>());
