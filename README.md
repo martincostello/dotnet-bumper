@@ -110,6 +110,52 @@ Options:
   -e|--warnings-as-errors          Treat any warnings encountered during the upgrade as errors.
 ```
 
+#### Custom Configuration File
+
+A custom configuration file can be used to specify some additional options to change
+the behaviour of Bumper for a specific repository. The possible options are documented in
+the [schema file][config-schema]. The format of the file can be either JSON or YAML.
+
+Bumper automatically loads the configuration file from directory containing the project to
+upgrade if one of the following files is found:
+
+- `.dotnet-bumper.json`
+- `.dotnet-bumper.yml`
+- `.dotnet-bumper.yaml`
+
+The file can also be explicitly specified using the `--configuration-file` option.
+
+An example JSON and YAML configuration file are shown below:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/martincostello/dotnet-bumper/main/dotnet-bumper-schema.json",
+  "excludeNuGetPackages": [
+    "System.Text.Json"
+  ],
+  "includeNuGetPackages": [
+    "Npgsql"
+  ],
+  "noWarn": [
+    "NU1605"
+  ],
+  "remainingReferencesIgnore": [
+    "tools/*"
+  ]
+}
+```
+
+```yaml
+excludeNuGetPackages:
+  - System.Text.Json
+includeNuGetPackages:
+  - Npgsql
+noWarn:
+  - NU1605
+remainingReferencesIgnore:
+  - "tools/*"
+```
+
 ## Pre-requisites
 
 - .NET 8 must be installed to use the tool
@@ -144,6 +190,7 @@ This project is licensed under the [Apache 2.0][license] license.
 
 [build-badge]: https://github.com/martincostello/dotnet-bumper/actions/workflows/build.yml/badge.svg?branch=main&event=push
 [build-status]: https://github.com/martincostello/dotnet-bumper/actions?query=workflow%3Abuild+branch%3Amain+event%3Apush "Continuous Integration for this project"
+[config-schema]: ./dotnet-bumper-schema.json "Configuration schema for the .NET Bumper tool"
 [coverage-badge]: https://codecov.io/gh/martincostello/dotnet-bumper/branch/main/graph/badge.svg
 [coverage-report]: https://codecov.io/gh/martincostello/dotnet-bumper "Code coverage report for this project"
 [demo]: ./docs/demo.gif "A demonstration of the .NET Bumper tool"
