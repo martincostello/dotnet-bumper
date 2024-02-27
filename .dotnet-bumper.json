@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martincostello/dotnet-bumper/main/dotnet-bumper-schema.json",
+  "excludeNuGetPackages": [
+    "System.Text.Json"
+  ],
+  "remainingReferencesIgnore": [
+    "tests/DotNetBumper.Tests/**/*.cs"
+  ]
+}
