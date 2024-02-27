@@ -29,7 +29,7 @@ internal sealed class BumperConfiguration
     public HashSet<string> NoWarn { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the path(s) to ignore from searching for remaining references.
+    /// Gets or sets the project-path(s) to ignore from searching for remaining references.
     /// </summary>
     [JsonPropertyName("remainingReferencesIgnore")]
     public HashSet<string> RemainingReferencesIgnore { get; set; } = [];
