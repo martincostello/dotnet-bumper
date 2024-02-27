@@ -41,7 +41,7 @@ internal partial class BumperConfigurationLoader(
                 throw new FileNotFoundException("The specified custom configuration file could not be found.", userConfig);
             }
 
-            bool isJson = string.Equals(Path.GetExtension(userConfig) ?? "json", "json", StringComparison.Ordinal);
+            bool isJson = string.Equals(Path.GetExtension(userConfig) ?? "json", "json", StringComparison.OrdinalIgnoreCase);
             return (userConfig, isJson, true);
         }
 
