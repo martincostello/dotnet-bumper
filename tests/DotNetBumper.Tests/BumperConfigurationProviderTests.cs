@@ -41,7 +41,7 @@ public class BumperConfigurationProviderTests(ITestOutputHelper outputHelper)
         actual.ShouldNotBeNull();
         actual.ExcludeNuGetPackages.ShouldBe([]);
         actual.IncludeNuGetPackages.ShouldBe(["Microsoft.AspNetCore.", "Microsoft.EntityFrameworkCore.", "Microsoft.Extensions.", "System.Text.Json"]);
-        actual.NoWarn.ShouldBe(["NU1605"]);
+        actual.NoWarn.ShouldBe(["NETSDK1057", "NU5104", "NU1605"]);
         actual.RemainingReferencesIgnore.ShouldBe([]);
     }
 
@@ -61,7 +61,7 @@ public class BumperConfigurationProviderTests(ITestOutputHelper outputHelper)
         actual.ShouldNotBeNull();
         actual.ExcludeNuGetPackages.ShouldBe(["exclude-json-1", "exclude-json-2"]);
         actual.IncludeNuGetPackages.ShouldBe(["Microsoft.AspNetCore.", "Microsoft.EntityFrameworkCore.", "Microsoft.Extensions.", "System.Text.Json", "include-json-1", "include-json-2"]);
-        actual.NoWarn.ShouldBe(["NU1605", "no-warn-json-1", "no-warn-json-2"]);
+        actual.NoWarn.ShouldBe(["NETSDK1057", "NU5104", "NU1605", "no-warn-json-1", "no-warn-json-2"]);
         actual.RemainingReferencesIgnore.ShouldBe(["ignore-json-1", "ignore-json-2"]);
     }
 
@@ -81,7 +81,7 @@ public class BumperConfigurationProviderTests(ITestOutputHelper outputHelper)
         actual.ShouldNotBeNull();
         actual.ExcludeNuGetPackages.ShouldBe(["exclude-yaml-1", "exclude-yaml-2"]);
         actual.IncludeNuGetPackages.ShouldBe(["Microsoft.AspNetCore.", "Microsoft.EntityFrameworkCore.", "Microsoft.Extensions.", "System.Text.Json", "include-yaml-1", "include-yaml-2"]);
-        actual.NoWarn.ShouldBe(["NU1605", "no-warn-yaml-1", "no-warn-yaml-2"]);
+        actual.NoWarn.ShouldBe(["NETSDK1057", "NU5104", "NU1605", "no-warn-yaml-1", "no-warn-yaml-2"]);
         actual.RemainingReferencesIgnore.ShouldBe(["ignore-yaml-1", "ignore-yaml-2"]);
     }
 
