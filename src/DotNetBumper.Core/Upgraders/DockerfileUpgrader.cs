@@ -24,7 +24,7 @@ internal sealed partial class DockerfileUpgrader(
 
     protected override string InitialStatus => "Update Dockerfiles";
 
-    protected override IReadOnlyList<string> Patterns => ["Dockerfile"];
+    protected override IReadOnlyList<string> Patterns => ["*Dockerfile"];
 
     internal static Match DockerImageMatch(string value) => DockerImage().Match(value);
 
