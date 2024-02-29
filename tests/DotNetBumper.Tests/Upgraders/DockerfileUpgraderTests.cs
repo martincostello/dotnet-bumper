@@ -268,7 +268,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string vsconfig = await fixture.Project.AddFileAsync("aws-lambda-tools-defaults.json", content);
+        string vsconfig = await fixture.Project.AddFileAsync("Dockerfile", content);
 
         var upgrade = new UpgradeInfo()
         {
@@ -438,7 +438,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string dockerfile = await fixture.Project.AddFileAsync("Dockerfile", fileContents);
+        string dockerfile = await fixture.Project.AddFileAsync("Custom.Dockerfile", fileContents);
 
         var upgrade = new UpgradeInfo()
         {
