@@ -13,11 +13,14 @@ For example, it might update the version of the .NET SDK in a `global.json` file
 The versions of .NET that can be upgraded to are determined from the [.NET release notes][dotnet-release-notes]
 in GitHub.
 
+Once the tool is run, you can then inspect the changes made in a diff tool, such as `git diff`, and
+then commit the changes to your source control system if you are happy with them.
+
 ## What is the difference between .NET Bumper and the .NET Upgrade Assistant?
 
 The philosophy behind .NET Bumper is that Bumper is intended to make it easier for you to make
 _incremental_ updates from one major version of .NET to the next in small steps for each annual
-release of .NET. It also supports moving from Long Term Support (LTS) release to another if you
+release of .NET. It also supports moving from one Long Term Support (LTS) release to another if you
 do not upgrade your version of .NET annually.
 
 In essence, .NET Bumper's purpose is to do the boring incremental changes so that a simple version
@@ -36,25 +39,24 @@ for more information.
 
 ## Why is my build broken/tests failing?
 
-.NET Bumper will build and test your project using `dotnet test` after the upgrade to produce a report on the
-success of the upgrade, but due to various factors, the build and/or tests may fail.
+.NET Bumper will optionally build and test your project using `dotnet test` after the upgrade to produce a report on the
+success of the upgrade via the `--test` option, but due to various factors the build and/or tests may fail.
 
 Reasons for this could include:
 
-- New code analysis options are introduced in the new version of .NET that are creating new warnings/errors;
+- New code analysers are introduced in the new version of .NET that are creating new warnings/errors;
 - A behavioural change in .NET is causing one or more tests to fail;
-- The test coverage has changed and the test runs are failing as a result;
+- The test coverage has changed and tests are failing as a result;
 - Some of your tests require custom manual setup (e.g. end-to-end tests) and cannot be run by .NET Bumper;
 - Conflicting NuGet package versions;
 - Syntax changes in a newer version of C#.
 
 ## Why haven't all my NuGet packages been updated?
 
-.NET Bumper will only updates specific packages that are known to require an upgrade when moving to a new version
+.NET Bumper only updates specific packages that are known to require an upgrade when moving to a new version
 of .NET.
 
-If you have other packages that create version conflicts that need to be upgraded, you must update these on
-the created branch manually.
+If you have other packages that create version conflicts that need to be upgraded, you must update these yourself.
 
 If you prefer, you can instead configure a custom set of NuGet package references to be included and excluded in updates by the tool.
 
@@ -130,10 +132,15 @@ use it as a source of inspiration to create your own bulk upgrade processes.
 
 .NET Bumper currently supports the use cases that I have come across in my own projects and those in the projects
 I help maintain in my day-to-day work. Because of this, other valid use cases may exist, but I'm not aware of them
-of I've not needed them, so they are not currently supported.
+or I've not needed them, so they are not currently supported.
 
-If a type of file edit that you need is not currently supported, please raise an issue on the GitHub repository
-suggesting a feature request for the tool.
+If a type of file edit that you need is not currently supported, please [raise an issue][dotnet-bumper-issues]
+in this GitHub repository suggesting a feature request for the tool. [Code contributions][contributions] are even better!
+
+Only contributions for _"industry standard"_ files related to the .NET ecosystem will be considered for inclusion.
+Contributions for custom updates for files/tooling you may have in your own private projects will not be accepted.
+
+By _"industry standard"_ files, I mean content such as .NET project files, Azure/AWS tooling, Dockerfiles, Serverless, etc.
 
 ## Why has .NET Bumper broken all my multi-targeting NuGet package versions?
 
@@ -144,15 +151,11 @@ If you have custom MSBuild properties configured for multi-targeting, .NET Bumpe
 for you in a correct manner. This is a known limitation.
 
 In these scenarios, you should use whatever existing process you have in place to update your package versions
-as appropriate to fulfill your multi-targeting requirements. [Contributions][contributions] are even better!
-
-Only contributions to "industry standard" files related to the .NET eco-system will be considered for inclusion.
-Contributions for custom updates for files/tooling you may have in your own private projects will not be accepted for inclusion.
-
-By _"industry standard"_ files, I mean content such as Azure/AWS tooling, Dockerfiles, Serverless, .NET project files, etc.
+as appropriate to fulfill your multi-targeting requirements.
 
 [contributions]: ../.github/CONTRIBUTING.md
 [dotnet-bumper-46]: https://github.com/martincostello/dotnet-bumper/issues/46
+[dotnet-bumper-issues]: https://github.com/martincostello/dotnet-bumper/issues/new/choose
 [dotnet-bumper-workflow]: https://github.com/martincostello/github-automation/blob/main/.github/workflows/dotnet-bumper.yml
 [dotnet-bumper-schema]: ../dotnet-bumper-schema.json
 [dotnet-outdated]: https://github.com/dotnet-outdated/dotnet-outdated
