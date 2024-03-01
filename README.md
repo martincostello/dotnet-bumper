@@ -163,6 +163,10 @@ remainingReferencesIgnore:
 - The [dotnet-outdated][dotnet-outdated] .NET Global tool must also be installed
 - Any project being upgraded must already target at least .NET 6
 
+## Questions
+
+An FAQ document for .NET Bumper is available [here](./docs/faq.md).
+
 ## Building and Testing
 
 Compiling the application yourself requires Git and the [.NET SDK][dotnet-sdk] to be installed.
