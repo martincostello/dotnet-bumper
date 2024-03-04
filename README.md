@@ -203,7 +203,7 @@ This project is licensed under the [Apache 2.0][license] license.
 [issues]: https://github.com/martincostello/dotnet-bumper/issues "Issues for this project on GitHub.com"
 [license]: https://www.apache.org/licenses/LICENSE-2.0.txt "The Apache 2.0 license"
 [lts]: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core ".NET and .NET Core Support Policy"
-[package-badge]: https://buildstats.info/nuget/MartinCostello.DotNetBumper?includePreReleases=true
+[package-badge]: https://buildstats.info/nuget/MartinCostello.DotNetBumper?includePreReleases=false
 [package-download]: https://www.nuget.org/packages/MartinCostello.DotNetBumper "Download dotnet-bumper from NuGet"
 [repo]: https://github.com/martincostello/dotnet-bumper "This project on GitHub.com"
 [scorecard-badge]: https://api.securityscorecards.dev/projects/github.com/martincostello/dotnet-bumper/badge
