@@ -34,6 +34,8 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
                 foreach (var hasByteOrderMark in new[] { false, true })
                 {
                     testCases.Add(channel, fileName, hasByteOrderMark, "DefaultTargetFramework", "net6.0", $"net{channel}");
+                    testCases.Add(channel, fileName, hasByteOrderMark, "PublishDir", "bin/Release/net6.0/publish/", $"bin/Release/net{channel}/publish/");
+                    testCases.Add(channel, fileName, hasByteOrderMark, "PublishDir", "bin\\Release\\net6.0\\publish\\", $"bin\\Release\\net{channel}\\publish\\");
                     testCases.Add(channel, fileName, hasByteOrderMark, "TargetFramework", "net6.0", $"net{channel}");
                     testCases.Add(channel, fileName, hasByteOrderMark, "TargetFrameworks", "net5.0;net6.0", $"net5.0;net6.0;net{channel}");
                     testCases.Add(channel, fileName, hasByteOrderMark, "TargetFrameworks", "net5.0;;;;net6.0", $"net5.0;;;;net6.0;net{channel}");
