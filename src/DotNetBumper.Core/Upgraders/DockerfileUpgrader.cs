@@ -190,7 +190,7 @@ internal sealed partial class DockerfileUpgrader(
     {
         updated = null;
 
-        if (channel < EightPointZero)
+        if (channel < DotNetVersions.EightPointZero)
         {
             return false;
         }
