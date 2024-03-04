@@ -13,7 +13,7 @@ internal abstract partial class XmlFileUpgrader(
     IAnsiConsole console,
     IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<TargetFrameworkUpgrader> logger) : FileUpgrader(console, environment, options, logger)
+    ILogger logger) : FileUpgrader(console, environment, options, logger)
 {
     protected static async Task UpdateProjectAsync(
         string filePath,
@@ -48,7 +48,7 @@ internal abstract partial class XmlFileUpgrader(
         }
         catch (Exception ex)
         {
-            Log.FailedToLoadProject(logger, filePath, ex);
+            Log.FailedToLoadProject(Logger, filePath, ex);
             return default;
         }
     }
