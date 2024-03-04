@@ -40,7 +40,7 @@ public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         var encoding = new UTF8Encoding(hasUtf8Bom);
-        string dockerfile = await fixture.Project.AddFileAsync("global.json", fileContents, encoding);
+        string globalJson = await fixture.Project.AddFileAsync("global.json", fileContents, encoding);
 
         var upgrade = new UpgradeInfo()
         {
@@ -61,10 +61,10 @@ public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
 
         fixture.LogContext.Changelog.ShouldContain($"Update .NET SDK to `{upgrade.SdkVersion}`");
 
-        string actualContent = await File.ReadAllTextAsync(dockerfile);
+        string actualContent = await File.ReadAllTextAsync(globalJson);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(dockerfile);
+        byte[] actualBytes = await File.ReadAllBytesAsync(globalJson);
 
         if (hasUtf8Bom)
         {

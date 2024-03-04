@@ -188,7 +188,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         var encoding = new UTF8Encoding(hasUtf8Bom);
-        string dockerfile = await fixture.Project.AddFileAsync("Directory.Build.props", fileContents, encoding);
+        string properties = await fixture.Project.AddFileAsync("Directory.Build.props", fileContents, encoding);
 
         var upgrade = new UpgradeInfo()
         {
@@ -207,10 +207,10 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(dockerfile);
+        string actualContent = await File.ReadAllTextAsync(properties);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(dockerfile);
+        byte[] actualBytes = await File.ReadAllBytesAsync(properties);
 
         if (hasUtf8Bom)
         {

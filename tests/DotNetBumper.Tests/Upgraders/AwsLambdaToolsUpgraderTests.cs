@@ -191,7 +191,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         var encoding = new UTF8Encoding(hasUtf8Bom);
-        string dockerfile = await fixture.Project.AddFileAsync("aws-lambda-tools-defaults.json", fileContents, encoding);
+        string jsonFile = await fixture.Project.AddFileAsync("aws-lambda-tools-defaults.json", fileContents, encoding);
 
         var upgrade = new UpgradeInfo()
         {
@@ -210,10 +210,10 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(dockerfile);
+        string actualContent = await File.ReadAllTextAsync(jsonFile);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(dockerfile);
+        byte[] actualBytes = await File.ReadAllBytesAsync(jsonFile);
 
         if (hasUtf8Bom)
         {
