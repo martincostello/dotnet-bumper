@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Xml;
 using System.Xml.Linq;
 using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
@@ -15,7 +14,7 @@ internal sealed partial class TargetFrameworkUpgrader(
     IEnvironment environment,
     BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
-    ILogger<TargetFrameworkUpgrader> logger) : FileUpgrader(console, environment, options, logger)
+    ILogger<TargetFrameworkUpgrader> logger) : XmlFileUpgrader(console, environment, options, logger)
 {
     protected override string Action => "Upgrading target frameworks";
 
@@ -29,7 +28,7 @@ internal sealed partial class TargetFrameworkUpgrader(
         StatusContext context,
         CancellationToken cancellationToken)
     {
-        Log.UpgradingTargetFramework(logger);
+        Log.UpgradingTargetFramework(Logger);
 
         var result = ProcessingResult.None;
 
@@ -61,20 +60,7 @@ internal sealed partial class TargetFrameworkUpgrader(
             {
                 context.Status = StatusMessage($"Updating {name}...");
 
-                // Ensure that the user's own formatting is preserved
-                string xml = project.ToString(SaveOptions.DisableFormatting);
-
-                var writerSettings = new XmlWriterSettings()
-                {
-                    Async = true,
-                    Encoding = metadata?.Encoding ?? Encoding.UTF8,
-                    Indent = true,
-                    NewLineChars = metadata?.NewLine ?? Environment.NewLine,
-                    OmitXmlDeclaration = true,
-                };
-
-                using var writer = XmlWriter.Create(filePath, writerSettings);
-                await project.WriteToAsync(writer, cancellationToken);
+                await UpdateProjectAsync(filePath, project, metadata, cancellationToken);
 
                 result = result.Max(ProcessingResult.Success);
             }
@@ -100,38 +86,13 @@ internal sealed partial class TargetFrameworkUpgrader(
         return false;
     }
 
-    private async Task<(XDocument? Project, FileMetadata? Metadata)> LoadProjectAsync(
-        string filePath,
-        CancellationToken cancellationToken)
-    {
-        using var stream = FileHelpers.OpenRead(filePath, out var metadata);
-        using var reader = new StreamReader(stream, metadata.Encoding);
-
-        try
-        {
-            var project = await XDocument.LoadAsync(reader, LoadOptions.PreserveWhitespace, cancellationToken);
-            return (project, metadata);
-        }
-        catch (Exception ex)
-        {
-            Log.FailedToLoadProject(logger, filePath, ex);
-            return default;
-        }
-    }
-
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private static partial class Log
     {
         [LoggerMessage(
-            EventId = 1,
+            EventId = 2,
             Level = LogLevel.Debug,
             Message = "Upgrading target framework moniker.")]
         public static partial void UpgradingTargetFramework(ILogger logger);
-
-        [LoggerMessage(
-            EventId = 2,
-            Level = LogLevel.Warning,
-            Message = "Failed to parse project file {FileName}.")]
-        public static partial void FailedToLoadProject(ILogger logger, string fileName, Exception exception);
     }
 }
