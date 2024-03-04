@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 using System.Xml.Linq;
 using MartinCostello.DotNetBumper.Logging;
@@ -17,11 +19,73 @@ internal sealed partial class TargetFrameworkUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<TargetFrameworkUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
+    private static readonly char[] PathSeparators = ['\\', '/'];
+
     protected override string Action => "Upgrading target frameworks";
 
     protected override string InitialStatus => "Update TFMs";
 
     protected override IReadOnlyList<string> Patterns => ["Directory.Build.props", "*.csproj", "*.fsproj", "*.pubxml"];
+
+    internal static bool TryUpdatePathTfm(
+        string value,
+        Version channel,
+        [NotNullWhen(true)] out string? updated)
+    {
+        updated = null;
+
+        if (!value.Split(PathSeparators).Any((p) => p.IsTargetFrameworkMoniker()))
+        {
+            return false;
+        }
+
+        var builder = new StringBuilder();
+        var remaining = value.AsSpan();
+
+        bool updateValue = false;
+
+        while (!remaining.IsEmpty)
+        {
+            int index = remaining.IndexOfAny(PathSeparators);
+            var maybeTfm = remaining;
+
+            if (index is not -1)
+            {
+                maybeTfm = maybeTfm[..index];
+            }
+
+            int consumed = maybeTfm.Length;
+
+            if (maybeTfm.IsTargetFrameworkMoniker())
+            {
+                if (maybeTfm.ToVersionFromTargetFramework() is { } version && version < channel)
+                {
+                    maybeTfm = channel.ToTargetFramework();
+                    updateValue = true;
+                }
+            }
+
+            builder.Append(maybeTfm);
+
+            if (index is not -1)
+            {
+                builder.Append(remaining.Slice(index, 1));
+                consumed++;
+            }
+
+            remaining = remaining[consumed..];
+        }
+
+        if (updateValue)
+        {
+            updated = builder.ToString();
+
+            Debug.Assert(updated.Length > 0, "The updated value should have a length.");
+            Debug.Assert(updated != value, "The value is was not updated.");
+        }
+
+        return updateValue;
+    }
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
@@ -51,7 +115,8 @@ internal sealed partial class TargetFrameworkUpgrader(
 
             foreach (var property in project.Root.Elements("PropertyGroup").Elements())
             {
-                if (TryUpgradeTargetFramework(property, upgrade.Channel))
+                if (TryUpgradeTargetFramework(property, upgrade.Channel) ||
+                    TryUpgradeTargetFrameworkInPath(property, upgrade.Channel))
                 {
                     edited = true;
                 }
@@ -146,6 +211,17 @@ internal sealed partial class TargetFrameworkUpgrader(
         var updated = append ? $"{current};{newTfm}" : newTfm;
 
         if (!current.SequenceEqual(updated))
+        {
+            property.SetValue(updated);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryUpgradeTargetFrameworkInPath(XElement property, Version channel)
+    {
+        if (TryUpdatePathTfm(property.Value, channel, out var updated))
         {
             property.SetValue(updated);
             return true;

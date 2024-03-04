@@ -18,8 +18,6 @@ internal sealed partial class VisualStudioCodeUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<VisualStudioCodeUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
-    private static readonly char[] PathSeparators = ['\\', '/'];
-
     protected override string Action => "Upgrading Visual Studio Code configuration";
 
     protected override string InitialStatus => "Update Visual Studio Code configuration";
@@ -107,53 +105,10 @@ internal sealed partial class VisualStudioCodeUpgrader(
 
             string value = node.GetValue<string>();
 
-            if (value.Split(PathSeparators).Any((p) => p.IsTargetFrameworkMoniker()))
+            if (TargetFrameworkUpgrader.TryUpdatePathTfm(value, channel, out var updated))
             {
-                var builder = new StringBuilder();
-                var remaining = value.AsSpan();
-
-                bool updated = false;
-
-                while (!remaining.IsEmpty)
-                {
-                    int index = remaining.IndexOfAny(PathSeparators);
-                    var maybeTfm = remaining;
-
-                    if (index is not -1)
-                    {
-                        maybeTfm = maybeTfm[..index];
-                    }
-
-                    int consumed = maybeTfm.Length;
-
-                    if (maybeTfm.IsTargetFrameworkMoniker())
-                    {
-                        if (maybeTfm.ToVersionFromTargetFramework() is { } version && version < channel)
-                        {
-                            maybeTfm = channel.ToTargetFramework();
-                            updated = true;
-                        }
-                    }
-
-                    builder.Append(maybeTfm);
-
-                    if (index is not -1)
-                    {
-                        builder.Append(remaining.Slice(index, 1));
-                        consumed++;
-                    }
-
-                    remaining = remaining[consumed..];
-                }
-
-                if (updated)
-                {
-                    Debug.Assert(builder.Length > 0, "The builder should have a length.");
-                    Debug.Assert(builder.ToString() != value, "The value is was not updated.");
-
-                    node.ReplaceWith(JsonValue.Create(builder.ToString()));
-                    return true;
-                }
+                node.ReplaceWith(JsonValue.Create(updated));
+                return true;
             }
 
             return false;
