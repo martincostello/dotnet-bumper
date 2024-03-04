@@ -32,7 +32,6 @@ internal sealed partial class TargetFrameworkUpgrader(
         Log.UpgradingTargetFramework(logger);
 
         var result = ProcessingResult.None;
-        var newTfm = upgrade.Channel.ToTargetFramework();
 
         foreach (var filePath in fileNames)
         {
@@ -52,17 +51,9 @@ internal sealed partial class TargetFrameworkUpgrader(
 
             foreach (var property in project.Root.Elements("PropertyGroup").Elements())
             {
-                string current = property.Value;
-
-                if (CanUpgradeTargetFramework(current, upgrade.Channel, out var append))
+                if (TryUpgradeTargetFramework(property, upgrade.Channel))
                 {
-                    string updated = append ? $"{current};{newTfm}" : newTfm;
-
-                    if (!string.Equals(current, updated, StringComparison.Ordinal))
-                    {
-                        property.SetValue(updated);
-                        edited = true;
-                    }
+                    edited = true;
                 }
             }
 
@@ -91,18 +82,18 @@ internal sealed partial class TargetFrameworkUpgrader(
 
         if (result is ProcessingResult.Success)
         {
-            logContext.Changelog.Add($"Update target framework to `{newTfm}`");
+            logContext.Changelog.Add($"Update target framework to `{upgrade.Channel.ToTargetFramework()}`");
         }
 
         return result;
     }
 
-    private static bool CanUpgradeTargetFramework(ReadOnlySpan<char> property, Version channel, out bool append)
+    private static bool TryUpgradeTargetFramework(XElement property, Version channel)
     {
-        append = false;
-
         const char Delimiter = ';';
-        var remaining = property;
+
+        var current = property.Value.AsSpan();
+        var remaining = current;
 
         int validTfms = 0;
         int updateableTfms = 0;
@@ -145,8 +136,22 @@ internal sealed partial class TargetFrameworkUpgrader(
             }
         }
 
-        append = validTfms > 1;
-        return updateableTfms > 0;
+        if (updateableTfms < 1)
+        {
+            return false;
+        }
+
+        var newTfm = channel.ToTargetFramework();
+        var append = validTfms > 1;
+        var updated = append ? $"{current};{newTfm}" : newTfm;
+
+        if (!current.SequenceEqual(updated))
+        {
+            property.SetValue(updated);
+            return true;
+        }
+
+        return false;
     }
 
     private async Task<(XDocument? Project, FileMetadata? Metadata)> LoadProjectAsync(
