@@ -18,8 +18,6 @@ internal sealed partial class DockerfileUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<DockerfileUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
-    private static readonly Version EightPointZero = new(8, 0);
-
     protected override string Action => "Upgrading Dockerfiles";
 
     protected override string InitialStatus => "Update Dockerfiles";
@@ -323,7 +321,7 @@ internal sealed partial class DockerfileUpgrader(
             if (portsUpdated)
             {
                 logContext.Changelog.Add("Update exposed Docker container ports");
-                Console.WriteWarningLine($"The exposed port(s) in {name} were updated to match .NET {EightPointZero}+ conventions.");
+                Console.WriteWarningLine($"The exposed port(s) in {name} were updated to match .NET {DotNetVersions.EightPointZero}+ conventions.");
                 Console.WriteWarningLine("Review whether any container orchestration configuration is compatible with the changes.");
             }
 

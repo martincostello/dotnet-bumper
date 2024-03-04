@@ -18,7 +18,7 @@ internal sealed partial class ServerlessUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<ServerlessUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
-    private static readonly Version MinimumVersion = new(6, 0);
+    private static readonly Version MinimumVersion = DotNetVersions.SixPointZero;
 
     protected override string Action => "Upgrading Serverless";
 
