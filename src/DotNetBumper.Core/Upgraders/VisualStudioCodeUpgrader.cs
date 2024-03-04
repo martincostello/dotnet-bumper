@@ -105,7 +105,7 @@ internal sealed partial class VisualStudioCodeUpgrader(
 
             string value = node.GetValue<string>();
 
-            if (TargetFrameworkUpgrader.TryUpdatePathTfm(value, channel, out var updated))
+            if (TargetFrameworkHelpers.TryUpdateTfmInPath(value, channel, out var updated))
             {
                 node.ReplaceWith(JsonValue.Create(updated));
                 return true;
