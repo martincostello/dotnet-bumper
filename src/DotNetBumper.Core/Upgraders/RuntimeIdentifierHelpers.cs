@@ -99,7 +99,7 @@ internal static partial class RuntimeIdentifierHelpers
         private const string Windows = "win";
 
         public bool IsPortable =>
-            Version is null &&
+            Version is { Length: 0 } &&
             (OperatingSystem is Windows || !OperatingSystem.StartsWith(Windows, StringComparison.Ordinal));
 
         public static bool TryParse(string value, [NotNullWhen(true)] out RuntimeIdentifier? rid)
