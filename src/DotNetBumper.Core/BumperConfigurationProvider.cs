@@ -25,7 +25,7 @@ internal sealed partial class BumperConfigurationProvider(
             IncludeNuGetPackages =
             {
                 "Microsoft.AspNetCore.",
-                "Microsoft.EntityFrameworkCore.",
+                "Microsoft.EntityFrameworkCore",
                 "Microsoft.Extensions.",
                 "System.Text.Json",
             },
