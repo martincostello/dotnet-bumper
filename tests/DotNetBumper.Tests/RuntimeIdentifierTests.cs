@@ -5,8 +5,8 @@ namespace MartinCostello.DotNetBumper;
 
 public static class RuntimeIdentifierTests
 {
-    private static readonly string[] MacOSVersions = ["10.10", "10.11", "10.12", "10.13", "10.14", "10.15", "10.16", "11.0", "12", "13"];
-    private static readonly string[] WindowsVersions = ["7", "8", "81", "10"];
+    internal static readonly string[] MacOSVersions = ["10.10", "10.11", "10.12", "10.13", "10.14", "10.15", "10.16", "11.0", "12", "13"];
+    internal static readonly string[] WindowsVersions = ["7", "8", "81", "10"];
 
     public static TheoryData<string, bool, string?, string?, string?, string?> RuntimeIdentifiers()
     {
