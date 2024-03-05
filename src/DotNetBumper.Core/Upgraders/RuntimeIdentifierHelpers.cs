@@ -8,6 +8,11 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal static partial class RuntimeIdentifierHelpers
 {
+    private const string RidPattern = "(?<os>((android|ios|linux|osx|win([0-9]+)?)(\\-[a-z\\-]+)?))(?<version>(\\.[0-9]+)+)?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?";
+
+    public static MatchCollection MatchRuntimeIdentifiers(this string value)
+        => ContainsRid().Matches(value);
+
     public static bool TryUpdateRid(string value, [NotNullWhen(true)] out string? updated)
     {
         const char Delimiter = ';';
@@ -90,6 +95,12 @@ internal static partial class RuntimeIdentifierHelpers
         }
     }
 
+    [GeneratedRegex($"{RidPattern}")]
+    private static partial Regex ContainsRid();
+
+    [GeneratedRegex($"^{RidPattern}$")]
+    private static partial Regex Rid();
+
     private sealed partial record RuntimeIdentifier(
         string OperatingSystem,
         string Version,
@@ -169,8 +180,5 @@ internal static partial class RuntimeIdentifierHelpers
 
             return builder.ToString();
         }
-
-        [GeneratedRegex($"^(?<os>[a-z0-9\\-]+)(?<version>(\\.[0-9]+)+)?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?$")]
-        private static partial Regex Rid();
     }
 }

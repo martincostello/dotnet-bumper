@@ -4,6 +4,7 @@
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using MartinCostello.DotNetBumper.Logging;
+using MartinCostello.DotNetBumper.Upgraders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -41,18 +42,30 @@ internal sealed partial class LeftoverReferencesPostProcessor(
         {
             lineNumber++;
 
+            IList<Match> matches = [];
+
+            if (channel >= DotNetVersions.EightPointZero)
+            {
+                matches = line.MatchRuntimeIdentifiers();
+
+                foreach (var match in matches)
+                {
+                    result.Add(PotentialFileEdit.FromMatch(match, lineNumber));
+                }
+            }
+
             if (line.Contains(expectedTfm, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            IList<Match> matches = line.MatchTargetFrameworkMonikers();
+            matches = line.MatchTargetFrameworkMonikers();
 
             foreach (var match in matches)
             {
                 if (match.ValueSpan.ToVersionFromTargetFramework() is { } version && version < channel)
                 {
-                    result.Add(new(lineNumber, match.Index + 1, match.Value));
+                    result.Add(PotentialFileEdit.FromMatch(match, lineNumber));
                 }
             }
         }
