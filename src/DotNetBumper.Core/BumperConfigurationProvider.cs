@@ -25,7 +25,7 @@ internal sealed partial class BumperConfigurationProvider(
             IncludeNuGetPackages =
             {
                 "Microsoft.AspNetCore.",
-                "Microsoft.EntityFrameworkCore.",
+                "Microsoft.EntityFrameworkCore",
                 "Microsoft.Extensions.",
                 "System.Text.Json",
             },
@@ -54,10 +54,10 @@ internal sealed partial class BumperConfigurationProvider(
 
         if (logger.IsEnabled(LogLevel.Debug))
         {
-            Log.IncludedNuGetPackages(logger, [..configuration.IncludeNuGetPackages]);
-            Log.ExcludedNuGetPackages(logger, [..configuration.ExcludeNuGetPackages]);
-            Log.NoWarn(logger, [..configuration.NoWarn]);
-            Log.IgnoreRemainingReferences(logger, [..configuration.RemainingReferencesIgnore]);
+            Log.IncludedNuGetPackages(logger, [.. configuration.IncludeNuGetPackages]);
+            Log.ExcludedNuGetPackages(logger, [.. configuration.ExcludeNuGetPackages]);
+            Log.NoWarn(logger, [.. configuration.NoWarn]);
+            Log.IgnoreRemainingReferences(logger, [.. configuration.RemainingReferencesIgnore]);
         }
 
         return configuration;
