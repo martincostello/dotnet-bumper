@@ -72,7 +72,6 @@ internal sealed partial record RuntimeIdentifier(
 
         if (Version is { Length: > 0 })
         {
-            builder.Append('.');
             builder.Append(Version);
         }
 
