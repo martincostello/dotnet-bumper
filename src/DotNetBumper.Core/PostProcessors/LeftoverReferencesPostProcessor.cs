@@ -69,7 +69,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
             }
         }
 
-        return result;
+        return [..result.OrderBy((p) => p.Line).ThenBy((p) => p.Column)];
     }
 
     internal async IAsyncEnumerable<ProjectFile> EnumerateProjectFilesAsync([EnumeratorCancellation] CancellationToken cancellationToken)
