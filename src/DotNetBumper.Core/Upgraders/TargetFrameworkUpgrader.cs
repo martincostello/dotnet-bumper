@@ -48,7 +48,7 @@ internal sealed partial class TargetFrameworkUpgrader(
 
             bool edited = false;
 
-            foreach (var property in project.Root.Elements("PropertyGroup").Elements())
+            foreach (var property in ProjectHelpers.EnumerateProperties(project.Root))
             {
                 if (TryUpgradeTargetFramework(property, upgrade.Channel))
                 {

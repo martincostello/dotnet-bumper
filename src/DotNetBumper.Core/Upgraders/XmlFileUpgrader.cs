@@ -27,7 +27,7 @@ internal abstract partial class XmlFileUpgrader(
             Encoding = metadata?.Encoding ?? Encoding.UTF8,
             Indent = true,
             NewLineChars = metadata?.NewLine ?? Environment.NewLine,
-            OmitXmlDeclaration = true,
+            OmitXmlDeclaration = project.Declaration is null,
         };
 
         using var writer = XmlWriter.Create(filePath, settings);
