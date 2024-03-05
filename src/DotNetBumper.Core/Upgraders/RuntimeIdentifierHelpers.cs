@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
@@ -9,11 +8,7 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal static partial class RuntimeIdentifierHelpers
 {
-    private static readonly char[] PathSeparators = ['\\', '/'];
-
-    public static bool TryUpdateRid(
-        string value,
-        [NotNullWhen(true)] out string? updated)
+    public static bool TryUpdateRid(string value, [NotNullWhen(true)] out string? updated)
     {
         const char Delimiter = ';';
 
@@ -76,60 +71,23 @@ internal static partial class RuntimeIdentifierHelpers
         return edited;
     }
 
-    public static bool TryUpdateRidInPath(
-        string value,
-        [NotNullWhen(true)] out string? updated)
+    public static bool TryUpdateRidInPath(string value, [NotNullWhen(true)] out string? updated)
     {
-        updated = null;
+        return PathHelpers.TryUpdateValueInPath(value, Predicate, Transform, out updated);
 
-        if (!PathSeparators.Any(value.Contains))
+        static bool Predicate(ReadOnlySpan<char> value) => RuntimeIdentifier.TryParse(new(value), out _);
+
+        static bool Transform(ReadOnlySpan<char> value, out ReadOnlySpan<char> transformed)
         {
+            if (TryUpdateRid(new(value), out var updated))
+            {
+                transformed = updated;
+                return true;
+            }
+
+            transformed = value;
             return false;
         }
-
-        bool edited = false;
-
-        var builder = new StringBuilder();
-        var remaining = value.AsSpan();
-
-        while (!remaining.IsEmpty)
-        {
-            int index = remaining.IndexOfAny(PathSeparators);
-            var maybeRid = remaining;
-
-            if (index is not -1)
-            {
-                maybeRid = maybeRid[..index];
-            }
-
-            int consumed = maybeRid.Length;
-
-            if (TryUpdateRid(new(maybeRid), out var updatedRid))
-            {
-                maybeRid = updatedRid;
-                edited = true;
-            }
-
-            builder.Append(maybeRid);
-
-            if (index is not -1)
-            {
-                builder.Append(remaining.Slice(index, 1));
-                consumed++;
-            }
-
-            remaining = remaining[consumed..];
-        }
-
-        if (edited)
-        {
-            updated = builder.ToString();
-
-            Debug.Assert(updated.Length > 0, "The updated value should have a length.");
-            Debug.Assert(updated != value, "The value is was not updated.");
-        }
-
-        return edited;
     }
 
     private sealed partial record RuntimeIdentifier(
