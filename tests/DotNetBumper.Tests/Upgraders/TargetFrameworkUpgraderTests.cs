@@ -122,6 +122,81 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         fixture.LogContext.Changelog.ShouldContain($"Update target framework to `net{channel}`");
     }
 
+    [Fact]
+    public async Task UpgradeAsync_Handles_Files_With_Xml_Namespace()
+    {
+        // Arrange
+        string fileContents =
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+             <PropertyGroup>
+               <Configuration>Release</Configuration>
+               <Platform>Any CPU</Platform>
+               <PublishDir>bin\Release\net6.0\publish\</PublishDir>
+               <PublishProtocol>FileSystem</PublishProtocol>
+               <TargetFramework>net6.0</TargetFramework>
+               <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+               <SelfContained>true</SelfContained>
+               <PublishSingleFile>False</PublishSingleFile>
+               <PublishReadyToRun>False</PublishReadyToRun>
+               <PublishTrimmed>True</PublishTrimmed>
+             </PropertyGroup>
+            </Project>
+            """;
+
+        string expectedContent =
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+             <PropertyGroup>
+               <Configuration>Release</Configuration>
+               <Platform>Any CPU</Platform>
+               <PublishDir>bin\Release\net10.0\publish\</PublishDir>
+               <PublishProtocol>FileSystem</PublishProtocol>
+               <TargetFramework>net10.0</TargetFramework>
+               <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+               <SelfContained>true</SelfContained>
+               <PublishSingleFile>False</PublishSingleFile>
+               <PublishReadyToRun>False</PublishReadyToRun>
+               <PublishTrimmed>True</PublishTrimmed>
+             </PropertyGroup>
+            </Project>
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string pubxml = await fixture.Project.AddFileAsync("src/Project/Properties/PublishProfiles/Profile.pubxml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse("10.0"),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("10.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(pubxml);
+        actualContent.ShouldBe(expectedContent);
+
+        byte[] actualBytes = await File.ReadAllBytesAsync(pubxml);
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
     [Theory]
     [InlineData("Not XML", ProcessingResult.Warning)]
     [InlineData("<>", ProcessingResult.Warning)]
