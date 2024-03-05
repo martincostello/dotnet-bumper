@@ -25,7 +25,6 @@ public static class RuntimeIdentifierHelpersTests
             { "win-arm64", false, null },
             { "win-x64", false, null },
             { "win-x86", false, null },
-            { "win-x86", false, null },
         };
 
         foreach (var version in new[] { "7", "8", "81", "10" })

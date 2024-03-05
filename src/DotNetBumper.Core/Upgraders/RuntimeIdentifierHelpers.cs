@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
-internal static class RuntimeIdentifierHelpers
+internal static partial class RuntimeIdentifierHelpers
 {
     private static readonly char[] PathSeparators = ['\\', '/'];
-
-    private static readonly SearchValues<char> VersionCharacters = SearchValues.Create("0123456789.");
 
     public static bool TryUpdateRid(
         string value,
@@ -19,7 +17,7 @@ internal static class RuntimeIdentifierHelpers
     {
         const char Delimiter = ';';
 
-        var runtimeIds = new List<string?>();
+        var runtimeIds = new List<RuntimeIdentifier?>();
 
         updated = null;
 
@@ -31,41 +29,9 @@ internal static class RuntimeIdentifierHelpers
                 continue;
             }
 
-            var rid = part;
-            int startIndex = rid.IndexOf('.', StringComparison.Ordinal);
-            int endIndex = -1;
-
-            const string WindowsPrefix = "win";
-
-            if (startIndex is not -1)
+            if (!RuntimeIdentifier.TryParse(part, out var rid))
             {
-                endIndex = rid.IndexOf('-', startIndex);
-            }
-            else if (rid.StartsWith(WindowsPrefix, StringComparison.Ordinal))
-            {
-                startIndex = WindowsPrefix.Length;
-                var versionIndex = rid[startIndex..].AsSpan().IndexOfAnyExcept(VersionCharacters);
-
-                if (versionIndex is not -1)
-                {
-                    endIndex = versionIndex + WindowsPrefix.Length;
-                }
-            }
-
-            if (startIndex is not -1)
-            {
-                var prefix = rid[..startIndex];
-
-                if (endIndex is -1)
-                {
-                    rid = prefix;
-                }
-                else
-                {
-                    rid = new StringBuilder(prefix)
-                        .Append(rid[endIndex..])
-                        .ToString();
-                }
+                return false;
             }
 
             runtimeIds.Add(rid);
@@ -82,9 +48,14 @@ internal static class RuntimeIdentifierHelpers
         {
             var rid = runtimeIds[i];
 
-            if (rid is { Length: > 0 })
+            if (rid is not null)
             {
-                builder.Append(rid);
+                if (!rid.IsPortable)
+                {
+                    rid = rid.AsPortable();
+                }
+
+                builder.Append(rid.ToString());
             }
 
             if (i < runtimeIds.Count - 1)
@@ -161,13 +132,17 @@ internal static class RuntimeIdentifierHelpers
         return edited;
     }
 
-    private sealed record RuntimeIdentifier(
+    private sealed partial record RuntimeIdentifier(
         string OperatingSystem,
-        string? Version,
-        string? Architecture,
-        string? AdditionalQualifiers)
+        string Version,
+        string Architecture,
+        string AdditionalQualifiers)
     {
-        public bool IsPortable => Version is null && AdditionalQualifiers is null;
+        private const string Windows = "win";
+
+        public bool IsPortable =>
+            Version is null &&
+            (OperatingSystem is Windows || !OperatingSystem.StartsWith(Windows, StringComparison.Ordinal));
 
         public static bool TryParse(string value, [NotNullWhen(true)] out RuntimeIdentifier? rid)
         {
@@ -178,35 +153,37 @@ internal static class RuntimeIdentifierHelpers
                 return false;
             }
 
-            var parts = value.Split('-', StringSplitOptions.RemoveEmptyEntries);
+            var match = Rid().Match(value);
 
-            if (parts.Length < 1)
+            if (!match.Success)
             {
                 return false;
             }
 
-            var operatingSystem = parts[0];
-            var architecture = parts.ElementAtOrDefault(1);
-            var additionalQualifiers = parts.ElementAtOrDefault(2);
-
-            string? version = null;
-
-            if (operatingSystem.Contains('.', StringComparison.Ordinal))
-            {
-                parts = operatingSystem.Split('.', StringSplitOptions.RemoveEmptyEntries);
-                version = parts.ElementAtOrDefault(1);
-            }
-
             rid = new(
-                operatingSystem,
-                version,
-                architecture,
-                additionalQualifiers);
+                match.Groups["os"].Value,
+                match.Groups["version"].Value,
+                match.Groups["architecture"].Value,
+                match.Groups["qualifiers"].Value);
 
             return true;
         }
 
-        public RuntimeIdentifier AsPortable() => this with { Version = null, AdditionalQualifiers = null };
+        public RuntimeIdentifier AsPortable()
+        {
+            string os = OperatingSystem;
+
+            if (os.StartsWith(Windows, StringComparison.Ordinal) && os.Length > Windows.Length)
+            {
+                os = Windows;
+            }
+
+            return this with
+            {
+                OperatingSystem = os,
+                Version = string.Empty,
+            };
+        }
 
         public override string ToString()
         {
@@ -232,9 +209,10 @@ internal static class RuntimeIdentifierHelpers
                 builder.Append(AdditionalQualifiers);
             }
 
-#pragma warning disable CA1308
-            return builder.ToString().ToLowerInvariant();
-#pragma warning restore CA1308
+            return builder.ToString();
         }
+
+        [GeneratedRegex($"^(?<os>[a-z0-9\\-]+)(?<version>(\\.[0-9]+)+)?-(?<architecture>[a-z0-9]+)(?<extra>\\-[a-z]+)?$")]
+        private static partial Regex Rid();
     }
 }
