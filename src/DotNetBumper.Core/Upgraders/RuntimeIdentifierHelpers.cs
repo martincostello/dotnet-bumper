@@ -170,7 +170,7 @@ internal static partial class RuntimeIdentifierHelpers
             return builder.ToString();
         }
 
-        [GeneratedRegex($"^(?<os>[a-z0-9\\-]+)(?<version>(\\.[0-9]+)+)?-(?<architecture>[a-z0-9]+)(?<extra>\\-[a-z]+)?$")]
+        [GeneratedRegex($"^(?<os>[a-z0-9\\-]+)(?<version>(\\.[0-9]+)+)?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?$")]
         private static partial Regex Rid();
     }
 }
