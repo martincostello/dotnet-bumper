@@ -32,7 +32,7 @@ internal sealed partial record RuntimeIdentifier(
             return false;
         }
 
-        var match = Rid().Match(value);
+        var match = IsRid().Match(value);
 
         if (!match.Success)
         {
@@ -95,5 +95,5 @@ internal sealed partial record RuntimeIdentifier(
     private static partial Regex ContainsRid();
 
     [GeneratedRegex($"^{RidPattern}$")]
-    private static partial Regex Rid();
+    private static partial Regex IsRid();
 }
