@@ -12,7 +12,7 @@ internal sealed partial record RuntimeIdentifier(
     string Architecture,
     string AdditionalQualifiers)
 {
-    private const string RidPattern = "(?<os>((android|ios|linux|osx|win([0-9]+)?)(\\-[a-z\\-]+)?))(?<version>(\\.[0-9]+)+)?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?";
+    private const string RidPattern = "(?<os>((android|ios|linux|osx|win([0-9]+)?)(\\-[a-z\\-]+)?))(\\.(?<version>([0-9]+)((\\.[0-9]+))?))?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?";
 
     private const string Windows = "win";
 
@@ -72,6 +72,7 @@ internal sealed partial record RuntimeIdentifier(
 
         if (Version is { Length: > 0 })
         {
+            builder.Append('.');
             builder.Append(Version);
         }
 

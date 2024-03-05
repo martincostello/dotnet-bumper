@@ -8,45 +8,44 @@ public static class RuntimeIdentifierTests
     private static readonly string[] MacOSVersions = ["10.10", "10.11", "10.12", "10.13", "10.14", "10.15", "10.16", "11.0", "12", "13"];
     private static readonly string[] WindowsVersions = ["7", "8", "81", "10"];
 
-    public static TheoryData<string, bool, string?> RuntimeIdentifiers()
+    public static TheoryData<string, bool, string?, string?, string?, string?> RuntimeIdentifiers()
     {
-        var testCases = new TheoryData<string, bool, string?>
+        var testCases = new TheoryData<string, bool, string?, string?, string?, string?>
         {
-            { string.Empty, false, null },
-            { " ", false, null },
-            { ";", false, null },
-            { ";;", false, null },
-            { "multi-targeting", false, null },
-            { "--configuration", false, null },
-            { "--framework", false, null },
-            { "--runtime", false, null },
-            { "android-arm64", true, "android-arm64" },
-            { "ios-arm64", true, "ios-arm64" },
-            { "linux-arm", true, "linux-arm" },
-            { "linux-arm64", true, "linux-arm64" },
-            { "linux-musl-x64", true, "linux-musl-x64" },
-            { "linux-musl-arm64", true, "linux-musl-arm64" },
-            { "linux-x64", true, "linux-x64" },
-            { "osx-arm64", true, "osx-arm64" },
-            { "osx-x64", true, "osx-x64" },
-            { "win-arm64", true, "win-arm64" },
-            { "win-x64", true, "win-x64" },
-            { "win-x86", true, "win-x86" },
+            { string.Empty, false, null, null, null, null },
+            { " ", false, null, null, null, null },
+            { ";", false, null, null, null, null },
+            { ";;", false, null, null, null, null },
+            { "multi-targeting", false, null, null, null, null },
+            { "--configuration", false, null, null, null, null },
+            { "--framework", false, null, null, null, null },
+            { "--runtime", false, null, null, null, null },
+            { "android-arm64", true, "android", string.Empty, "arm64", string.Empty },
+            { "ios-arm64", true, "ios", string.Empty, "arm64", string.Empty },
+            { "linux-arm", true, "linux", string.Empty, "arm", string.Empty },
+            { "linux-arm64", true, "linux", string.Empty, "arm64", string.Empty },
+            { "linux-musl-x64", true, "linux-musl", string.Empty, "x64", string.Empty },
+            { "linux-musl-arm64", true, "linux-musl", string.Empty, "arm64", string.Empty },
+            { "linux-x64", true, "linux", string.Empty, "x64", string.Empty },
+            { "osx-arm64", true, "osx", string.Empty, "arm64", string.Empty },
+            { "osx-x64", true, "osx", string.Empty, "x64", string.Empty },
+            { "win-arm64", true, "win", string.Empty, "arm64", string.Empty },
+            { "win-x64", true, "win", string.Empty, "x64", string.Empty },
+            { "win-x86", true, "win", string.Empty, "x86", string.Empty },
         };
 
         foreach (var version in WindowsVersions)
         {
-            testCases.Add($"win{version}-aot", true, $"win{version}-aot");
-            testCases.Add($"win{version}-arm", true, $"win{version}-arm");
-            testCases.Add($"win{version}-arm64", true, $"win{version}-arm64");
-            testCases.Add($"win{version}-x64", true, $"win{version}-x64");
-            testCases.Add($"win{version}-x86", true, $"win{version}-x86");
+            testCases.Add($"win{version}-arm", true, $"win{version}", string.Empty, "arm", string.Empty);
+            testCases.Add($"win{version}-arm64", true, $"win{version}", string.Empty, "arm64", string.Empty);
+            testCases.Add($"win{version}-x64", true, $"win{version}", string.Empty, "x64", string.Empty);
+            testCases.Add($"win{version}-x86", true, $"win{version}", string.Empty, "x86", string.Empty);
         }
 
         foreach (var version in MacOSVersions)
         {
-            testCases.Add($"osx.{version}-arm64", true, $"osx.{version}-arm64");
-            testCases.Add($"osx.{version}-x64", true, $"osx.{version}-x64");
+            testCases.Add($"osx.{version}-arm64", true, "osx", version, "arm64", string.Empty);
+            testCases.Add($"osx.{version}-x64", true, "osx", version, "x64", string.Empty);
         }
 
         return testCases;
@@ -54,7 +53,13 @@ public static class RuntimeIdentifierTests
 
     [Theory]
     [MemberData(nameof(RuntimeIdentifiers))]
-    public static void TryParse_Returns_Correct_Value(string value, bool expectedResult, string? expectedValue)
+    public static void TryParse_Returns_Correct_Value(
+        string value,
+        bool expectedResult,
+        string? expectedOperatingSystem,
+        string? expectedVersion,
+        string? expectedArchitecture,
+        string? expectedAdditionalQualifiers)
     {
         // Act
         bool actualResult = RuntimeIdentifier.TryParse(value, out var actualRid);
@@ -65,7 +70,11 @@ public static class RuntimeIdentifierTests
         if (expectedResult)
         {
             actualRid.ShouldNotBeNull();
-            actualRid.ToString().ShouldBe(expectedValue);
+            actualRid.OperatingSystem.ShouldBe(expectedOperatingSystem);
+            actualRid.Version.ShouldBe(expectedVersion);
+            actualRid.Architecture.ShouldBe(expectedArchitecture);
+            actualRid.AdditionalQualifiers.ShouldBe(expectedAdditionalQualifiers);
+            actualRid.ToString().ShouldBe(value);
         }
         else
         {
