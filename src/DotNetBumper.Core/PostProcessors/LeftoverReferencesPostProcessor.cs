@@ -41,23 +41,38 @@ internal sealed partial class LeftoverReferencesPostProcessor(
         {
             lineNumber++;
 
+            IList<Match> matches = [];
+
+            if (channel >= DotNetVersions.EightPointZero)
+            {
+                matches = RuntimeIdentifier.Match(line);
+
+                foreach (var match in matches)
+                {
+                    if (RuntimeIdentifier.TryParse(match.Value, out var rid) && !rid.IsPortable)
+                    {
+                        result.Add(PotentialFileEdit.FromMatch(match, lineNumber));
+                    }
+                }
+            }
+
             if (line.Contains(expectedTfm, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            IList<Match> matches = line.MatchTargetFrameworkMonikers();
+            matches = line.MatchTargetFrameworkMonikers();
 
             foreach (var match in matches)
             {
                 if (match.ValueSpan.ToVersionFromTargetFramework() is { } version && version < channel)
                 {
-                    result.Add(new(lineNumber, match.Index + 1, match.Value));
+                    result.Add(PotentialFileEdit.FromMatch(match, lineNumber));
                 }
             }
         }
 
-        return result;
+        return [..result.OrderBy((p) => p.Line).ThenBy((p) => p.Column)];
     }
 
     internal async IAsyncEnumerable<ProjectFile> EnumerateProjectFilesAsync([EnumeratorCancellation] CancellationToken cancellationToken)

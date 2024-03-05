@@ -25,12 +25,12 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
             To build it, run the following command:
 
             ```sh
-            dotnet publish --configuration Release --framework net6.0
+            dotnet publish --configuration Release --framework net6.0 --runtime win10-x64
             ```
 
             It supports AWS Lambda for the `dotnet6` runtimes and `dotnet8` runtimes.
 
-            It also multi-targets `net6.0` and `net8.0`.
+            It also multi-targets `net6.0` and `net8.0` and is published for `win-x64`.
             """;
 
         var fixture = new UpgraderFixture(outputHelper);
@@ -46,7 +46,7 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
 
         // Assert
         actual.ShouldNotBeNull();
-        actual.Count.ShouldBe(2);
+        actual.Count.ShouldBe(3);
 
         actual[0].Line.ShouldBe(7);
         actual[0].Column.ShouldBe(3);
@@ -55,6 +55,10 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         actual[1].Line.ShouldBe(13);
         actual[1].Column.ShouldBe(52);
         actual[1].Text.ShouldBe("net6.0");
+
+        actual[2].Line.ShouldBe(13);
+        actual[2].Column.ShouldBe(69);
+        actual[2].Text.ShouldBe("win10-x64");
 
         // Arrange
         relativePath = Path.Combine("version.txt");

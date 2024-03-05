@@ -242,7 +242,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         var encoding = new UTF8Encoding(hasUtf8Bom);
-        string dockerfile = await fixture.Project.AddFileAsync("serverless.yaml", fileContents, encoding);
+        string serverlessFile = await fixture.Project.AddFileAsync("serverless.yaml", fileContents, encoding);
 
         var upgrade = new UpgradeInfo()
         {
@@ -261,10 +261,10 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(dockerfile);
+        string actualContent = await File.ReadAllTextAsync(serverlessFile);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(dockerfile);
+        byte[] actualBytes = await File.ReadAllBytesAsync(serverlessFile);
 
         if (hasUtf8Bom)
         {

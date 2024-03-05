@@ -5,13 +5,12 @@ using System.Xml.Linq;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
-public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
+public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
 {
     public static TheoryData<string, string, bool, string, string, string> TargetFrameworks()
     {
         string[] channels =
         [
-            "7.0",
             "8.0",
             "9.0",
             "10.0",
@@ -33,13 +32,11 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
             {
                 foreach (var hasByteOrderMark in new[] { false, true })
                 {
-                    testCases.Add(channel, fileName, hasByteOrderMark, "DefaultTargetFramework", "net6.0", $"net{channel}");
-                    testCases.Add(channel, fileName, hasByteOrderMark, "PublishDir", "bin/Release/net6.0/publish/", $"bin/Release/net{channel}/publish/");
-                    testCases.Add(channel, fileName, hasByteOrderMark, "PublishDir", "bin\\Release\\net6.0\\publish\\", $"bin\\Release\\net{channel}\\publish\\");
-                    testCases.Add(channel, fileName, hasByteOrderMark, "TargetFramework", "net6.0", $"net{channel}");
-                    testCases.Add(channel, fileName, hasByteOrderMark, "TargetFrameworks", "net5.0;net6.0", $"net5.0;net6.0;net{channel}");
-                    testCases.Add(channel, fileName, hasByteOrderMark, "TargetFrameworks", "net5.0;;;;net6.0", $"net5.0;;;;net6.0;net{channel}");
-                    testCases.Add(channel, fileName, hasByteOrderMark, "TargetFrameworks", "netstandard2.0;net462;net6.0", $"netstandard2.0;net462;net6.0;net{channel}");
+                    testCases.Add(channel, fileName, hasByteOrderMark, "DefaultRuntimeIdentifier", "win10-x64", "win-x64");
+                    testCases.Add(channel, fileName, hasByteOrderMark, "PublishDir", "bin/Release/publish/win10-x64", "bin/Release/publish/win-x64");
+                    testCases.Add(channel, fileName, hasByteOrderMark, "PublishDir", "bin\\Release\\publish\\win10-x64", "bin\\Release\\publish\\win-x64");
+                    testCases.Add(channel, fileName, hasByteOrderMark, "RuntimeIdentifier", "win10-x64", "win-x64");
+                    testCases.Add(channel, fileName, hasByteOrderMark, "RuntimeIdentifiers", "linux-x64;osx-x64;win10-x64", "linux-x64;osx-x64;win-x64");
                 }
             }
         }
@@ -119,7 +116,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
 
-        fixture.LogContext.Changelog.ShouldContain($"Update target framework to `net{channel}`");
+        fixture.LogContext.Changelog.ShouldContain("Update runtime identifiers");
     }
 
     [Fact]
@@ -152,10 +149,10 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
              <PropertyGroup>
                <Configuration>Release</Configuration>
                <Platform>Any CPU</Platform>
-               <PublishDir>bin\Release\net10.0\publish\</PublishDir>
+               <PublishDir>bin\Release\net6.0\publish\</PublishDir>
                <PublishProtocol>FileSystem</PublishProtocol>
-               <TargetFramework>net10.0</TargetFramework>
-               <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+               <TargetFramework>net6.0</TargetFramework>
+               <RuntimeIdentifier>win-x64</RuntimeIdentifier>
                <SelfContained>true</SelfContained>
                <PublishSingleFile>False</PublishSingleFile>
                <PublishReadyToRun>False</PublishReadyToRun>
@@ -232,6 +229,43 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(expected);
     }
 
+    [Fact]
+    public async Task UpgradeAsync_Does_Not_Change_DotNet_7_Runtime_Identifiers()
+    {
+        // Arrange
+        string fileContents =
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+              </PropertyGroup>
+            </Project>
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+        var projectFile = await fixture.Project.AddFileAsync("Directory.Build.props", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse("7.0"),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("7.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+
+        string actualContent = await File.ReadAllTextAsync(projectFile);
+        actualContent.ShouldBe(fileContents);
+    }
+
     [Theory]
     [ClassData(typeof(FileEncodingTestData))]
     public async Task UpgradeAsync_Preserves_Bom(string newLine, bool hasUtf8Bom)
@@ -242,7 +276,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
             "<Project Sdk=\"Microsoft.NET.Sdk\">",
             "  <PropertyGroup>",
             "    <!-- This is a comment -->",
-            "    <TargetFramework>net6.0</TargetFramework>",
+            "    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>",
             "  </PropertyGroup>",
             "</Project>",
         ];
@@ -252,7 +286,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
             "<Project Sdk=\"Microsoft.NET.Sdk\">",
             "  <PropertyGroup>",
             "    <!-- This is a comment -->",
-            "    <TargetFramework>net10.0</TargetFramework>",
+            "    <RuntimeIdentifier>win-x64</RuntimeIdentifier>",
             "  </PropertyGroup>",
             "</Project>",
         ];
@@ -303,13 +337,13 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
-    private static TargetFrameworkUpgrader CreateTarget(UpgraderFixture fixture)
+    private static RuntimeIdentifierUpgrader CreateTarget(UpgraderFixture fixture)
     {
         return new(
             fixture.Console,
             fixture.Environment,
             fixture.LogContext,
             fixture.CreateOptions(),
-            fixture.CreateLogger<TargetFrameworkUpgrader>());
+            fixture.CreateLogger<RuntimeIdentifierUpgrader>());
     }
 }

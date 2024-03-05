@@ -9,16 +9,16 @@ using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
-internal sealed partial class TargetFrameworkUpgrader(
+internal sealed partial class RuntimeIdentifierUpgrader(
     IAnsiConsole console,
     IEnvironment environment,
     BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
-    ILogger<TargetFrameworkUpgrader> logger) : XmlFileUpgrader(console, environment, options, logger)
+    ILogger<RuntimeIdentifierUpgrader> logger) : XmlFileUpgrader(console, environment, options, logger)
 {
-    protected override string Action => "Upgrading target frameworks";
+    protected override string Action => "Upgrading runtime identifiers";
 
-    protected override string InitialStatus => "Update TFMs";
+    protected override string InitialStatus => "Update RIDs";
 
     protected override IReadOnlyList<string> Patterns => ["Directory.Build.props", "*.csproj", "*.fsproj", "*.pubxml"];
 
@@ -28,7 +28,13 @@ internal sealed partial class TargetFrameworkUpgrader(
         StatusContext context,
         CancellationToken cancellationToken)
     {
-        Log.UpgradingTargetFramework(Logger);
+        if (upgrade.Channel < DotNetVersions.EightPointZero)
+        {
+            // RIDs only need updating if upgrading to .NET 8.0+
+            return ProcessingResult.None;
+        }
+
+        Log.UpgradingRuntimeIdentifier(Logger);
 
         var result = ProcessingResult.None;
 
@@ -50,7 +56,7 @@ internal sealed partial class TargetFrameworkUpgrader(
 
             foreach (var property in ProjectHelpers.EnumerateProperties(project.Root))
             {
-                if (TryUpgradeTargetFramework(property, upgrade.Channel))
+                if (TryUpgradeRuntimeId(property))
                 {
                     edited = true;
                 }
@@ -68,16 +74,16 @@ internal sealed partial class TargetFrameworkUpgrader(
 
         if (result is ProcessingResult.Success)
         {
-            logContext.Changelog.Add($"Update target framework to `{upgrade.Channel.ToTargetFramework()}`");
+            logContext.Changelog.Add("Update runtime identifiers");
         }
 
         return result;
     }
 
-    private static bool TryUpgradeTargetFramework(XElement property, Version channel)
+    private static bool TryUpgradeRuntimeId(XElement property)
     {
-        if (TargetFrameworkHelpers.TryUpdateTfm(property.Value, channel, out var updated) ||
-            TargetFrameworkHelpers.TryUpdateTfmInPath(property.Value, channel, out updated))
+        if (RuntimeIdentifierHelpers.TryUpdateRid(property.Value, out var updated) ||
+            RuntimeIdentifierHelpers.TryUpdateRidInPath(property.Value, out updated))
         {
             property.SetValue(updated);
             return true;
@@ -92,7 +98,7 @@ internal sealed partial class TargetFrameworkUpgrader(
         [LoggerMessage(
             EventId = 2,
             Level = LogLevel.Debug,
-            Message = "Upgrading target framework moniker.")]
-        public static partial void UpgradingTargetFramework(ILogger logger);
+            Message = "Upgrading runtime identifier.")]
+        public static partial void UpgradingRuntimeIdentifier(ILogger logger);
     }
 }

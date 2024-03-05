@@ -72,6 +72,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUpgrader, DockerfileUpgrader>();
         services.AddSingleton<IUpgrader, GlobalJsonUpgrader>();
         services.AddSingleton<IUpgrader, PackageVersionUpgrader>();
+        services.AddSingleton<IUpgrader, RuntimeIdentifierUpgrader>();
         services.AddSingleton<IUpgrader, ServerlessUpgrader>();
         services.AddSingleton<IUpgrader, TargetFrameworkUpgrader>();
         services.AddSingleton<IUpgrader, VisualStudioCodeUpgrader>();
