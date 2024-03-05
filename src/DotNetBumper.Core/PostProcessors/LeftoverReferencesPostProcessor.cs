@@ -49,7 +49,10 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
                 foreach (var match in matches)
                 {
-                    result.Add(PotentialFileEdit.FromMatch(match, lineNumber));
+                    if (RuntimeIdentifier.TryParse(match.Value, out var rid) && !rid.IsPortable)
+                    {
+                        result.Add(PotentialFileEdit.FromMatch(match, lineNumber));
+                    }
                 }
             }
 
