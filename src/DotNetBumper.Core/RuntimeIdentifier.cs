@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
@@ -12,13 +13,42 @@ internal sealed partial record RuntimeIdentifier(
     string Architecture,
     string AdditionalQualifiers)
 {
-    private const string RidPattern = "(?<os>((android|ios|linux|osx|win([0-9]+)?)(\\-[a-z\\-]+)?))(\\.(?<version>([0-9]+)((\\.[0-9]+))?))?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?";
+    private const string RidPattern = "(?<os>((alpine|android|arch|browser|centos|debian|fedora|freebsd|gentoo|haiku|illumos|ios|iossimulator|linux|linuxmint|maccatalyst|miraclelinux|ol|omnios|openindiana|opensuse|osx|rhel|rocky|sles|smartos|solaris|tizen|tvos|tvossimulator|ubuntu|unix|wasi|win([0-9]+)?)(\\-[a-z\\-]+)?))(\\.(?<version>([0-9]+)((\\.[0-9]+))?))?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?";
 
-    private const string Windows = "win";
+    /// <summary>
+    /// In the future, it would be better to dynamically generate this map from the sources of truth:
+    /// <list type="bullet">
+    /// <item>https://github.com/dotnet/sdk/blob/main/src/Layout/redist/PortableRuntimeIdentifierGraph.json</item>
+    /// <item>https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.NETCore.Platforms/src/runtime.json</item>
+    /// </list>
+    /// </summary>
+    private static readonly ImmutableDictionary<string, string> PortableRidMap = new Dictionary<string, string>()
+    {
+        ["alpine"] = "linux-musl",
+        ["arch"] = "linux",
+        ["centos"] = "linux",
+        ["debian"] = "linux",
+        ["fedora"] = "linux",
+        ["gentoo"] = "linux",
+        ["linuxmint"] = "linux",
+        ["miraclelinux"] = "linux",
+        ["ol"] = "linux",
+        ["omnios"] = "illumos",
+        ["openindiana"] = "illumos",
+        ["opensuse"] = "linux",
+        ["rhel"] = "linux",
+        ["rocky"] = "linux",
+        ["sles"] = "linux",
+        ["smartos"] = "illumos",
+        ["tizen"] = "linux",
+        ["ubuntu"] = "linux",
+        ["win7"] = "win",
+        ["win8"] = "win",
+        ["win81"] = "win",
+        ["win10"] = "win",
+    }.ToImmutableDictionary();
 
-    public bool IsPortable =>
-        Version is { Length: 0 } &&
-        (OperatingSystem is Windows || !OperatingSystem.StartsWith(Windows, StringComparison.Ordinal));
+    public bool IsPortable => Version is { Length: 0 } && !PortableRidMap.ContainsKey(OperatingSystem);
 
     public static MatchCollection Match(string value)
         => ContainsRid().Matches(value);
@@ -52,9 +82,9 @@ internal sealed partial record RuntimeIdentifier(
     {
         string os = OperatingSystem;
 
-        if (os.StartsWith(Windows, StringComparison.Ordinal) && os.Length > Windows.Length)
+        if (PortableRidMap.TryGetValue(os, out var portable))
         {
-            os = Windows;
+            os = portable;
         }
 
         return this with
