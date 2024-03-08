@@ -59,7 +59,7 @@ public static class RuntimeIdentifierHelpersTests
 
         foreach (var version in RuntimeIdentifierTests.WindowsVersions)
         {
-            testCases.Add($"win{version}-aot", true, "win-aot");
+            testCases.Add($"win{version}-aot", true, "win");
             testCases.Add($"win{version}-arm", true, "win-arm");
             testCases.Add($"win{version}-arm64", true, "win-arm64");
             testCases.Add($"win{version}-x64", true, "win-x64");
@@ -113,7 +113,7 @@ public static class RuntimeIdentifierHelpersTests
 
         foreach (var version in RuntimeIdentifierTests.WindowsVersions)
         {
-            testCases.Add($"bin\\Release\\win{version}-aot", true, "bin\\Release\\win-aot");
+            testCases.Add($"bin\\Release\\win{version}-aot", true, "bin\\Release\\win");
             testCases.Add($"bin\\Release\\win{version}-arm", true, "bin\\Release\\win-arm");
             testCases.Add($"bin\\Release\\win{version}-arm64", true, "bin\\Release\\win-arm64");
             testCases.Add($"bin\\Release\\win{version}-x64", true, "bin\\Release\\win-x64");
