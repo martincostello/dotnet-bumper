@@ -44,9 +44,9 @@ internal static class RuntimeIdentifierHelpers
 
             if (rid is not null)
             {
-                if (!rid.IsPortable)
+                if (!rid.IsPortable && rid.TryMakePortable(out var portable))
                 {
-                    rid = rid.AsPortable();
+                    rid = portable;
                 }
 
                 builder.Append(rid.ToString());

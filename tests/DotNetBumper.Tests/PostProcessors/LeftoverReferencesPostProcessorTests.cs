@@ -31,6 +31,13 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
             It supports AWS Lambda for the `dotnet6` runtimes and `dotnet8` runtimes.
 
             It also multi-targets `net6.0` and `net8.0` and is published for `win-x64`.
+
+            To create a deployment artifact, run the following command:
+
+            ```sh
+            dotnet tool install Amazon.Lambda.Tools --tool-path tools
+            & (Join-Path "./tools" "dotnet-lambda") package --project-location . --output-package package.zip
+            ```
             """;
 
         var fixture = new UpgraderFixture(outputHelper);

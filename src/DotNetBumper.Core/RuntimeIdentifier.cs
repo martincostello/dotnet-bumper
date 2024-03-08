@@ -3,57 +3,23 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace MartinCostello.DotNetBumper;
 
-internal sealed partial record RuntimeIdentifier(
-    string OperatingSystem,
-    string Version,
-    string Architecture,
-    string AdditionalQualifiers)
+internal sealed partial record RuntimeIdentifier(string Value)
 {
-    private const string RidPattern = "(?<os>((alpine|android|arch|browser|centos|debian|fedora|freebsd|gentoo|haiku|illumos|ios|iossimulator|linux|linuxmint|maccatalyst|miraclelinux|ol|omnios|openindiana|opensuse|osx|rhel|rocky|sles|smartos|solaris|tizen|tvos|tvossimulator|ubuntu|unix|wasi|win([0-9]+)?)(\\-[a-z\\-]+)?))(\\.(?<version>([0-9]+)((\\.[0-9]+))?))?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?";
+    private static readonly ImmutableDictionary<string, ImmutableHashSet<string>> PortableRids = LoadRuntimeIds("runtime-identifiers.portable");
 
-    /// <summary>
-    /// In the future, it would be better to dynamically generate this map from the sources of truth:
-    /// <list type="bullet">
-    /// <item>https://github.com/dotnet/sdk/blob/main/src/Layout/redist/PortableRuntimeIdentifierGraph.json</item>
-    /// <item>https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.NETCore.Platforms/src/runtime.json</item>
-    /// </list>
-    /// </summary>
-    private static readonly ImmutableDictionary<string, string> PortableRidMap = new Dictionary<string, string>()
-    {
-        ["alpine"] = "linux-musl",
-        ["arch"] = "linux",
-        ["centos"] = "linux",
-        ["debian"] = "linux",
-        ["fedora"] = "linux",
-        ["gentoo"] = "linux",
-        ["linuxmint"] = "linux",
-        ["miraclelinux"] = "linux",
-        ["ol"] = "linux",
-        ["omnios"] = "illumos",
-        ["openindiana"] = "illumos",
-        ["opensuse"] = "linux",
-        ["rhel"] = "linux",
-        ["rocky"] = "linux",
-        ["sles"] = "linux",
-        ["smartos"] = "illumos",
-        ["tizen"] = "linux",
-        ["ubuntu"] = "linux",
-        ["win7"] = "win",
-        ["win8"] = "win",
-        ["win81"] = "win",
-        ["win10"] = "win",
-    }.ToImmutableDictionary();
+    private static readonly ImmutableDictionary<string, ImmutableHashSet<string>> NonPortableRids = LoadRuntimeIds("runtime-identifiers");
 
-    public bool IsPortable => Version is { Length: 0 } && !PortableRidMap.ContainsKey(OperatingSystem);
+    public bool IsPortable => PortableRids.ContainsKey(Value);
 
     public static MatchCollection Match(string value)
         => ContainsRid().Matches(value);
 
-    public static bool TryParse(string value, [NotNullWhen(true)] out RuntimeIdentifier? rid)
+    public static bool TryParse(string? value, [NotNullWhen(true)] out RuntimeIdentifier? rid)
     {
         rid = null;
 
@@ -62,68 +28,96 @@ internal sealed partial record RuntimeIdentifier(
             return false;
         }
 
-        var match = IsRid().Match(value);
-
-        if (!match.Success)
+        if (!PortableRids.ContainsKey(value) && !NonPortableRids.ContainsKey(value))
         {
             return false;
         }
 
-        rid = new(
-            match.Groups["os"].Value,
-            match.Groups["version"].Value,
-            match.Groups["architecture"].Value,
-            match.Groups["qualifiers"].Value);
-
+        rid = new(value);
         return true;
     }
 
-    public RuntimeIdentifier AsPortable()
+    public bool TryMakePortable([NotNullWhen(true)] out RuntimeIdentifier? portable)
     {
-        string os = OperatingSystem;
-
-        if (PortableRidMap.TryGetValue(os, out var portable))
+        if (IsPortable)
         {
-            os = portable;
+            portable = this;
+            return true;
         }
 
-        return this with
+        var value = TryFindPortableRid(Value);
+
+        if (!TryParse(value, out var parsed))
         {
-            OperatingSystem = os,
-            Version = string.Empty,
-        };
+            portable = null;
+            return false;
+        }
+
+        portable = parsed;
+        return true;
+
+        static string? TryFindPortableRid(string value)
+        {
+            var candidates = new HashSet<string>();
+            TryFindPortableRid(value, candidates);
+
+            // Prefer more specific Runtime Identifiers over shorter ones (e.g. "win-x64" over "win" or "linux-musl-x64" over "linux-x64").
+            // "any" is artificially the least preferred RID as it's the base of the hierarchy/graph, so is least preferred.
+            foreach (var candidate in candidates.OrderByDescending((p) => p.Length).ThenByDescending((p) => p is not "any"))
+            {
+                if (PortableRids.ContainsKey(candidate))
+                {
+                    return candidate;
+                }
+            }
+
+            return null;
+
+            static void TryFindPortableRid(string value, HashSet<string> candidates)
+            {
+                if (PortableRids.ContainsKey(value))
+                {
+                    candidates.Add(value);
+                    return;
+                }
+
+                var imports = NonPortableRids[value];
+
+                foreach (var import in imports)
+                {
+                    TryFindPortableRid(import, candidates);
+                }
+            }
+        }
     }
 
-    public override string ToString()
-    {
-        var builder = new StringBuilder();
+    public override string ToString() => Value;
 
-        builder.Append(OperatingSystem);
-
-        if (Version is { Length: > 0 })
-        {
-            builder.Append('.');
-            builder.Append(Version);
-        }
-
-        if (Architecture is { Length: > 0 })
-        {
-            builder.Append('-');
-            builder.Append(Architecture);
-        }
-
-        if (AdditionalQualifiers is { Length: > 0 })
-        {
-            builder.Append('-');
-            builder.Append(AdditionalQualifiers);
-        }
-
-        return builder.ToString();
-    }
-
-    [GeneratedRegex($"{RidPattern}")]
+    [GeneratedRegex("(?<os>[a-z]+[a-z0-9\\-]+)(\\.(?<version>([0-9]+)((\\.[0-9]+))?))?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?")]
     private static partial Regex ContainsRid();
 
-    [GeneratedRegex($"^{RidPattern}$")]
-    private static partial Regex IsRid();
+    private static ImmutableDictionary<string, ImmutableHashSet<string>> LoadRuntimeIds(string resource)
+    {
+        var type = typeof(RuntimeIdentifier);
+        using var stream = type.Assembly.GetManifestResourceStream($"{type.Namespace}.Resources.{resource}.json");
+        using var rids = JsonDocument.Parse(stream!);
+
+        var builder = ImmutableDictionary.CreateBuilder<string, ImmutableHashSet<string>>();
+        var runtimes = rids.RootElement.GetProperty("runtimes");
+
+        foreach (var property in runtimes.EnumerateObject())
+        {
+            var values = new HashSet<string>();
+            var imports = property.Value.GetProperty("#import");
+
+            foreach (var import in imports.EnumerateArray())
+            {
+                values.Add(import.GetString()!);
+            }
+
+            builder.Add(property.Name, [..values]);
+        }
+
+        return builder.ToImmutable();
+    }
 }
