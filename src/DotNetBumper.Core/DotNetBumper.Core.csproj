@@ -11,6 +11,10 @@
     <Title>MartinCostello.DotNetBumper.Core</Title>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\**\*" />
+    <EmbeddedResource Include="Resources\**\*" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Ignore" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />

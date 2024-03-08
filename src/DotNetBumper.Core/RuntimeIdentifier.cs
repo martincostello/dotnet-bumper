@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace MartinCostello.DotNetBumper;
@@ -13,7 +14,7 @@ internal sealed partial record RuntimeIdentifier(
     string Architecture,
     string AdditionalQualifiers)
 {
-    private const string RidPattern = "(?<os>((alpine|android|arch|browser|centos|debian|fedora|freebsd|gentoo|haiku|illumos|ios|iossimulator|linux|linuxmint|maccatalyst|miraclelinux|ol|omnios|openindiana|opensuse|osx|rhel|rocky|sles|smartos|solaris|tizen|tvos|tvossimulator|ubuntu|unix|wasi|win([0-9]+)?)(\\-[a-z\\-]+)?))(\\.(?<version>([0-9]+)((\\.[0-9]+))?))?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?";
+    private const string RidPattern = "(?<os>[a-z]+[a-z0-9\\-]+)(\\.(?<version>([0-9]+)((\\.[0-9]+))?))?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?";
 
     /// <summary>
     /// In the future, it would be better to dynamically generate this map from the sources of truth:
@@ -48,7 +49,11 @@ internal sealed partial record RuntimeIdentifier(
         ["win10"] = "win",
     }.ToImmutableDictionary();
 
-    public bool IsPortable => Version is { Length: 0 } && !PortableRidMap.ContainsKey(OperatingSystem);
+    private static readonly ImmutableDictionary<string, ImmutableHashSet<string>> PortableRids = LoadRuntimeIds("runtime-identifiers.portable");
+
+    private static readonly ImmutableDictionary<string, ImmutableHashSet<string>> NonPortableRids = LoadRuntimeIds("runtime-identifiers");
+
+    public bool IsPortable => PortableRids.ContainsKey(ToString());
 
     public static MatchCollection Match(string value)
         => ContainsRid().Matches(value);
@@ -58,6 +63,11 @@ internal sealed partial record RuntimeIdentifier(
         rid = null;
 
         if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        if (!PortableRids.ContainsKey(value) && !NonPortableRids.ContainsKey(value))
         {
             return false;
         }
@@ -126,4 +136,29 @@ internal sealed partial record RuntimeIdentifier(
 
     [GeneratedRegex($"^{RidPattern}$")]
     private static partial Regex IsRid();
+
+    private static ImmutableDictionary<string, ImmutableHashSet<string>> LoadRuntimeIds(string resource)
+    {
+        var type = typeof(RuntimeIdentifier);
+        using var stream = type.Assembly.GetManifestResourceStream($"{type.Namespace}.Resources.{resource}.json");
+        using var rids = JsonDocument.Parse(stream!);
+
+        var builder = ImmutableDictionary.CreateBuilder<string, ImmutableHashSet<string>>();
+        var runtimes = rids.RootElement.GetProperty("runtimes");
+
+        foreach (var property in runtimes.EnumerateObject())
+        {
+            var values = new HashSet<string>();
+            var imports = property.Value.GetProperty("#import");
+
+            foreach (var import in imports.EnumerateArray())
+            {
+                values.Add(import.GetString()!);
+            }
+
+            builder.Add(property.Name, [..values]);
+        }
+
+        return builder.ToImmutable();
+    }
 }
