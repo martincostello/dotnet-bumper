@@ -93,7 +93,7 @@ internal sealed partial record RuntimeIdentifier(string Value)
 
     public override string ToString() => Value;
 
-    [GeneratedRegex("(?<os>[a-z]+[a-z0-9\\-]+)(\\.(?<version>([0-9]+)((\\.[0-9]+))?))?-(?<architecture>[a-z0-9]+)(?<qualifiers>\\-[a-z]+)?")]
+    [GeneratedRegex("[a-z]+[a-z0-9\\-]+(\\.[0-9]+(\\.[0-9]+)?)?-[a-z0-9]+(\\-[a-z]+)?")]
     private static partial Regex ContainsRid();
 
     private static ImmutableDictionary<string, ImmutableHashSet<string>> LoadRuntimeIds(string resource)
