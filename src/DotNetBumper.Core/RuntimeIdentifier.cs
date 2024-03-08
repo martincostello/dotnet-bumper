@@ -1,4 +1,4 @@
-﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
+// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Collections.Immutable;
@@ -59,19 +59,15 @@ internal sealed partial record RuntimeIdentifier(string Value)
         static string? TryFindPortableRid(string value)
         {
             var candidates = new HashSet<string>();
+
             TryFindPortableRid(value, candidates);
 
             // Prefer more specific Runtime Identifiers over shorter ones (e.g. "win-x64" over "win" or "linux-musl-x64" over "linux-x64").
             // "any" is artificially the least preferred RID as it's the base of the hierarchy/graph, so is least preferred.
-            foreach (var candidate in candidates.OrderByDescending((p) => p.Length).ThenByDescending((p) => p is not "any"))
-            {
-                if (PortableRids.ContainsKey(candidate))
-                {
-                    return candidate;
-                }
-            }
-
-            return null;
+            return candidates
+                .OrderByDescending((p) => p.Length)
+                .ThenByDescending((p) => p is not "any")
+                .FirstOrDefault();
 
             static void TryFindPortableRid(string value, HashSet<string> candidates)
             {
