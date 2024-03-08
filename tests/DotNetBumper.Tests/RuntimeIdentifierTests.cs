@@ -107,4 +107,20 @@ public static class RuntimeIdentifierTests
             actualRid.ShouldBeNull();
         }
     }
+
+    [Fact]
+    public static void TryMakePortable_Returns_Same_Value_When_Already_Portable()
+    {
+        // Arrange
+        var expected = new RuntimeIdentifier("win-x64");
+
+        // Act
+        bool result = expected.TryMakePortable(out var actual);
+
+        // Assert
+        result.ShouldBeTrue();
+        actual.ShouldNotBeNull();
+        actual.ShouldBeSameAs(expected);
+        actual.IsPortable.ShouldBeTrue();
+    }
 }
