@@ -19,7 +19,7 @@ internal sealed partial record RuntimeIdentifier(string Value)
     public static MatchCollection Match(string value)
         => ContainsRid().Matches(value);
 
-    public static bool TryParse(string value, [NotNullWhen(true)] out RuntimeIdentifier? rid)
+    public static bool TryParse(string? value, [NotNullWhen(true)] out RuntimeIdentifier? rid)
     {
         rid = null;
 
@@ -39,8 +39,6 @@ internal sealed partial record RuntimeIdentifier(string Value)
 
     public bool TryMakePortable([NotNullWhen(true)] out RuntimeIdentifier? portable)
     {
-        portable = null;
-
         if (IsPortable)
         {
             portable = this;
@@ -49,8 +47,9 @@ internal sealed partial record RuntimeIdentifier(string Value)
 
         var value = TryFindPortableRid(Value);
 
-        if (value is null || !TryParse(value, out var parsed))
+        if (!TryParse(value, out var parsed))
         {
+            portable = null;
             return false;
         }
 
