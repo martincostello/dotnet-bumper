@@ -14,7 +14,7 @@ internal sealed partial record RuntimeIdentifier(string Value)
 
     private static readonly ImmutableDictionary<string, ImmutableHashSet<string>> NonPortableRids = LoadRuntimeIds("runtime-identifiers");
 
-    public bool IsPortable => PortableRids.ContainsKey(ToString());
+    public bool IsPortable => PortableRids.ContainsKey(Value);
 
     public static MatchCollection Match(string value)
         => ContainsRid().Matches(value);
@@ -47,7 +47,7 @@ internal sealed partial record RuntimeIdentifier(string Value)
             return true;
         }
 
-        var value = TryFindPortableRid(ToString());
+        var value = TryFindPortableRid(Value);
 
         if (value is null || !TryParse(value, out var parsed))
         {
