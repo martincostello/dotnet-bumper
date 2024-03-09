@@ -47,14 +47,7 @@ internal sealed partial record RuntimeIdentifier(string Value)
 
         var value = TryFindPortableRid(Value);
 
-        if (!TryParse(value, out var parsed))
-        {
-            portable = null;
-            return false;
-        }
-
-        portable = parsed;
-        return true;
+        return TryParse(value, out portable);
 
         static string? TryFindPortableRid(string value)
         {
