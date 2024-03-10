@@ -84,7 +84,7 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
     [Theory]
     [InlineData("")]
     [InlineData("{}")]
-    [InlineData("<document/>")]
+    [InlineData("$foo = @(1 2)")]
     public async Task UpgradeAsync_Handles_Invalid_Scripts(string content)
     {
         // Arrange
