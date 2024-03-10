@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace MartinCostello.DotNetBumper;
@@ -89,24 +90,30 @@ internal sealed partial record RuntimeIdentifier(string Value)
     {
         var type = typeof(RuntimeIdentifier);
         using var stream = type.Assembly.GetManifestResourceStream($"{type.Namespace}.Resources.{resource}.json");
-        using var rids = JsonDocument.Parse(stream!);
+        var graph = JsonSerializer.Deserialize<RidGraph>(stream!, RidJsonSerializerContext.Default.RidGraph);
 
         var builder = ImmutableDictionary.CreateBuilder<string, ImmutableHashSet<string>>();
-        var runtimes = rids.RootElement.GetProperty("runtimes");
 
-        foreach (var property in runtimes.EnumerateObject())
+        foreach ((var name, var rid) in graph!.Runtimes)
         {
-            var values = new HashSet<string>();
-            var imports = property.Value.GetProperty("#import");
-
-            foreach (var import in imports.EnumerateArray())
-            {
-                values.Add(import.GetString()!);
-            }
-
-            builder.Add(property.Name, [..values]);
+            builder.Add(name, [..rid.Imports]);
         }
 
         return builder.ToImmutable();
     }
+
+    private sealed class Rid
+    {
+        [JsonPropertyName("#import")]
+        public List<string> Imports { get; set; } = [];
+    }
+
+    private sealed class RidGraph
+    {
+        [JsonPropertyName("runtimes")]
+        public Dictionary<string, Rid> Runtimes { get; set; } = [];
+    }
+
+    [JsonSerializable(typeof(RidGraph))]
+    private sealed partial class RidJsonSerializerContext : JsonSerializerContext;
 }
