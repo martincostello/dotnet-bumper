@@ -9,18 +9,14 @@ namespace MartinCostello.DotNetBumper;
 internal sealed class PowerShellScript
 {
     private PowerShellScript(
-        string fileName,
         FileMetadata fileMetadata,
         List<string> lines,
         Ast syntaxTree)
     {
-        FileName = fileName;
         FileMetadata = fileMetadata;
         Lines = lines;
         SyntaxTree = syntaxTree;
     }
-
-    public string FileName { get; }
 
     public FileMetadata FileMetadata { get; }
 
@@ -50,7 +46,7 @@ internal sealed class PowerShellScript
             return null;
         }
 
-        return new PowerShellScript(path, metadata, lines, syntaxTree);
+        return new PowerShellScript(metadata, lines, syntaxTree);
     }
 
     public bool TryUpdate(Version channel)
