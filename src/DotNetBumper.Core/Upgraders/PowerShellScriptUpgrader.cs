@@ -51,7 +51,7 @@ internal sealed partial class PowerShellScriptUpgrader(
 
         if (script is null)
         {
-            // TODO Log that the script could not be parsed
+            Log.FailedToParsePowerShellScript(logger, path);
             return ProcessingResult.None;
         }
 
@@ -88,5 +88,11 @@ internal sealed partial class PowerShellScriptUpgrader(
             Level = LogLevel.Debug,
             Message = "Upgrading PowerShell scripts.")]
         public static partial void UpgradingPowerShellScripts(ILogger logger);
+
+        [LoggerMessage(
+            EventId = 2,
+            Level = LogLevel.Debug,
+            Message = "Unable to parse {FileName} as a PowerShell script.")]
+        public static partial void FailedToParsePowerShellScript(ILogger logger, string fileName);
     }
 }
