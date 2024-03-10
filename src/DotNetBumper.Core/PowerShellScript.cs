@@ -59,21 +59,15 @@ internal sealed class PowerShellScript
             return false;
         }
 
-        foreach (var lineEdits in vistor.Edits.GroupBy((p) => p.Location.StartLineNumber))
+        foreach (var edits in vistor.Edits.GroupBy((p) => p.Location.StartLineNumber))
         {
-            int lineIndex = lineEdits.Key - 1;
-
-            var edits = lineEdits
-                .OrderBy((p) => p.Location.StartOffset)
-                .ToList();
-
-            var builder = new StringBuilder();
-
             int offset = 0;
+            int lineIndex = edits.Key - 1;
 
             var original = Lines[lineIndex];
+            var builder = new StringBuilder();
 
-            foreach ((var location, var replacement) in edits)
+            foreach ((var location, var replacement) in edits.OrderBy((p) => p.Location.StartOffset))
             {
                 int start = location.StartColumnNumber - 1;
                 int end = location.EndColumnNumber - 1;
