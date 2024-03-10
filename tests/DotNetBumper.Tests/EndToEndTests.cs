@@ -57,6 +57,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         string globalJson = await fixture.Project.AddGlobalJsonAsync(testCase.SdkVersion);
         string vscode = await fixture.Project.AddVisualStudioCodeLaunchConfigurationsAsync();
         string vsconfig = await fixture.Project.AddVisualStudioConfigurationAsync();
+        string script = await fixture.Project.AddPowerShellBuildScriptAsync(testCase.Channel);
 
         string appProject = await fixture.Project.AddApplicationProjectAsync(
             testCase.TargetFrameworks,
@@ -120,6 +121,8 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         property.ValueKind.ShouldBe(JsonValueKind.String);
         property.GetString().ShouldStartWith($"${{workspaceFolder}}/src/Project/bin/Debug/net");
         property.GetString().ShouldNotBe($"${{workspaceFolder}}/src/Project/bin/Debug/net{testCase.Channel}/Project.dll");
+
+        await AssertPowerShellScriptIsValidAsync(script, testCase.Channel);
     }
 
     [Theory]
@@ -558,6 +561,17 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             .Element("PropertyGroup")?
             .Element("TargetFrameworks")?
             .Value;
+    }
+
+    private static async Task AssertPowerShellScriptIsValidAsync(string path, Version channel)
+    {
+        System.Management.Automation.Language.Parser.ParseFile(path, out _, out var errors);
+        errors.ShouldBeEmpty();
+
+        var script = await File.ReadAllTextAsync(path);
+
+        script.ShouldNotContain($" net{channel} ");
+        script.ShouldContain(" win-x64 ");
     }
 
     private static Dictionary<string, string> Packages(params (string Name, string Version)[] packages)
