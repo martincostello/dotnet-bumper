@@ -72,8 +72,8 @@ internal sealed class PowerShellScript
                 int start = location.StartColumnNumber - 1;
                 int end = location.EndColumnNumber - 1;
 
-                builder.Append(original[offset..start]);
-                builder.Append(replacement);
+                builder.Append(original[offset..start])
+                       .Append(replacement);
 
                 offset = end;
             }
