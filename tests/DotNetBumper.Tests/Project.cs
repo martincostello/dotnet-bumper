@@ -206,6 +206,18 @@ internal sealed class Project : IDisposable
         return await AddFileAsync(path, configuration);
     }
 
+    public async Task<string> AddPowerShellBuildScriptAsync(Version channel, string path = "build.ps1")
+    {
+        var script =
+            $"""
+             dotnet run --framework net{channel}
+             dotnet publish --runtime win10-x64 # Publish the app
+             dotnet dotnet-lambda package -c release -f net{channel} # Package the Lambda
+             """;
+
+        return await AddFileAsync(path, script);
+    }
+
     public void Dispose() => _directory.Dispose();
 
     private static string CreateGlobalJson(string sdkVersion)
