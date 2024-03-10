@@ -82,6 +82,47 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
+    [InlineData("dotnet publish --framework net6.0", "dotnet publish --framework net10.0")]
+    [InlineData("dotnet publish --framework 'net6.0'", "dotnet publish --framework 'net10.0'")]
+    [InlineData("dotnet publish --framework \"net6.0\"", "dotnet publish --framework \"net10.0\"")]
+    [InlineData("dotnet publish `\n       --framework \"net6.0\"", "dotnet publish `\n       --framework \"net10.0\"")]
+    [InlineData("dotnet publish --runtime win10-x64", "dotnet publish --runtime win-x64")]
+    [InlineData("dotnet publish --runtime win10-x64 # A comment", "dotnet publish --runtime win-x64 # A comment")]
+    public async Task UpgradeAsync_Upgrades_PowerShell_Script_Correctly(string fileContents, string expectedContents)
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string script = await fixture.Project.AddFileAsync("script.ps1", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(10, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("10.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(script);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
     [InlineData("")]
     [InlineData("{}")]
     [InlineData("$foo = @(1 2)")]
