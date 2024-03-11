@@ -50,8 +50,9 @@ internal sealed partial class PowerShellScriptUpgrader(
 
         if (Path.GetExtension(path) is ".yaml" or ".yml")
         {
-            if ((!name.StartsWith(".github/workflows/", StringComparison.OrdinalIgnoreCase) &&
-                 !name.StartsWith(".github\\workflows\\", StringComparison.OrdinalIgnoreCase)) ||
+            var directory = PathHelpers.Normalize(Path.GetDirectoryName(path) ?? string.Empty);
+
+            if (!directory.EndsWith(".github/workflows", StringComparison.OrdinalIgnoreCase) ||
                 !TryParseActionsWorkflow(path, out workflow))
             {
                 return ProcessingResult.None;

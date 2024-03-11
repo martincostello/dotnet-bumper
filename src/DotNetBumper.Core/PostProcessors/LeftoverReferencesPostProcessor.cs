@@ -83,7 +83,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var relativePath = NormalizePath(RelativeName(path));
+            var relativePath = PathHelpers.Normalize(RelativeName(path));
 
             if (gitignore?.IsIgnored(relativePath) is true || IsIgnoredFileType(path))
             {
@@ -136,8 +136,6 @@ internal sealed partial class LeftoverReferencesPostProcessor(
             _ => false,
         };
     }
-
-    private static string NormalizePath(string path) => path.Replace('\\', '/');
 
     private void RenderTable(Dictionary<ProjectFile, List<PotentialFileEdit>> references)
     {
@@ -202,7 +200,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
         if (config.RemainingReferencesIgnore.Count > 0)
         {
-            ignore.Add(config.RemainingReferencesIgnore.Select(NormalizePath));
+            ignore.Add(config.RemainingReferencesIgnore.Select(PathHelpers.Normalize));
         }
 
         const string GitDirectory = ".git";
