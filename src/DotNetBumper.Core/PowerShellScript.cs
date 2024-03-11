@@ -121,7 +121,7 @@ internal sealed class PowerShellScript
                 int offset = 0;
                 int lineIndex = lineOffset + edits.Key - 1;
 
-                var original = Lines[lineIndex];
+                var original = Lines[lineIndex].AsSpan();
                 var builder = new StringBuilder();
 
                 foreach ((var location, var replacement) in edits.OrderBy((p) => p.Location.StartOffset))
