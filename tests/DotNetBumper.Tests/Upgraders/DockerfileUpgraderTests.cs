@@ -5,6 +5,23 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 {
+    [Theory]
+    [InlineData("", null)]
+    [InlineData("docker.local/base-images/dotnet-6.0-sdk", null)]
+    [InlineData("amaysim/serverless", false)]
+    [InlineData("rhysd/actionlint", false)]
+    [InlineData("ubuntu/dotnet-deps", false)]
+    [InlineData("mcr.microsoft.com/dotnet/aspnet", true)]
+    [InlineData("mcr.microsoft.com/dotnet/runtime", true)]
+    public static void IsDotNetImage_Returns_Correct_Value(string image, bool? expected)
+    {
+        // Act
+        bool? actual = DockerfileUpgrader.IsDotNetImage(image);
+
+        // Assert
+        actual.ShouldBe(expected);
+    }
+
     public static TheoryData<string, bool, string, string, string, string> ParsedDockerImages()
     {
         return new TheoryData<string, bool, string, string, string, string>
