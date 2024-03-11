@@ -58,6 +58,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         string vscode = await fixture.Project.AddVisualStudioCodeLaunchConfigurationsAsync();
         string vsconfig = await fixture.Project.AddVisualStudioConfigurationAsync();
         string script = await fixture.Project.AddPowerShellBuildScriptAsync(testCase.Channel);
+        string workflow = await fixture.Project.AddGitHubActionsWorkflowAsync(testCase.Channel);
 
         string appProject = await fixture.Project.AddApplicationProjectAsync(
             testCase.TargetFrameworks,
@@ -123,6 +124,10 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         property.GetString().ShouldNotBe($"${{workspaceFolder}}/src/Project/bin/Debug/net{testCase.Channel}/Project.dll");
 
         await AssertPowerShellScriptIsValidAsync(script, testCase.Channel);
+
+        var actualWorkflow = await File.ReadAllTextAsync(workflow);
+        actualWorkflow.ShouldNotContain($" net{testCase.Channel} ");
+        actualWorkflow.ShouldContain(" win-x64 ");
     }
 
     [Theory]

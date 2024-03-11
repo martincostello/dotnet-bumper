@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
+using YamlDotNet.RepresentationModel;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
@@ -17,7 +19,7 @@ internal sealed partial class PowerShellScriptUpgrader(
 
     protected override string InitialStatus => "Update PowerShell scripts";
 
-    protected override IReadOnlyList<string> Patterns => ["*.ps1"];
+    protected override IReadOnlyList<string> Patterns => ["*.ps1", "*.yaml", "*.yml"];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
@@ -44,10 +46,30 @@ internal sealed partial class PowerShellScriptUpgrader(
         CancellationToken cancellationToken)
     {
         var name = RelativeName(path);
+        YamlStream? workflow = null;
+
+        if (Path.GetExtension(path) is ".yaml" or ".yml")
+        {
+            if ((!name.StartsWith(".github/workflows/", StringComparison.OrdinalIgnoreCase) &&
+                 !name.StartsWith(".github\\workflows\\", StringComparison.OrdinalIgnoreCase)) ||
+                !TryParseActionsWorkflow(path, out workflow))
+            {
+                return ProcessingResult.None;
+            }
+        }
 
         context.Status = StatusMessage($"Parsing {name}...");
 
-        var script = await PowerShellScript.TryParseAsync(path, cancellationToken);
+        PowerShellScript? script;
+
+        if (workflow is not null)
+        {
+            script = await PowerShellScript.TryParseAsync(workflow, path, cancellationToken);
+        }
+        else
+        {
+            script = await PowerShellScript.TryParseAsync(path, cancellationToken);
+        }
 
         if (script is null)
         {
@@ -80,6 +102,30 @@ internal sealed partial class PowerShellScriptUpgrader(
         return edited ? ProcessingResult.Success : ProcessingResult.None;
     }
 
+    private bool TryParseActionsWorkflow(
+        string fileName,
+        [NotNullWhen(true)] out YamlStream? workflow)
+    {
+        using var stream = File.OpenRead(fileName);
+        using var reader = new StreamReader(stream);
+
+        try
+        {
+            var yaml = new YamlStream();
+            yaml.Load(reader);
+
+            workflow = yaml;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.ParseActionsWorkflowFailed(logger, fileName, ex);
+        }
+
+        workflow = null;
+        return false;
+    }
+
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private static partial class Log
     {
@@ -94,5 +140,14 @@ internal sealed partial class PowerShellScriptUpgrader(
             Level = LogLevel.Debug,
             Message = "Unable to parse {FileName} as a PowerShell script.")]
         public static partial void FailedToParsePowerShellScript(ILogger logger, string fileName);
+
+        [LoggerMessage(
+            EventId = 3,
+            Level = LogLevel.Warning,
+            Message = "Unable to parse GitHub Actions workflow file {FileName}.")]
+        public static partial void ParseActionsWorkflowFailed(
+            ILogger logger,
+            string fileName,
+            Exception exception);
     }
 }

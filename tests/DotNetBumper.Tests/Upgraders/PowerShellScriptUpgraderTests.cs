@@ -122,6 +122,136 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
+    [Fact]
+    public async Task UpgradeAsync_Upgrades_PowerShell_Script_Embedded_In_Actions_Workflow_One_Line()
+    {
+        // Arrange
+        string fileContents =
+            $"""
+             name: build
+             on: [push]
+             jobs:
+               build:               
+                 runs-on: ubuntu-latest             
+                 steps:
+                   - uses: actions/checkout@v4
+                   - uses: actions/setup-dotnet@v3
+                   - shell: pwsh
+                     run: dotnet publish --framework net6.0
+             """;
+
+        string expectedContents =
+            $"""
+             name: build
+             on: [push]
+             jobs:
+               build:               
+                 runs-on: ubuntu-latest             
+                 steps:
+                   - uses: actions/checkout@v4
+                   - uses: actions/setup-dotnet@v3
+                   - shell: pwsh
+                     run: dotnet publish --framework net8.0
+             """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [InlineData('|')]
+    [InlineData('>')]
+    public async Task UpgradeAsync_Upgrades_PowerShell_Script_Embedded_In_Actions_Workflow_Multiline(char blockCharacter)
+    {
+        // Arrange
+        string fileContents =
+            $"""
+             name: build
+             on: [push]
+             jobs:
+               build:               
+                 runs-on: ubuntu-latest             
+                 steps:
+                   - uses: actions/checkout@v4
+                   - uses: actions/setup-dotnet@v3
+                   - shell: pwsh
+                     run: {blockCharacter}
+                       dotnet publish --framework net6.0
+             """;
+
+        string expectedContents =
+            $"""
+             name: build
+             on: [push]
+             jobs:
+               build:               
+                 runs-on: ubuntu-latest             
+                 steps:
+                   - uses: actions/checkout@v4
+                   - uses: actions/setup-dotnet@v3
+                   - shell: pwsh
+                     run: {blockCharacter}
+                       dotnet publish --framework net8.0
+             """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("{}")]

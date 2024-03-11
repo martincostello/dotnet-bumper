@@ -218,6 +218,37 @@ internal sealed class Project : IDisposable
         return await AddFileAsync(path, script);
     }
 
+    public async Task<string> AddGitHubActionsWorkflowAsync(Version channel, string path = ".github/workflows/build.yml")
+    {
+        var script =
+            $$$"""
+               name: build               
+               on: [push]
+               
+               jobs:
+                 build:
+               
+                   runs-on: ubuntu-latest
+                   strategy:
+                     matrix:
+                       dotnet-version: [ '{{{channel}}}.x' ]
+               
+                   steps:
+                     - uses: actions/checkout@v4
+                     - name: Setup .NET ${{ matrix.dotnet-version }}
+                       uses: actions/setup-dotnet@v3
+                       with:
+                         dotnet-version: ${{ matrix.dotnet-version }}
+               
+                     - name: Publish app
+                       shell: pwsh
+                       run: |
+                         dotnet publish --framework net{{{channel}}} --runtime win10-x64 # Publish the app
+               """;
+
+        return await AddFileAsync(path, script);
+    }
+
     public void Dispose() => _directory.Dispose();
 
     private static string CreateGlobalJson(string sdkVersion)
