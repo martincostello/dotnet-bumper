@@ -26,6 +26,27 @@ internal sealed partial class DockerfileUpgrader(
 
     internal static Match DockerImageMatch(string value) => DockerImage().Match(value);
 
+    internal static bool? IsDotNetImage(string image)
+    {
+        string[] parts = image.Split('/');
+
+        if (parts.Length is 2 && !image.Contains('.', StringComparison.Ordinal))
+        {
+            // Image hosted in Dockerhub - unlikely to be anything official to do with .NET
+            return false;
+        }
+        else if (parts.Length > 1 &&
+                 string.Equals(parts[0], "mcr.microsoft.com", StringComparison.OrdinalIgnoreCase) &&
+                 string.Equals(parts[1], "dotnet", StringComparison.OrdinalIgnoreCase))
+        {
+            // Official .NET container image
+            return true;
+        }
+
+        // Unknown
+        return null;
+    }
+
     internal static bool TryUpdateImage(
         string current,
         Version channel,
@@ -43,6 +64,11 @@ internal sealed partial class DockerfileUpgrader(
             var image = match.Groups["image"].Value;
             var tag = match.Groups["tag"].Value;
             var name = match.Groups["name"].Value;
+
+            if (IsDotNetImage(image) is false)
+            {
+                return false;
+            }
 
             var builder = new StringBuilder("FROM ");
 
