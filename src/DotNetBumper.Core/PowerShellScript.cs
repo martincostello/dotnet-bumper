@@ -150,11 +150,6 @@ internal sealed class PowerShellScript
     {
         public IList<(int LineIndex, int ColumnIndex, Range Range)> ScriptLocations { get; } = [];
 
-        public override void Visit(YamlMappingNode mapping)
-        {
-            base.Visit(mapping);
-        }
-
         protected override void VisitPair(YamlNode key, YamlNode value)
         {
             if (key is YamlScalarNode { Value: "steps" } &&
