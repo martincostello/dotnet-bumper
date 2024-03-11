@@ -51,7 +51,7 @@ internal sealed class PowerShellScript
 
         List<(int LineOffset, int ColumnOffset, Range Location, Ast SyntaxTree)> syntaxTrees = [];
 
-        string allContents = string.Join(metadata.NewLine, lines);
+        string allContents = string.Join(metadata.NewLine, lines) + metadata.NewLine;
 
         foreach ((var lineOffset, var columnOffset, var location) in finder.ScriptLocations)
         {
