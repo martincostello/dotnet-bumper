@@ -122,6 +122,329 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
+    [Fact]
+    public async Task UpgradeAsync_Upgrades_PowerShell_Script_Embedded_In_Actions_Workflow_One_Line()
+    {
+        // Arrange
+        string fileContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:               
+                runs-on: ubuntu-latest             
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - shell: pwsh
+                    run: dotnet publish --framework net6.0
+            """;
+
+        string expectedContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:               
+                runs-on: ubuntu-latest             
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - shell: pwsh
+                    run: dotnet publish --framework net8.0
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [InlineData('|')]
+    [InlineData('>')]
+    public async Task UpgradeAsync_Upgrades_PowerShell_Script_Embedded_In_Actions_Workflow_Multiline(char blockCharacter)
+    {
+        // Arrange
+        string fileContents =
+            $"""
+             name: build
+             on: [push]
+             jobs:
+               build:               
+                 runs-on: ubuntu-latest             
+                 steps:
+                   - uses: actions/checkout@v4
+                   - uses: actions/setup-dotnet@v3
+                   - shell: pwsh
+                     run: {blockCharacter}
+                       dotnet publish --framework net6.0
+             """;
+
+        string expectedContents =
+            $"""
+             name: build
+             on: [push]
+             jobs:
+               build:               
+                 runs-on: ubuntu-latest             
+                 steps:
+                   - uses: actions/checkout@v4
+                   - uses: actions/setup-dotnet@v3
+                   - shell: pwsh
+                     run: {blockCharacter}
+                       dotnet publish --framework net8.0
+             """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Upgrades_PowerShell_Scripts_Embedded_In_Actions_Workflow()
+    {
+        // Arrange
+        string fileContents =
+            """
+            name: build
+
+            on: [push]
+
+            jobs:
+
+              build:               
+                runs-on: ubuntu-latest             
+                steps:
+
+                  - name: Install .NET
+                    run: |
+                      declare repo_version=$(if command -v lsb_release &> /dev/null; then lsb_release -r -s; else grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"'; fi)
+                      wget https://packages.microsoft.com/config/ubuntu/$repo_version/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+                      sudo dpkg -i packages-microsoft-prod.deb
+                      rm packages-microsoft-prod.deb
+                      sudo apt update
+                      sudo apt install dotnet-sdk-7.0
+
+                  - name: Checkout code
+                    uses: actions/checkout@v4
+
+                  - name: Build and publish
+                    shell: pwsh
+                    run: |
+                      dotnet build --framework net7.0 --output ./artifacts/build
+                      dotnet publish --framework net7.0 --output ./artifacts/publish --runtime win10-x64
+
+                  - name: Run tests
+                    shell: pwsh
+                    run: dotnet test --framework net7.0
+
+                  - name: Publish artifacts
+                    uses: actions/upload-artifact@v4
+                    with:
+                      name: webapp
+                      path: ./artifacts/publish
+            """;
+
+        string expectedContents =
+            """
+            name: build
+
+            on: [push]
+
+            jobs:
+
+              build:               
+                runs-on: ubuntu-latest             
+                steps:
+
+                  - name: Install .NET
+                    run: |
+                      declare repo_version=$(if command -v lsb_release &> /dev/null; then lsb_release -r -s; else grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"'; fi)
+                      wget https://packages.microsoft.com/config/ubuntu/$repo_version/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+                      sudo dpkg -i packages-microsoft-prod.deb
+                      rm packages-microsoft-prod.deb
+                      sudo apt update
+                      sudo apt install dotnet-sdk-7.0
+
+                  - name: Checkout code
+                    uses: actions/checkout@v4
+
+                  - name: Build and publish
+                    shell: pwsh
+                    run: |
+                      dotnet build --framework net8.0 --output ./artifacts/build
+                      dotnet publish --framework net8.0 --output ./artifacts/publish --runtime win-x64
+
+                  - name: Run tests
+                    shell: pwsh
+                    run: dotnet test --framework net8.0
+
+                  - name: Publish artifacts
+                    uses: actions/upload-artifact@v4
+                    with:
+                      name: webapp
+                      path: ./artifacts/publish
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Ignores_Actions_Workflows_With_No_PowerShell()
+    {
+        // Arrange
+        string fileContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:               
+                runs-on: ubuntu-latest             
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - shell: bash
+                    run: dotnet publish --framework net6.0
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Handles_Invalid_Workflow_Yaml()
+    {
+        // Arrange
+        string fileContents =
+            """
+            foo: bar
+            baz
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("{}")]

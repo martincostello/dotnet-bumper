@@ -3,6 +3,7 @@
 
 using System.Management.Automation.Language;
 using MartinCostello.DotNetBumper.Upgraders;
+using YamlDotNet.RepresentationModel;
 
 namespace MartinCostello.DotNetBumper;
 
@@ -11,18 +12,68 @@ internal sealed class PowerShellScript
     private PowerShellScript(
         FileMetadata fileMetadata,
         List<string> lines,
-        Ast syntaxTree)
+        List<(int LineOffset, int ColumnOffset, Range Location, Ast SyntaxTree)> syntaxTrees)
     {
         FileMetadata = fileMetadata;
         Lines = lines;
-        SyntaxTree = syntaxTree;
+        SyntaxTrees = syntaxTrees;
     }
 
     public FileMetadata FileMetadata { get; }
 
     public List<string> Lines { get; }
 
-    public Ast SyntaxTree { get; }
+    private List<(int LineOffset, int ColumnOffset, Range Location, Ast SyntaxTree)> SyntaxTrees { get; }
+
+    public static async Task<PowerShellScript?> TryParseAsync(
+        YamlStream workflow,
+        string path,
+        CancellationToken cancellationToken)
+    {
+        using var input = FileHelpers.OpenRead(path, out var metadata);
+        using var reader = new StreamReader(input, metadata.Encoding);
+
+        List<string> lines = [];
+        string? line;
+
+        while ((line = await reader.ReadLineAsync(cancellationToken)) is not null)
+        {
+            lines.Add(line);
+        }
+
+        var finder = new PowerShellRunStepFinder();
+        workflow.Accept(finder);
+
+        if (finder.ScriptLocations.Count is 0)
+        {
+            return null;
+        }
+
+        List<(int LineOffset, int ColumnOffset, Range Location, Ast SyntaxTree)> syntaxTrees = [];
+
+        string contents = string.Join(metadata.NewLine, lines) + metadata.NewLine;
+
+        foreach ((var lineOffset, var columnOffset, var range) in finder.ScriptLocations)
+        {
+            string script = contents[range];
+            var location = range;
+
+            if (script[0] is '>' or '|')
+            {
+                location = new(new(location.Start.Value + 1), location.End);
+                script = script[1..];
+            }
+
+            var syntaxTree = Parser.ParseInput(script, path, out _, out var errors);
+
+            if (errors.Length is 0)
+            {
+                syntaxTrees.Add((lineOffset, columnOffset, range, syntaxTree));
+            }
+        }
+
+        return new PowerShellScript(metadata, lines, syntaxTrees);
+    }
 
     public static async Task<PowerShellScript?> TryParseAsync(string path, CancellationToken cancellationToken)
     {
@@ -46,44 +97,95 @@ internal sealed class PowerShellScript
             return null;
         }
 
-        return new PowerShellScript(metadata, lines, syntaxTree);
+        var location = new Range(0, Math.Max(0, contents.Length - 1));
+
+        return new PowerShellScript(metadata, lines, [(0, 0, location, syntaxTree)]);
     }
 
     public bool TryUpdate(Version channel)
     {
-        var vistor = new SyntaxTreeVisitor(channel);
-        SyntaxTree.Visit(vistor);
+        bool edited = false;
 
-        if (vistor.Edits.Count is 0)
+        foreach ((var lineOffset, var columnOffset, var range, var syntaxTree) in SyntaxTrees)
         {
-            return false;
-        }
+            var visitor = new SyntaxTreeVisitor(channel);
+            syntaxTree.Visit(visitor);
 
-        foreach (var edits in vistor.Edits.GroupBy((p) => p.Location.StartLineNumber))
-        {
-            int offset = 0;
-            int lineIndex = edits.Key - 1;
-
-            var original = Lines[lineIndex];
-            var builder = new StringBuilder();
-
-            foreach ((var location, var replacement) in edits.OrderBy((p) => p.Location.StartOffset))
+            if (visitor.Edits.Count is 0)
             {
-                int start = location.StartColumnNumber - 1;
-                int end = location.EndColumnNumber - 1;
-
-                builder.Append(original[offset..start])
-                       .Append(replacement);
-
-                offset = end;
+                continue;
             }
 
-            builder.Append(original[offset..]);
+            foreach (var edits in visitor.Edits.GroupBy((p) => p.Location.StartLineNumber))
+            {
+                int offset = 0;
+                int lineIndex = lineOffset + edits.Key - 1;
 
-            Lines[lineIndex] = builder.ToString();
+                var original = Lines[lineIndex];
+                var builder = new StringBuilder();
+
+                foreach ((var location, var replacement) in edits.OrderBy((p) => p.Location.StartOffset))
+                {
+                    int start = columnOffset + location.StartColumnNumber - 1;
+                    int end = columnOffset + location.EndColumnNumber - 1;
+
+                    builder.Append(original[offset..start])
+                           .Append(replacement);
+
+                    offset = end;
+                }
+
+                builder.Append(original[offset..]);
+
+                Lines[lineIndex] = builder.ToString();
+            }
+
+            edited |= true;
         }
 
-        return true;
+        return edited;
+    }
+
+    private sealed class PowerShellRunStepFinder() : YamlVisitorBase
+    {
+        public IList<(int LineIndex, int ColumnIndex, Range Range)> ScriptLocations { get; } = [];
+
+        public override void Visit(YamlMappingNode mapping)
+        {
+            base.Visit(mapping);
+        }
+
+        protected override void VisitPair(YamlNode key, YamlNode value)
+        {
+            if (key is YamlScalarNode { Value: "steps" } &&
+                value is YamlSequenceNode { Children.Count: > 0 } items)
+            {
+                foreach (var item in items)
+                {
+                    if (item is not YamlMappingNode { Children.Count: > 0 } step)
+                    {
+                        continue;
+                    }
+
+                    var shell = step.Children.FirstOrDefault((p) => p.Key is YamlScalarNode { Value: "shell" }).Value;
+
+                    if (shell is not YamlScalarNode { Value: "pwsh" })
+                    {
+                        continue;
+                    }
+
+                    var run = step.Children.FirstOrDefault((p) => p.Key is YamlScalarNode { Value: "run" }).Value;
+
+                    if (run != default)
+                    {
+                        int columnOffset = run.Start.Line == run.End.Line ? run.Start.Column - 1 : 0;
+                        ScriptLocations.Add((run.Start.Line - 1, columnOffset, new(run.Start.Index, run.End.Index)));
+                    }
+                }
+            }
+
+            base.VisitPair(key, value);
+        }
     }
 
     private sealed class SyntaxTreeVisitor(Version channel) : AstVisitor2
