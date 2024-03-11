@@ -107,24 +107,17 @@ internal sealed partial class PowerShellScriptUpgrader(
         string fileName,
         [NotNullWhen(true)] out YamlStream? workflow)
     {
-        using var stream = File.OpenRead(fileName);
-        using var reader = new StreamReader(stream);
-
         try
         {
-            var yaml = new YamlStream();
-            yaml.Load(reader);
-
-            workflow = yaml;
+            workflow = YamlHelpers.ParseFile(fileName);
             return true;
         }
         catch (Exception ex)
         {
             Log.ParseActionsWorkflowFailed(logger, fileName, ex);
+            workflow = null;
+            return false;
         }
-
-        workflow = null;
-        return false;
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
