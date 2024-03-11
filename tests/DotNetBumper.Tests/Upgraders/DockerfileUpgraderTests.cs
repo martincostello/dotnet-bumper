@@ -256,6 +256,101 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
+    [Fact]
+    public async Task UpgradeAsync_Upgrades_Dockerfile_But_Does_Not_Update_Not_DotNet_Images()
+    {
+        // Arrange
+        string fileContents =
+            """
+            FROM docker.local/base-images/dotnet-6.0-sdk AS build-env
+
+            COPY . /app
+            WORKDIR /app
+
+            RUN apt-get update && apt-get install -y dos2unix
+            RUN npm install
+            RUN dotnet restore Application.sln
+
+            ENV ASPNETCORE_ENVIRONMENT="Development"
+            ENV AWS_ACCESS_KEY_ID="not-a-real-secret"
+            ENV AWS_SECRET_ACCESS_KEY="not-a-real-secret"
+            ENV AWS_SESSION_TOKEN="not-a-real-secret"
+
+            RUN dos2unix ./localstack/deploy_app.sh
+            RUN dos2unix ./build.sh
+            RUN chmod +x ./build.sh
+            RUN ./build.sh --skip-tests
+
+            FROM amaysim/serverless:3.30.1 AS serverless-build
+            WORKDIR /app
+
+            ENV AWS_ACCESS_KEY_ID="not-a-real-secret"
+            ENV AWS_SECRET_ACCESS_KEY="not-a-real-secret"
+
+            COPY --from=build-env /app /app
+            """;
+
+        string expectedContents =
+            """
+            FROM docker.local/base-images/dotnet-8.0-sdk AS build-env
+
+            COPY . /app
+            WORKDIR /app
+
+            RUN apt-get update && apt-get install -y dos2unix
+            RUN npm install
+            RUN dotnet restore Application.sln
+
+            ENV ASPNETCORE_ENVIRONMENT="Development"
+            ENV AWS_ACCESS_KEY_ID="not-a-real-secret"
+            ENV AWS_SECRET_ACCESS_KEY="not-a-real-secret"
+            ENV AWS_SESSION_TOKEN="not-a-real-secret"
+
+            RUN dos2unix ./localstack/deploy_app.sh
+            RUN dos2unix ./build.sh
+            RUN chmod +x ./build.sh
+            RUN ./build.sh --skip-tests
+
+            FROM amaysim/serverless:3.30.1 AS serverless-build
+            WORKDIR /app
+
+            ENV AWS_ACCESS_KEY_ID="not-a-real-secret"
+            ENV AWS_SECRET_ACCESS_KEY="not-a-real-secret"
+
+            COPY --from=build-env /app /app
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string dockerfile = await fixture.Project.AddFileAsync("Dockerfile", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(dockerfile);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("FROM")]
