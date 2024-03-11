@@ -369,6 +369,82 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
+    [Fact]
+    public async Task UpgradeAsync_Ignores_Actions_Workflows_With_No_PowerShell()
+    {
+        // Arrange
+        string fileContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:               
+                runs-on: ubuntu-latest             
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - shell: bash
+                    run: dotnet publish --framework net6.0
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Handles_Invalid_Workflow_Yaml()
+    {
+        // Arrange
+        string fileContents =
+            """
+            foo: bar
+            baz
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("{}")]

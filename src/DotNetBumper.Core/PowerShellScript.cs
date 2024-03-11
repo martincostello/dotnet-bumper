@@ -171,9 +171,9 @@ internal sealed class PowerShellScript
                         continue;
                     }
 
-                    var shell = step.Children.FirstOrDefault((p) => p.Key is YamlScalarNode { Value: "shell" });
+                    var shell = step.Children.FirstOrDefault((p) => p.Key is YamlScalarNode { Value: "shell" }).Value;
 
-                    if (shell.Key == default || shell.Value is not YamlScalarNode { Value: "pwsh" })
+                    if (shell is not YamlScalarNode { Value: "pwsh" })
                     {
                         continue;
                     }
