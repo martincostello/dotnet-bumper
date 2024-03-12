@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="System.Management.Automation" />
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
   <ItemGroup>

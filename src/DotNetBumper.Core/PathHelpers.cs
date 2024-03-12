@@ -14,6 +14,8 @@ internal static class PathHelpers
 
     internal delegate bool Transform(ReadOnlySpan<char> value, out ReadOnlySpan<char> transformed);
 
+    public static string Normalize(string path) => path.Replace('\\', '/');
+
     public static bool TryUpdateValueInPath(
         string value,
         Predicate predicate,

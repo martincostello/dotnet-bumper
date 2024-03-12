@@ -106,24 +106,18 @@ internal sealed partial class ServerlessUpgrader(
         string fileName,
         [NotNullWhen(true)] out YamlStream? serverless)
     {
-        using var stream = File.OpenRead(fileName);
-        using var reader = new StreamReader(stream);
-
         try
         {
-            var yaml = new YamlStream();
-            yaml.Load(reader);
-
-            serverless = yaml;
+            serverless = YamlHelpers.ParseFile(fileName);
             return true;
         }
         catch (Exception ex)
         {
             Log.ParseServerlessFailed(logger, fileName, ex);
-        }
 
-        serverless = null;
-        return false;
+            serverless = null;
+            return false;
+        }
     }
 
     private async Task UpdateRuntimesAsync(
