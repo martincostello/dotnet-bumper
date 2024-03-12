@@ -30,16 +30,7 @@ internal sealed class PowerShellScript
         string path,
         CancellationToken cancellationToken)
     {
-        using var input = FileHelpers.OpenRead(path, out var metadata);
-        using var reader = new StreamReader(input, metadata.Encoding);
-
-        List<string> lines = [];
-        string? line;
-
-        while ((line = await reader.ReadLineAsync(cancellationToken)) is not null)
-        {
-            lines.Add(line);
-        }
+        (var lines, var metadata) = await ReadScriptAsync(path, cancellationToken);
 
         var finder = new PowerShellRunStepFinder();
         workflow.Accept(finder);
@@ -64,47 +55,37 @@ internal sealed class PowerShellScript
                 script = script[1..];
             }
 
-            var syntaxTree = Parser.ParseInput(script, path, out _, out var errors);
-
-            if (errors.Length is 0)
+            if (ParseScript(script, path) is { } syntaxTree)
             {
-                syntaxTrees.Add((lineOffset, columnOffset, range, syntaxTree));
+                syntaxTrees.Add((lineOffset, columnOffset, location, syntaxTree));
             }
         }
 
-        return new PowerShellScript(metadata, lines, syntaxTrees);
+        return new(metadata, lines, syntaxTrees);
     }
 
     public static async Task<PowerShellScript?> TryParseAsync(string path, CancellationToken cancellationToken)
     {
-        using var input = FileHelpers.OpenRead(path, out var metadata);
-        using var reader = new StreamReader(input, metadata.Encoding);
-
-        List<string> lines = [];
-        string? line;
-
-        while ((line = await reader.ReadLineAsync(cancellationToken)) is not null)
-        {
-            lines.Add(line);
-        }
+        (var lines, var metadata) = await ReadScriptAsync(path, cancellationToken);
 
         string contents = string.Join(metadata.NewLine, lines);
 
-        var syntaxTree = Parser.ParseInput(contents, path, out _, out var errors);
+        var syntaxTree = ParseScript(contents, path);
 
-        if (errors.Length is not 0)
+        if (syntaxTree is null)
         {
             return null;
         }
 
         var location = new Range(0, Math.Max(0, contents.Length - 1));
 
-        return new PowerShellScript(metadata, lines, [(0, 0, location, syntaxTree)]);
+        return new(metadata, lines, [(0, 0, location, syntaxTree)]);
     }
 
     public bool TryUpdate(Version channel)
     {
         bool edited = false;
+        var builder = new StringBuilder();
 
         foreach ((var lineOffset, var columnOffset, var range, var syntaxTree) in SyntaxTrees)
         {
@@ -122,7 +103,7 @@ internal sealed class PowerShellScript
                 int lineIndex = lineOffset + edits.Key - 1;
 
                 var original = Lines[lineIndex].AsSpan();
-                var builder = new StringBuilder();
+                builder.Clear();
 
                 foreach ((var location, var replacement) in edits.OrderBy((p) => p.Location.StartOffset))
                 {
@@ -144,6 +125,28 @@ internal sealed class PowerShellScript
         }
 
         return edited;
+    }
+
+    private static async Task<(List<string> Lines, FileMetadata Metadata)> ReadScriptAsync(string path, CancellationToken cancellationToken)
+    {
+        using var input = FileHelpers.OpenRead(path, out var metadata);
+        using var reader = new StreamReader(input, metadata.Encoding);
+
+        List<string> lines = [];
+        string? line;
+
+        while ((line = await reader.ReadLineAsync(cancellationToken)) is not null)
+        {
+            lines.Add(line);
+        }
+
+        return (lines, metadata);
+    }
+
+    private static ScriptBlockAst? ParseScript(string input, string fileName)
+    {
+        var syntaxTree = Parser.ParseInput(input, fileName, out _, out var errors);
+        return errors.Length is 0 ? syntaxTree : null;
     }
 
     private sealed class PowerShellRunStepFinder() : YamlVisitorBase
