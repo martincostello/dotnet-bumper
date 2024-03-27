@@ -218,7 +218,10 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
                 foreach (var rule in await File.ReadAllLinesAsync(gitignore, cancellationToken))
                 {
-                    ignore.Add(rule);
+                    if (!string.IsNullOrWhiteSpace(rule) && !rule.StartsWith('#'))
+                    {
+                        ignore.Add(rule);
+                    }
                 }
             }
         }
