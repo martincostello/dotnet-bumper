@@ -17,6 +17,10 @@
   <ItemGroup>
     <PackageReference Include="Ignore" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="Microsoft.Build.Locator" />
+    <PackageReference Include="Microsoft.CodeAnalysis" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Http" />
@@ -27,6 +31,9 @@
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="System.Management.Automation" />
     <PackageReference Include="YamlDotNet" />
+    <!-- See https://patriksvensson.se/posts/2019/09/how-to-find-a-nuget-package-path-from-msbuild -->
+    <Reference Include="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll" />
+    <Reference Include="$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)\analyzers\dotnet\cs\Microsoft.CodeAnalysis.NetAnalyzers.dll" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetBumper.MSBuild\DotNetBumper.MSBuild.csproj" />
