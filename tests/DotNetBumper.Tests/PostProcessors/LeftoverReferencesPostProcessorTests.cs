@@ -107,6 +107,7 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
+        await fixture.Project.AddFileAsync("build.sh", "dotnet publish --framework \"net6.0\"");
         await fixture.Project.AddFileAsync("file.txt", "Hello, World!");
         await fixture.Project.AddFileAsync("src/Program.cs", "Console.WriteLine(\"Hello, World!\"");
         await fixture.Project.AddFileAsync("src/Project.csproj", "<Project/>");
@@ -119,8 +120,9 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         // Assert
         actual.ShouldNotBeNull();
         actual.ShouldNotBeEmpty();
-        actual.Count.ShouldBe(3);
+        actual.Count.ShouldBe(4);
 
+        actual.ShouldContain((p) => p.RelativePath == "build.sh");
         actual.ShouldContain((p) => p.RelativePath == "file.txt");
         actual.ShouldContain((p) => p.RelativePath == "src/Program.cs");
         actual.ShouldContain((p) => p.RelativePath == "src/Project.csproj");

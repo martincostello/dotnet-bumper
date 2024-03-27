@@ -132,7 +132,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
         return segments.Length >= 1 && segments[0] switch
         {
-            "application" or "font" or "image" or "video" => true,
+            "application" or "font" or "image" or "video" => segments[1] is not "x-sh", // Include shell scripts
             _ => false,
         };
     }
