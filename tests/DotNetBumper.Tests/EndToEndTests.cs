@@ -70,7 +70,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         await fixture.Project.AddUnitTestsAsync();
 
         // Act
-        int actualStatus = await RunAsync(fixture, [..testCase.Arguments, "--test"]);
+        int actualStatus = await RunAsync(fixture, [.. testCase.Arguments, "--test"]);
 
         // Assert
         actualStatus.ShouldBe(0);
@@ -152,7 +152,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         string projectFile = await fixture.Project.AddApplicationProjectAsync([targetFramework]);
 
         // Act
-        int actualStatus = await RunAsync(fixture, [..args, "--test"]);
+        int actualStatus = await RunAsync(fixture, [.. args, "--test"]);
 
         // Assert
         actualStatus.ShouldBe(0);
@@ -223,7 +223,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Act
         int actual = await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, "--verbose", ..args],
+            [fixture.Project.DirectoryName, "--verbose", .. args],
             (builder) => builder.AddXUnit(fixture),
             CancellationToken.None);
 
@@ -315,7 +315,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Act
         int actual = await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, "--verbose", ..args],
+            [fixture.Project.DirectoryName, "--verbose", .. args],
             (builder) => builder.AddXUnit(fixture),
             CancellationToken.None);
 
@@ -393,7 +393,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         // Act
-        int actual = await Program.Main([fixture.Project.DirectoryName, ..args]);
+        int actual = await Program.Main([fixture.Project.DirectoryName, .. args]);
 
         // Assert
         actual.ShouldBe(0);
@@ -505,7 +505,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         return await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, "--verbose", "--warnings-as-errors", ..args],
+            [fixture.Project.DirectoryName, "--verbose", "--warnings-as-errors", .. args],
             (builder) => builder.AddXUnit(fixture).AddFilter(LogFilter),
             cts.Token);
     }

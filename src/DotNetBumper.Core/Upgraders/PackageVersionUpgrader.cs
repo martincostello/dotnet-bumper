@@ -146,7 +146,7 @@ internal sealed partial class PackageVersionUpgrader(
             environmentVariables["NoWarn"] = string.Join(";", configuration.NoWarn);
         }
 
-        var result = await dotnet.RunAsync(directory, ["outdated", ..arguments], environmentVariables, cancellationToken);
+        var result = await dotnet.RunAsync(directory, ["outdated", .. arguments], environmentVariables, cancellationToken);
 
         logContext.Add(result);
 
