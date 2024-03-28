@@ -6,7 +6,6 @@
     <OutputType>Library</OutputType>
     <PackageId>MartinCostello.DotNetBumper.MSBuild</PackageId>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
-    <Summary>$(Description)</Summary>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Title>$(PackageId)</Title>
   </PropertyGroup>

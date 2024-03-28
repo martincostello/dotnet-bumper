@@ -6,7 +6,6 @@
     <OutputType>Library</OutputType>
     <PackageId>MartinCostello.DotNetBumper.Core</PackageId>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
-    <Summary>$(Description)</Summary>
     <TargetFramework>net8.0</TargetFramework>
     <Title>MartinCostello.DotNetBumper.Core</Title>
   </PropertyGroup>
