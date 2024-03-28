@@ -138,6 +138,8 @@ internal sealed class Project : IDisposable
               
               public static class UnitTests
               {
+                  public static bool IsTrue() => string.Equals(bool.TrueString, "true");
+
                   [Fact]
                   public static void {{testName}}()
                   {
