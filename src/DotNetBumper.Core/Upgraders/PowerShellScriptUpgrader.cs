@@ -61,16 +61,9 @@ internal sealed partial class PowerShellScriptUpgrader(
 
         context.Status = StatusMessage($"Parsing {name}...");
 
-        PowerShellScript? script;
-
-        if (workflow is not null)
-        {
-            script = await PowerShellScript.TryParseAsync(workflow, path, cancellationToken);
-        }
-        else
-        {
-            script = await PowerShellScript.TryParseAsync(path, cancellationToken);
-        }
+        var script = workflow is not null
+            ? await PowerShellScript.TryParseAsync(workflow, path, cancellationToken)
+            : await PowerShellScript.TryParseAsync(path, cancellationToken);
 
         if (script is null)
         {

@@ -96,7 +96,7 @@ internal sealed partial record RuntimeIdentifier(string Value)
 
         foreach ((var name, var rid) in graph!.Runtimes)
         {
-            builder.Add(name, [..rid.Imports]);
+            builder.Add(name, [.. rid.Imports]);
         }
 
         return builder.ToImmutable();

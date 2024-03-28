@@ -115,7 +115,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             string loggerPath = typeof(BumperBuildLogger).Assembly.Location;
             string customLogger = $"-logger:{loggerPath}";
 
-            arguments = [..arguments, customLogger];
+            arguments = [.. arguments, customLogger];
         }
 
         using var process = StartDotNet(workingDirectory, arguments, environmentVariables, logFilePath);

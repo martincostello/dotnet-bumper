@@ -100,14 +100,7 @@ public sealed class BumperLogContext
 
                 foreach ((var id, var count) in entries)
                 {
-                    if (existing.TryGetValue(id, out var current))
-                    {
-                        existing[id] = current + count;
-                    }
-                    else
-                    {
-                        existing[id] = count;
-                    }
+                    existing[id] = existing.TryGetValue(id, out var current) ? current + count : count;
                 }
             }
         }
@@ -149,14 +142,7 @@ public sealed class BumperLogContext
 
                 foreach ((var outcome, var count) in entries)
                 {
-                    if (existing.TryGetValue(outcome, out var current))
-                    {
-                        existing[outcome] = current + count;
-                    }
-                    else
-                    {
-                        existing[outcome] = count;
-                    }
+                    existing[outcome] = existing.TryGetValue(outcome, out var current) ? current + count : count;
                 }
             }
         }
