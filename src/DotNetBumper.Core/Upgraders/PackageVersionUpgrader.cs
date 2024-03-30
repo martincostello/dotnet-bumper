@@ -18,7 +18,7 @@ internal sealed partial class PackageVersionUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<PackageVersionUpgrader> logger) : Upgrader(console, environment, options, logger)
 {
-    public override int Order => int.MaxValue; // Packages need to be updated after the TFM so the packages relate to the update
+    public override int Order => int.MaxValue - 1; // Packages need to be updated after the TFM so the packages relate to the update but before C# updates
 
     protected override string Action => "Upgrading NuGet packages";
 

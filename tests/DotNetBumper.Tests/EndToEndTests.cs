@@ -50,8 +50,11 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         fixture.Project.AddGitRepository();
         await fixture.Project.AddGitIgnoreAsync();
+        await fixture.Project.AddEditorConfigAsync();
 
         await fixture.Project.AddSolutionAsync("Project.sln");
+
+        await fixture.Project.AddDirectoryBuildPropsAsync();
         await fixture.Project.AddToolManifestAsync();
 
         string globalJson = await fixture.Project.AddGlobalJsonAsync(testCase.SdkVersion);

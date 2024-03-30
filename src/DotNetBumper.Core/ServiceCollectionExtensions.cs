@@ -70,6 +70,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IUpgrader, AwsLambdaToolsUpgrader>();
         services.AddSingleton<IUpgrader, DockerfileUpgrader>();
+        services.AddSingleton<IUpgrader, DotNetCodeUpgrader>();
         services.AddSingleton<IUpgrader, GlobalJsonUpgrader>();
         services.AddSingleton<IUpgrader, PackageVersionUpgrader>();
         services.AddSingleton<IUpgrader, PowerShellScriptUpgrader>();
