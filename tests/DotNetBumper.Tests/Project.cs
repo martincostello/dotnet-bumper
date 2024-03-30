@@ -106,8 +106,8 @@ internal sealed class Project : IDisposable
 
     public async Task<string> AddToolManifestAsync(string path = ".config/dotnet-tools.json")
     {
+        /*lang=json,strict*/
         var manifest =
-            /*lang=json,strict*/
             """
             {
               "version": 1,
