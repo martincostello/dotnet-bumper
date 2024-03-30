@@ -10,11 +10,11 @@ using Spectre.Console;
 namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal sealed partial class DotNetCodeUpgrader(
+    DotNetProcess dotnet,
     IAnsiConsole console,
     IEnvironment environment,
     BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
-    DotNetProcess dotnet,
     ILogger<DotNetCodeUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
     public override int Order => int.MaxValue; // Run after all other upgraders
