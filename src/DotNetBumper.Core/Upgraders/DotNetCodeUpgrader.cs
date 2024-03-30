@@ -14,7 +14,7 @@ internal sealed partial class DotNetCodeUpgrader(
     IEnvironment environment,
     BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
-    DotNetProcess dotNet,
+    DotNetProcess dotnet,
     ILogger<DotNetCodeUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
     public override int Order => int.MaxValue; // Run after all other upgraders
@@ -90,7 +90,7 @@ internal sealed partial class DotNetCodeUpgrader(
         };
 
         // See https://learn.microsoft.com/dotnet/core/tools/dotnet-format#analyzers
-        var formatResult = await dotNet.RunAsync(
+        var formatResult = await dotnet.RunAsync(
             workingDirectory,
             arguments,
             environmentVariables,
