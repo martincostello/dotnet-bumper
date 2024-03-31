@@ -67,8 +67,6 @@ public partial class ProjectUpgrader(
             return 0;
         }
 
-        logContext.DotNetSdkVersion = upgrade.SdkVersion.ToString();
-
         var name = Path.GetFileNameWithoutExtension(ProjectPath);
 
         console.MarkupLineInterpolated($"Upgrading project [aqua]{name}[/] to .NET [purple]{upgrade.Channel}[/]...");

@@ -68,6 +68,8 @@ internal sealed partial class GlobalJsonUpgrader(
                     currentVersion.ToString(),
                     upgrade.SdkVersion.ToString());
 
+                logContext.DotNetSdkVersion = upgrade.SdkVersion.ToString();
+
                 result = result.Max(ProcessingResult.Success);
             }
         }
