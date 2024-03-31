@@ -23,7 +23,13 @@ internal sealed partial class DotNetCodeUpgrader(
 
     protected override string InitialStatus => "Update .NET code";
 
-    protected override IReadOnlyList<string> Patterns { get; } = ["*.sln", "*.csproj", "*.fsproj", "*.vbproj"];
+    protected override IReadOnlyList<string> Patterns { get; } =
+    [
+        WellKnownFileNames.SolutionFiles,
+        WellKnownFileNames.CSharpProjects,
+        WellKnownFileNames.FSharpProjects,
+        WellKnownFileNames.VisualBasicProjects,
+    ];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
