@@ -105,6 +105,11 @@ jobs:
       with:
         node-version: '20'
 
+    - name: Checkout ${{ github.repository_owner }}/${{ matrix.repo }}
+      uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+      with:
+        repository: "${{ github.repository_owner }}/${{ matrix.repo }}"
+
     - name: Install .NET SDKs
       uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
       with:
@@ -114,6 +119,9 @@ jobs:
           8.0.x
           9.0.x
 
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+
     - name: Install .NET Bumper
       shell: pwsh
       env:
@@ -122,15 +130,7 @@ jobs:
         dotnet tool install --global dotnet-outdated-tool --version ${env:DOTNET_OUTDATED_VERSION}
         dotnet tool install --global MartinCostello.DotNetBumper --add-source ./packages --prerelease
 
-    - name: Checkout ${{ github.repository_owner }}/${{ matrix.repo }}
-      uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
-      with:
-        repository: "${{ github.repository_owner }}/${{ matrix.repo }}"
-
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
-
-    - name: Create .NET Bumper config file if no custom config
+    - name: Generate .NET Bumper config
       id: generate-config
       shell: pwsh
       run: |
