@@ -80,7 +80,7 @@ internal sealed partial class DotNetCodeUpgrader(
             "--severity",
             "warn",
             "--verbosity",
-            "normal",
+            "diagnostic",
         ];
 
         // HACK Ignore CA1515 from .NET 9 as it seems to just break things
