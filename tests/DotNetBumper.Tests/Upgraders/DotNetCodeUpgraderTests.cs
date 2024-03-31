@@ -152,6 +152,45 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.None);
     }
 
+    [Theory]
+    [MemberData(nameof(Channels))]
+    public async Task UpgradeAsync_Does_Not_Fix_Information_Diagnostics(string channel)
+    {
+        // Arrange
+        var upgrade = await GetUpgradeAsync(channel);
+
+        using var fixture = await CreateFixtureAsync(upgrade, severity: "information");
+
+        string code =
+            """
+            namespace Project;
+
+            /// <summary>
+            /// A person.
+            /// </summary>
+            public class Person
+            {
+                /// <summary>Gets or sets the name of the person.</summary>
+                public string Name { get; set; } = string.Empty;
+
+                /// <summary>Truncates the name to the specified length.</summary>
+                /// <param name="length">The length to truncate the name to.</param>
+                /// <returns>The truncated name.</returns>
+                public string TruncateName(int length) => Name.Substring(0, length); // IDE0057
+            }
+            """;
+
+        await fixture.Project.AddFileAsync("src/Project/Person.cs", code);
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.None);
+    }
+
     private static DotNetCodeUpgrader CreateTarget(UpgraderFixture fixture)
     {
         return new(
@@ -163,46 +202,36 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
             fixture.CreateLogger<DotNetCodeUpgrader>());
     }
 
-    private async Task<UpgraderFixture> CreateFixtureAsync(UpgradeInfo upgrade, string? noWarn = null)
+    private async Task<UpgraderFixture> CreateFixtureAsync(
+        UpgradeInfo upgrade,
+        string severity = "warning",
+        string? noWarn = null)
     {
         string editorconfig =
-            """
-            root = true
-            
-            [*]
-            end_of_line = lf
-            indent_size = 4
-            indent_style = space
-            insert_final_newline = true
-            trim_trailing_whitespace = true
-            
-            [*.{cs,vb}]
-            dotnet_analyzer_diagnostic.category-Style.severity = warning
-            
-            [*.cs]
-            csharp_style_expression_bodied_methods = when_on_single_line
-            csharp_style_namespace_declarations = file_scoped
-            """;
-
-        string properties =
-            $"""
-             <Project>
-               <PropertyGroup>
-                 <AnalysisMode>All</AnalysisMode>
-                 <EnableNETAnalyzers>true</EnableNETAnalyzers>
-                 <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-                 <GenerateDocumentationFile>true</GenerateDocumentationFile>
-                 <NoWarn>$(NoWarn);{noWarn}</NoWarn>
-               </PropertyGroup>
-             </Project>
-             """;
+            $$"""
+              root = true
+              
+              [*]
+              end_of_line = lf
+              indent_size = 4
+              indent_style = space
+              insert_final_newline = true
+              trim_trailing_whitespace = true
+              
+              [*.{cs,vb}]
+              dotnet_analyzer_diagnostic.category-Style.severity = {{severity}}
+              
+              [*.cs]
+              csharp_style_expression_bodied_methods = when_on_single_line
+              csharp_style_namespace_declarations = file_scoped
+              """;
 
         var fixture = new UpgraderFixture(outputHelper);
 
         try
         {
             await fixture.Project.AddApplicationProjectAsync([$"net{upgrade.Channel}"]);
-            await fixture.Project.AddDirectoryBuildPropsAsync(properties);
+            await fixture.Project.AddDirectoryBuildPropsAsync(noWarn: noWarn);
             await fixture.Project.AddEditorConfigAsync(editorconfig);
             await fixture.Project.AddGlobalJsonAsync(upgrade.SdkVersion.ToString());
 

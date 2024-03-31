@@ -280,20 +280,25 @@ internal sealed class Project : IDisposable
         await AddFileAsync(".editorconfig", editorconfig);
     }
 
-    public async Task AddDirectoryBuildPropsAsync(string? properties = null)
+    public async Task AddDirectoryBuildPropsAsync(
+        string? noWarn = null,
+        bool treatWarningsAsErrors = false)
     {
-        properties ??=
-            """
-            <Project>
-              <PropertyGroup>
-                <AnalysisMode>All</AnalysisMode>
-                <EnableNETAnalyzers>true</EnableNETAnalyzers>
-                <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-                <GenerateDocumentationFile>true</GenerateDocumentationFile>
-                <NoWarn>$(NoWarn);CA1002;CS419;CS1570;CS1573;CS1574;CS1584;CS1591</NoWarn>
-              </PropertyGroup>
-            </Project>
-            """;
+#pragma warning disable CA1308
+        string properties =
+            $"""
+             <Project>
+               <PropertyGroup>
+                 <AnalysisMode>All</AnalysisMode>
+                 <EnableNETAnalyzers>true</EnableNETAnalyzers>
+                 <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+                 <GenerateDocumentationFile>true</GenerateDocumentationFile>
+                 <NoWarn>$(NoWarn);{noWarn ?? "CA1002;CS419;CS1570;CS1573;CS1574;CS1584;CS1591"}</NoWarn>
+                 <TreatWarningsAsErrors>{treatWarningsAsErrors.ToString().ToLowerInvariant()}</TreatWarningsAsErrors>
+               </PropertyGroup>
+             </Project>
+             """;
+#pragma warning restore CA1308
 
         await AddFileAsync("Directory.Build.props", properties);
     }
