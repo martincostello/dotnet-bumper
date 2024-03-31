@@ -80,7 +80,7 @@ jobs:
       fail-fast: false
       matrix:
         repo:
-          - adventofcode
+          # - adventofcode HACK Disabled due to https://github.com/dotnet/sdk/issues/39909
           - alexa-london-travel
           - alexa-london-travel-site
           - costellobot
