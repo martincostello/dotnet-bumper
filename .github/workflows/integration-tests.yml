@@ -1,0 +1,121 @@
+name: integration-tests
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**/*.gitattributes'
+      - '**/*.gitignore'
+      - '**/*.md'
+  pull_request:
+    branches:
+      - main
+      - dotnet-vnext
+      - dotnet-nightly
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+  DOTNET_MULTILEVEL_LOOKUP: 0
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
+  FORCE_COLOR: 3
+  NUGET_XMLDOC_MODE: skip
+  TERM: xterm
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+
+    - name: Install .NET SDKs
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      with:
+        dotnet-version: |
+          6.0.x
+          7.0.x
+          8.0.x
+          9.0.x
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+
+    - name: Publish NuGet package
+      shell: pwsh
+      run: |
+        dotnet tool restore
+        dotnet pack
+
+    - name: Publish NuGet packages
+      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      with:
+        name: packages
+        path: ./artifacts/package/release
+        if-no-files-found: error
+
+  test:
+    needs: [ package ]
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - martincostello/adventofcode
+          - martincostello/alexa-london-travel
+          - martincostello/alexa-london-travel-site
+          - martincostello/costellobot
+          - martincostello/dependabot-helper
+          - martincostello/dotnet-bumper
+          - martincostello/website
+        upgrade-type:
+          - Lts
+          - Latest
+          - Preview
+
+    steps:
+
+    - name: Download packages
+      uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+      with:
+        name: packages
+        path: ./packages
+
+    - name: Install .NET SDKs
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      with:
+        dotnet-version: |
+          6.0.x
+          7.0.x
+          8.0.x
+          9.0.x
+
+    - name: Install .NET Bumper
+      shell: pwsh
+      run: |
+        dotnet tool install --global MartinCostello.DotNetBumper --add-source ./packages --prerelease
+
+    - name: Checkout ${{ matrix.repo }}
+      uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+      with:
+        repository: ${{ matrix.repo }}
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+
+    - name: Run .NET Bumper
+      shell: pwsh
+      env:
+        DOTNET_BUMPER_UPGRADE_TYPE: ${{ matrix.upgrade-type }}
+        NoWarn: 'CA1515'
+      run: |
+        dotnet bumper . --log-format GitHubActions --test --upgrade-type ${env:DOTNET_BUMPER_UPGRADE_TYPE}
