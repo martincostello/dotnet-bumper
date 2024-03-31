@@ -20,7 +20,7 @@ internal sealed partial class AwsLambdaToolsUpgrader(
 
     protected override string InitialStatus => "Update AWS Lambda Tools";
 
-    protected override IReadOnlyList<string> Patterns => ["aws-lambda-tools-defaults.json"];
+    protected override IReadOnlyList<string> Patterns { get; } = ["aws-lambda-tools-defaults.json"];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,

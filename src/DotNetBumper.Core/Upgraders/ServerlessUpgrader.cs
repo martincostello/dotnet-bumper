@@ -24,7 +24,7 @@ internal sealed partial class ServerlessUpgrader(
 
     protected override string InitialStatus => "Update Serverless runtimes";
 
-    protected override IReadOnlyList<string> Patterns => ["serverless.yml", "serverless.yaml"];
+    protected override IReadOnlyList<string> Patterns { get; } = ["serverless.yml", "serverless.yaml"];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,

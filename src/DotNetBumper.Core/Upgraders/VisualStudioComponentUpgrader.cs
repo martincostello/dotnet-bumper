@@ -20,7 +20,7 @@ internal sealed partial class VisualStudioComponentUpgrader(
 
     protected override string InitialStatus => "Update Visual Studio configuration";
 
-    protected override IReadOnlyList<string> Patterns => [".vsconfig"];
+    protected override IReadOnlyList<string> Patterns { get; } = [".vsconfig"];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,

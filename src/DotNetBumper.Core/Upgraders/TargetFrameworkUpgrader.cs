@@ -20,7 +20,7 @@ internal sealed partial class TargetFrameworkUpgrader(
 
     protected override string InitialStatus => "Update TFMs";
 
-    protected override IReadOnlyList<string> Patterns => ["Directory.Build.props", "*.csproj", "*.fsproj", "*.pubxml"];
+    protected override IReadOnlyList<string> Patterns { get; } = ["Directory.Build.props", "*.csproj", "*.fsproj", "*.pubxml"];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
