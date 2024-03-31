@@ -250,17 +250,5 @@ internal sealed partial class DotNetCodeUpgrader(
             Level = LogLevel.Debug,
             Message = "Fixed diagnostic {DiagnosticId} in {FileName}:{LineNumber}.")]
         public static partial void FixedDiagnostic(ILogger logger, string diagnosticId, string fileName, int lineNumber);
-
-        [LoggerMessage(
-            EventId = 4,
-            Level = LogLevel.Debug,
-            Message = "Failed to register MSBuild defaults.")]
-        public static partial void RegisterMSBuildDefaultsFailed(ILogger logger, Exception exception);
-
-        [LoggerMessage(
-            EventId = 5,
-            Level = LogLevel.Debug,
-            Message = "Failed to determine projects included in the solution file {SolutionFile}.")]
-        public static partial void FailedToDetermineSolutionProjects(ILogger logger, string solutionFile, Exception exception);
     }
 }
