@@ -163,6 +163,12 @@ jobs:
         }
         dotnet bumper $bumperArgs
 
+    - name: Show git diff
+      shell: pwsh
+      run: |
+        git config color.diff always
+        git --no-pager diff
+
   integration-tests:
     needs: [ package, test ]
     if: always() && !cancelled() && !contains(needs.*.result, 'failure')
