@@ -3,7 +3,7 @@
 
 namespace MartinCostello.DotNetBumper;
 
-internal class WellKnownFileNames
+internal static class WellKnownFileNames
 {
     public const string CSharpProjects = "*.csproj";
     public const string FSharpProjects = "*.fsproj";
