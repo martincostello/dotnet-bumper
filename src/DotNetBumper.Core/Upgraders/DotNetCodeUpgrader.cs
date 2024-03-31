@@ -99,6 +99,11 @@ internal sealed partial class DotNetCodeUpgrader(
         Dictionary<string, int> fixes = [];
         ProcessingResult result;
 
+        if (!string.IsNullOrEmpty(formatResult.StandardError))
+        {
+            Log.DotNetFormatErrors(logger, formatResult.StandardError);
+        }
+
         if (formatResult.Success)
         {
             int fixCount = 0;
@@ -195,6 +200,12 @@ internal sealed partial class DotNetCodeUpgrader(
 
         [LoggerMessage(
             EventId = 2,
+            Level = LogLevel.Warning,
+            Message = "dotnet format stderr: {StdErr}")]
+        public static partial void DotNetFormatErrors(ILogger logger, string stderr);
+
+        [LoggerMessage(
+            EventId = 3,
             Level = LogLevel.Debug,
             Message = "Fixed diagnostic {DiagnosticId} in {FileName}:{LineNumber}.")]
         public static partial void FixedDiagnostic(ILogger logger, string diagnosticId, string fileName, int lineNumber);
