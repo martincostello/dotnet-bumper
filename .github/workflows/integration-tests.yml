@@ -162,3 +162,10 @@ jobs:
           $bumperArgs += ${env:DOTNET_BUMPER_CONFIG}
         }
         dotnet bumper $bumperArgs
+
+  integration-tests:
+    needs: [ package, test ]
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo 'Integration tests successful ✅'
