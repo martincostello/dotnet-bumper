@@ -33,6 +33,8 @@ internal sealed partial class DotNetCodeUpgrader(
     {
         Log.UpgradingDotNetCode(Logger);
 
+        string sdkVersion = upgrade.SdkVersion.ToString();
+
         var diagnostics = new Dictionary<string, int>();
         var result = ProcessingResult.None;
 
@@ -41,7 +43,7 @@ internal sealed partial class DotNetCodeUpgrader(
             var relativePath = PathHelpers.Normalize(RelativeName(fileName));
             context.Status = StatusMessage($"Updating .NET code for {relativePath}...");
 
-            (var fileResult, var fixes) = await ApplyFixesAsync(fileName, cancellationToken);
+            (var fileResult, var fixes) = await ApplyFixesAsync(fileName, sdkVersion, cancellationToken);
 
             foreach ((var diagnosticId, var count) in fixes)
             {
@@ -66,6 +68,7 @@ internal sealed partial class DotNetCodeUpgrader(
 
     private async Task<(ProcessingResult Result, Dictionary<string, int> Fixes)> ApplyFixesAsync(
         string projectOrSolution,
+        string sdkVersion,
         CancellationToken cancellationToken)
     {
         var workingDirectory = Path.GetDirectoryName(projectOrSolution)!;
@@ -88,6 +91,31 @@ internal sealed partial class DotNetCodeUpgrader(
         {
             ["NoWarn"] = "CA1515",
         };
+
+        // HACK dotnet format seems to have issues resolving where the .NET SDK is installed with .NET 8
+        const string MSBuildSDKsPath = "MSBuildSDKsPath";
+        var msbuildSdksPath = Environment.GetEnvironmentVariable(MSBuildSDKsPath);
+
+        if (string.IsNullOrEmpty(msbuildSdksPath))
+        {
+            var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+
+            if (string.IsNullOrEmpty(dotnetRoot))
+            {
+                dotnetRoot = Path.Combine(
+                    Environment.GetFolderPath(OperatingSystem.IsWindows() ? Environment.SpecialFolder.ProgramFiles : Environment.SpecialFolder.CommonApplicationData),
+                    "dotnet");
+            }
+
+            msbuildSdksPath = Path.Combine(
+                dotnetRoot,
+                "sdk",
+                sdkVersion,
+                "Sdks");
+        }
+
+        // This has to be specifically set because DotNetProcess will otherwise unset it for other reasons
+        environmentVariables[MSBuildSDKsPath] = msbuildSdksPath;
 
         // See https://learn.microsoft.com/dotnet/core/tools/dotnet-format#analyzers
         var formatResult = await dotnet.RunAsync(

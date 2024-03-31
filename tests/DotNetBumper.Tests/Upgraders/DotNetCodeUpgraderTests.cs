@@ -28,10 +28,17 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
             """
             namespace Project;
 
+            /// <summary>
+            /// A person.
+            /// </summary>
             public class Person
             {
+                /// <summary>Gets or sets the name of the person.</summary>
                 public string Name { get; set; } = string.Empty;
 
+                /// <summary>Truncates the name to the specified length.</summary>
+                /// <param name="length">The length to truncate the name to.</param>
+                /// <returns>The truncated name.</returns>
                 public string TruncateName(int length) => Name.Substring(0, length); // IDE0057
             }
             """;
