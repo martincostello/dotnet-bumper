@@ -125,10 +125,40 @@ jobs:
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
 
+    - name: Create .NET Bumper config file if no custom config
+      id: generate-config
+      shell: pwsh
+      run: |
+        $configFile = ""
+        $hasConfigFile = ((Test-Path -Path ".dotnet-bumper.json") -Or (Test-Path -Path ".dotnet-bumper.yml")) -Or (Test-Path -Path ".dotnet-bumper.yaml")
+        if (-Not $hasConfigFile) {
+          $tempFile = [System.IO.Path]::GetTempFileName()
+          $config = @{
+            noWarn = @(
+              'CA1515'
+            )
+          }
+          $config | ConvertTo-Json | Out-File -FilePath $tempFile | Out-Null
+        }
+        "dotnet-bumper-config=${configFile}" >> $env:GITHUB_OUTPUT
+
     - name: Run .NET Bumper
       shell: pwsh
       env:
+        DOTNET_BUMPER_CONFIG: ${{ steps.generate-config.outputs.dotnet-bumper-config }}
         DOTNET_BUMPER_UPGRADE_TYPE: ${{ matrix.upgrade-type }}
         NoWarn: 'CA1515'
       run: |
-        dotnet bumper . --log-format GitHubActions --test --upgrade-type ${env:DOTNET_BUMPER_UPGRADE_TYPE}
+        $bumperArgs = @(
+          ".",
+          "--log-format",
+          "GitHubActions",
+          "--test",
+          "--upgrade-type",
+          ${env:DOTNET_BUMPER_UPGRADE_TYPE}
+        )
+        if (-Not [string]::IsNullOrEmpty(${env:DOTNET_BUMPER_CONFIG})) {
+          $bumperArgs += "--configuration-file"
+          $bumperArgs += ${env:DOTNET_BUMPER_CONFIG}
+        }
+        dotnet bumper $bumperArgs
