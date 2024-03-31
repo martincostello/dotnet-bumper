@@ -15,6 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBumper.Tests", "tests
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4CFD8621-B558-4A35-8780-E56A3C5F29CB}"
 	ProjectSection(SolutionItems) = preProject
+		.dotnet-bumper.json = .dotnet-bumper.json
 		.editorconfig = .editorconfig
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
