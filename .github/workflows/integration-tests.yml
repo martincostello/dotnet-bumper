@@ -177,7 +177,7 @@ jobs:
     - name: Run tests
       shell: pwsh
       run: |
-        dotnet test
+        dotnet test --logger "GitHubActions;report-warnings=false"
 
   integration-tests:
     needs: [ package, test ]
