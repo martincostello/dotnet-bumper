@@ -3,6 +3,8 @@
 
 using System.Text.Json;
 using MartinCostello.DotNetBumper.Logging;
+using Microsoft.Build.Locator;
+using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
@@ -39,6 +41,8 @@ internal sealed partial class DotNetCodeUpgrader(
     {
         Log.UpgradingDotNetCode(Logger);
 
+        fileNames = await TryReduceAnalysisAsync(fileNames, cancellationToken);
+
         string sdkVersion = upgrade.SdkVersion.ToString();
 
         var diagnostics = new Dictionary<string, int>();
@@ -70,6 +74,21 @@ internal sealed partial class DotNetCodeUpgrader(
         }
 
         return result;
+    }
+
+    private static void EnsureMSBuildConfigured(ILogger logger)
+    {
+        if (!MSBuildLocator.IsRegistered && MSBuildLocator.CanRegister)
+        {
+            try
+            {
+                MSBuildLocator.RegisterDefaults();
+            }
+            catch (Exception ex)
+            {
+                Log.RegisterMSBuildDefaultsFailed(logger, ex);
+            }
+        }
     }
 
     private static Dictionary<string, string?> GetFormatEnvironment(string sdkVersion)
@@ -228,6 +247,44 @@ internal sealed partial class DotNetCodeUpgrader(
         return fixes;
     }
 
+    private async Task<IReadOnlyList<string>> TryReduceAnalysisAsync(
+        IReadOnlyList<string> fileNames,
+        CancellationToken cancellationToken)
+    {
+        var solutionFiles = fileNames.Where((p) => Path.GetExtension(p) is ".sln").ToList();
+        var projectFiles = fileNames.Where((p) => Path.GetExtension(p) is not ".sln").ToList();
+
+        if (solutionFiles.Count is 0 || projectFiles.Count is 0)
+        {
+            return fileNames;
+        }
+
+        EnsureMSBuildConfigured(Logger);
+
+        foreach (var solutionFile in solutionFiles)
+        {
+            try
+            {
+                using var workspace = MSBuildWorkspace.Create();
+                var solution = await workspace.OpenSolutionAsync(solutionFile, cancellationToken: cancellationToken);
+
+                foreach (var project in solution.Projects)
+                {
+                    if (project.FilePath is { Length: > 0 } projectFile)
+                    {
+                        projectFiles.Remove(projectFile);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.FailedToDetermineSolutionProjects(Logger, solutionFile, ex);
+            }
+        }
+
+        return [.. solutionFiles, .. projectFiles];
+    }
+
     private record struct DiagnosticFix(string FilePath, string DiagnosticId, int LineNumber);
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -250,5 +307,17 @@ internal sealed partial class DotNetCodeUpgrader(
             Level = LogLevel.Debug,
             Message = "Fixed diagnostic {DiagnosticId} in {FileName}:{LineNumber}.")]
         public static partial void FixedDiagnostic(ILogger logger, string diagnosticId, string fileName, int lineNumber);
+
+        [LoggerMessage(
+            EventId = 4,
+            Level = LogLevel.Debug,
+            Message = "Failed to register MSBuild defaults.")]
+        public static partial void RegisterMSBuildDefaultsFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(
+            EventId = 5,
+            Level = LogLevel.Debug,
+            Message = "Failed to determine projects included in the solution file {SolutionFile}.")]
+        public static partial void FailedToDetermineSolutionProjects(ILogger logger, string solutionFile, Exception exception);
     }
 }
