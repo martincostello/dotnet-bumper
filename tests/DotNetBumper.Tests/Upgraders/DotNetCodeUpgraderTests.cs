@@ -60,9 +60,9 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
             <Project>
               <PropertyGroup>
                 <AnalysisMode>All</AnalysisMode>
-                <EnableGenerateDocumentationFile>true</EnableGenerateDocumentationFile>
                 <EnableNETAnalyzers>true</EnableNETAnalyzers>
                 <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+                <GenerateDocumentationFile>true</GenerateDocumentationFile>
               </PropertyGroup>
             </Project>
             """;
