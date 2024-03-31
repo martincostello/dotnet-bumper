@@ -22,6 +22,7 @@ internal static class ProjectHelpers
         {
             projects.AddRange(Directory.GetFiles(path, WellKnownFileNames.CSharpProjects, searchOption));
             projects.AddRange(Directory.GetFiles(path, WellKnownFileNames.FSharpProjects, searchOption));
+            projects.AddRange(Directory.GetFiles(path, WellKnownFileNames.VisualBasicProjects, searchOption));
         }
 
         return projects
