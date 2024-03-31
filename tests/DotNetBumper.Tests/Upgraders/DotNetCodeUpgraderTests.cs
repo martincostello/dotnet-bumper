@@ -159,7 +159,7 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
 
-        using var fixture = await CreateFixtureAsync(upgrade, severity: "information");
+        using var fixture = await CreateFixtureAsync(upgrade, severity: "info");
 
         string code =
             """
