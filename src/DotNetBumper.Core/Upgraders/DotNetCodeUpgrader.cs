@@ -66,6 +66,42 @@ internal sealed partial class DotNetCodeUpgrader(
         return result;
     }
 
+    private static Dictionary<string, string?> GetFormatEnvironment(string sdkVersion)
+    {
+        var environment = new Dictionary<string, string?>()
+        {
+            ["NoWarn"] = "CA1515", // HACK Ignore CA1515 from .NET 9 as it seems to just break things
+        };
+
+        // HACK dotnet format seems to have issues resolving where the .NET SDK is installed
+        // with .NET 8. If MSBuildSDKsPath is set, it needs to be overridden otherwise it may
+        // point to an SDK version that is lower that the one we are upgrading to.
+        const string MSBuildSDKsPath = "MSBuildSDKsPath";
+
+        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+
+        if (string.IsNullOrEmpty(dotnetRoot))
+        {
+            dotnetRoot = Path.Combine(
+                Environment.GetFolderPath(
+                    OperatingSystem.IsWindows() ?
+                    Environment.SpecialFolder.ProgramFiles :
+                    Environment.SpecialFolder.CommonApplicationData),
+                "dotnet");
+        }
+
+        var msbuildSdksPath = Path.Combine(
+            dotnetRoot,
+            "sdk",
+            sdkVersion,
+            "Sdks");
+
+        // This has to be specifically set because DotNetProcess will otherwise unset it for other reasons
+        environment[MSBuildSDKsPath] = msbuildSdksPath;
+
+        return environment;
+    }
+
     private async Task<(ProcessingResult Result, Dictionary<string, int> Fixes)> ApplyFixesAsync(
         string projectOrSolution,
         string sdkVersion,
@@ -86,36 +122,7 @@ internal sealed partial class DotNetCodeUpgrader(
             "diagnostic",
         ];
 
-        // HACK Ignore CA1515 from .NET 9 as it seems to just break things
-        var environmentVariables = new Dictionary<string, string?>()
-        {
-            ["NoWarn"] = "CA1515",
-        };
-
-        // HACK dotnet format seems to have issues resolving where the .NET SDK is installed with .NET 8
-        const string MSBuildSDKsPath = "MSBuildSDKsPath";
-        var msbuildSdksPath = Environment.GetEnvironmentVariable(MSBuildSDKsPath);
-
-        if (string.IsNullOrEmpty(msbuildSdksPath))
-        {
-            var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-
-            if (string.IsNullOrEmpty(dotnetRoot))
-            {
-                dotnetRoot = Path.Combine(
-                    Environment.GetFolderPath(OperatingSystem.IsWindows() ? Environment.SpecialFolder.ProgramFiles : Environment.SpecialFolder.CommonApplicationData),
-                    "dotnet");
-            }
-
-            msbuildSdksPath = Path.Combine(
-                dotnetRoot,
-                "sdk",
-                sdkVersion,
-                "Sdks");
-        }
-
-        // This has to be specifically set because DotNetProcess will otherwise unset it for other reasons
-        environmentVariables[MSBuildSDKsPath] = msbuildSdksPath;
+        var environmentVariables = GetFormatEnvironment(sdkVersion);
 
         // See https://learn.microsoft.com/dotnet/core/tools/dotnet-format#analyzers
         var formatResult = await dotnet.RunAsync(
