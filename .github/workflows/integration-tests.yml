@@ -100,6 +100,21 @@ jobs:
         name: packages
         path: ./packages
 
+    - name: Setup arm64 support for native AoT
+      if: runner.os == 'Linux' && matrix.repo == 'alexa-london-travel'
+      shell: bash
+      run: |
+        sudo dpkg --add-architecture arm64
+        sudo bash -c 'cat > /etc/apt/sources.list.d/arm64.list <<EOF
+        deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted
+        deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted
+        deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ jammy-backports main restricted universe multiverse
+        EOF'
+        sudo sed -i -e 's/deb http/deb [arch=amd64] http/g' /etc/apt/sources.list
+        sudo sed -i -e 's/deb mirror/deb [arch=amd64] mirror/g' /etc/apt/sources.list
+        sudo apt update
+        sudo apt install --yes clang llvm binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu zlib1g-dev:arm64
+
     - name: Install .NET SDKs
       uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
       with:
