@@ -289,7 +289,8 @@ internal sealed class Project : IDisposable
                 <AnalysisMode>All</AnalysisMode>
                 <EnableNETAnalyzers>true</EnableNETAnalyzers>
                 <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-                <NoWarn>$(NoWarn);CA1002</NoWarn>
+                <GenerateDocumentationFile>true</GenerateDocumentationFile>
+                <NoWarn>$(NoWarn);CA1002;CS419;CS1570;CS1573;CS1574;CS1584;CS1591</NoWarn>
               </PropertyGroup>
             </Project>
             """;
