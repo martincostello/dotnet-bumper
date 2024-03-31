@@ -32,6 +32,9 @@ jobs:
   package:
     runs-on: ubuntu-latest
 
+    outputs:
+      dotnet-outdated-version: ${{ steps.get-dotnet-outdated-version.outputs.dotnet-outdated-version }}
+
     steps:
 
     - name: Checkout code
@@ -61,6 +64,13 @@ jobs:
         name: packages
         path: ./artifacts/package/release
         if-no-files-found: error
+
+    - name: Get dotnet-outdated version
+      id: get-dotnet-outdated-version
+      shell: pwsh
+      run: |
+        $dotnetOutdatedVersion = (Get-Content "./.config/dotnet-tools.json" | Out-String | ConvertFrom-Json).tools.'dotnet-outdated-tool'.version
+        "dotnet-outdated-version=${dotnetOutdatedVersion}" >> $env:GITHUB_OUTPUT
 
   test:
     needs: [ package ]
@@ -101,7 +111,10 @@ jobs:
 
     - name: Install .NET Bumper
       shell: pwsh
+      env:
+        DOTNET_OUTDATED_VERSION: ${{ needs.package.outputs.dotnet-outdated-version }}
       run: |
+        dotnet tool install --global dotnet-outdated-tool --version ${env:DOTNET_OUTDATED_VERSION}
         dotnet tool install --global MartinCostello.DotNetBumper --add-source ./packages --prerelease
 
     - name: Checkout ${{ matrix.repo }}
