@@ -24,6 +24,8 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
 
+        using var fixture = await CreateFixtureAsync(upgrade);
+
         string code =
             """
             namespace Project;
@@ -43,6 +45,126 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
             }
             """;
 
+        await fixture.Project.AddFileAsync("src/Project/Person.cs", code);
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.Success);
+        fixture.LogContext.Changelog.ShouldContain("Fix IDE0057 warning");
+
+        // Act
+        actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [MemberData(nameof(Channels))]
+    public async Task UpgradeAsync_Applies_Code_Fixes(string channel)
+    {
+        // Arrange
+        var upgrade = await GetUpgradeAsync(channel);
+
+        using var fixture = await CreateFixtureAsync(upgrade);
+
+        string code =
+            """
+            namespace Project;
+
+            /// <summary>
+            /// A person.
+            /// </summary>
+            public class Person
+            {
+                /// <summary>Gets or sets the name of the person.</summary>
+                public string Name { get; set; } = string.Empty;
+
+                /// <summary>Truncates the name to the specified length.</summary>
+                /// <param name="length">The length to truncate the name to.</param>
+                /// <returns>The truncated name.</returns>
+                public string TruncateName(int length) => Name.Substring(0, length); // IDE0057
+
+                /// <summary>Gets the name's 3 character prefix.</summary>
+                /// <returns>The prefix of the name.</returns>
+                public string NamePrefix() => Name.Substring(0, 3); // IDE0057
+            }
+            """;
+
+        await fixture.Project.AddFileAsync("src/Project/Person.cs", code);
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.Success);
+        fixture.LogContext.Changelog.ShouldContain("Fix IDE0057 warnings");
+
+        // Act
+        actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [MemberData(nameof(Channels))]
+    public async Task UpgradeAsync_Honors_User_Project_Settings(string channel)
+    {
+        // Arrange
+        var upgrade = await GetUpgradeAsync(channel);
+
+        using var fixture = await CreateFixtureAsync(upgrade, noWarn: "IDE0057");
+
+        string code =
+            """
+            namespace Project;
+
+            /// <summary>
+            /// A person.
+            /// </summary>
+            public class Person
+            {
+                /// <summary>Gets or sets the name of the person.</summary>
+                public string Name { get; set; } = string.Empty;
+
+                /// <summary>Truncates the name to the specified length.</summary>
+                /// <param name="length">The length to truncate the name to.</param>
+                /// <returns>The truncated name.</returns>
+                public string TruncateName(int length) => Name.Substring(0, length); // IDE0057
+            }
+            """;
+
+        await fixture.Project.AddFileAsync("src/Project/Person.cs", code);
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.None);
+    }
+
+    private static DotNetCodeUpgrader CreateTarget(UpgraderFixture fixture)
+    {
+        return new(
+            new(fixture.CreateLogger<DotNetProcess>()),
+            fixture.Console,
+            fixture.Environment,
+            fixture.LogContext,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<DotNetCodeUpgrader>());
+    }
+
+    private async Task<UpgraderFixture> CreateFixtureAsync(UpgradeInfo upgrade, string? noWarn = null)
+    {
         string editorconfig =
             """
             root = true
@@ -63,50 +185,34 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
             """;
 
         string properties =
-            """
-            <Project>
-              <PropertyGroup>
-                <AnalysisMode>All</AnalysisMode>
-                <EnableNETAnalyzers>true</EnableNETAnalyzers>
-                <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-                <GenerateDocumentationFile>true</GenerateDocumentationFile>
-              </PropertyGroup>
-            </Project>
-            """;
+            $"""
+             <Project>
+               <PropertyGroup>
+                 <AnalysisMode>All</AnalysisMode>
+                 <EnableNETAnalyzers>true</EnableNETAnalyzers>
+                 <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+                 <GenerateDocumentationFile>true</GenerateDocumentationFile>
+                 <NoWarn>$(NoWarn);{noWarn}</NoWarn>
+               </PropertyGroup>
+             </Project>
+             """;
 
-        using var fixture = new UpgraderFixture(outputHelper);
+        var fixture = new UpgraderFixture(outputHelper);
 
-        await fixture.Project.AddApplicationProjectAsync([$"net{channel}"]);
-        await fixture.Project.AddDirectoryBuildPropsAsync(properties);
-        await fixture.Project.AddEditorConfigAsync(editorconfig);
-        await fixture.Project.AddFileAsync("src/Project/Person.cs", code);
-        await fixture.Project.AddGlobalJsonAsync(upgrade.SdkVersion.ToString());
+        try
+        {
+            await fixture.Project.AddApplicationProjectAsync([$"net{upgrade.Channel}"]);
+            await fixture.Project.AddDirectoryBuildPropsAsync(properties);
+            await fixture.Project.AddEditorConfigAsync(editorconfig);
+            await fixture.Project.AddGlobalJsonAsync(upgrade.SdkVersion.ToString());
 
-        var target = CreateTarget(fixture);
-
-        // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.Success);
-        fixture.LogContext.Changelog.ShouldContain("Fix IDE0057 warning");
-
-        // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.None);
-    }
-
-    private static DotNetCodeUpgrader CreateTarget(UpgraderFixture fixture)
-    {
-        return new(
-            new(fixture.CreateLogger<DotNetProcess>()),
-            fixture.Console,
-            fixture.Environment,
-            fixture.LogContext,
-            fixture.CreateOptions(),
-            fixture.CreateLogger<DotNetCodeUpgrader>());
+            return fixture;
+        }
+        catch (Exception)
+        {
+            fixture.Dispose();
+            throw;
+        }
     }
 
     private async Task<UpgradeInfo> GetUpgradeAsync(string channel)
