@@ -174,11 +174,6 @@ jobs:
         git config color.diff always
         git --no-pager diff
 
-    - name: Run tests
-      shell: pwsh
-      run: |
-        dotnet test --logger "GitHubActions;report-warnings=false"
-
   integration-tests:
     needs: [ package, test ]
     if: always() && !cancelled() && !contains(needs.*.result, 'failure')
