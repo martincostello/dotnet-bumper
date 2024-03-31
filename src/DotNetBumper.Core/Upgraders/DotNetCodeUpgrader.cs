@@ -116,6 +116,7 @@ internal sealed partial class DotNetCodeUpgrader(
         var workingDirectory = Path.GetDirectoryName(projectOrSolution)!;
         using var tempDirectory = new TemporaryDirectory();
 
+        // See https://learn.microsoft.com/dotnet/core/tools/dotnet-format#analyzers
         string[] arguments =
         [
             "format",
@@ -130,7 +131,6 @@ internal sealed partial class DotNetCodeUpgrader(
 
         var environmentVariables = GetFormatEnvironment(sdkVersion);
 
-        // See https://learn.microsoft.com/dotnet/core/tools/dotnet-format#analyzers
         var formatResult = await dotnet.RunAsync(
             workingDirectory,
             arguments,
