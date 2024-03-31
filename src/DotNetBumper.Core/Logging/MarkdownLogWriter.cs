@@ -24,6 +24,11 @@ internal class MarkdownLogWriter(string fileName) : FileLogWriter(fileName)
 
             await writer.WriteLineAsync();
         }
+        else if (context.Result is nameof(ProcessingResult.None))
+        {
+            await writer.WriteLineAsync("The project upgrade did not result in any changes being made.");
+            await writer.WriteLineAsync();
+        }
         else if (context.DotNetSdkVersion is not null)
         {
             await writer.WriteLineAsync($"Project upgraded to .NET SDK `{context.DotNetSdkVersion}`.");
