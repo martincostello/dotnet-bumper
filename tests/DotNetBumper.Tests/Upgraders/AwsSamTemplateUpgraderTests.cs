@@ -142,7 +142,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
     [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.Preview)]
     [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.GoLive)]
-    public async Task UpgradeAsync_Warns_If_Channel_Unsupported(
+    public async Task UpgradeAsync_Warns_If_Channel_Unsupported_Json(
         string channel,
         DotNetReleaseType releaseType,
         DotNetSupportPhase supportPhase)
@@ -170,7 +170,73 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
               "profile": "alexa-london-travel",
               "region": "eu-west-1",
               "configuration": "Release",
-              "template": "../../my-template.yml",
+              "template": "../../my-template.json",
+            }
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        await fixture.Project.AddFileAsync("src/Project/aws-lambda-tools-defaults.json", toolsDefaults);
+        string templateFile = await fixture.Project.AddFileAsync("my-template.json", template);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse(channel),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = releaseType,
+            SdkVersion = new($"{channel}.100"),
+            SupportPhase = supportPhase,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Warning);
+
+        string actualContent = await File.ReadAllTextAsync(templateFile);
+        actualContent.NormalizeLineEndings().Trim().ShouldBe(template.NormalizeLineEndings().Trim());
+    }
+
+    [Theory]
+    [InlineData("7.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
+    [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Preview)]
+    [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.GoLive)]
+    [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
+    [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.Preview)]
+    [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.GoLive)]
+    public async Task UpgradeAsync_Warns_If_Channel_Unsupported_Yaml(
+        string channel,
+        DotNetReleaseType releaseType,
+        DotNetSupportPhase supportPhase)
+    {
+        // Arrange
+        string template =
+            """
+            AWSTemplateFormatVersion: '2010-09-09'
+            Globals:
+              Function:
+                Runtime: dotnet6
+            Resources:
+              MyFunction:
+                Type: AWS::Serverless::Function
+                Properties:
+                  Handler: MyFunction
+                  Runtime: dotnet6
+            """;
+
+        string toolsDefaults =
+            """
+            {
+              "profile": "alexa-london-travel",
+              "region": "eu-west-1",
+              "configuration": "Release",
+              "template": "my-template.yml",
             }
             """;
 
@@ -382,6 +448,93 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
         await fixture.Project.AddFileAsync(".aws-sam/template.yaml", invalidYaml);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.201"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.None);
+        fixture.LogContext.Changelog.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Ignores_Json_That_Unknown_Template_Version()
+    {
+        // Arrange
+        string invalidYaml =
+            """
+            {
+              "AWSTemplateFormatVersion": "2024-04-01",
+              "Globals": {
+                "Function": {
+                  "Runtime": "dotnet6"
+                }
+              },
+              "Resources": {
+                "MyFunction": {
+                  "Type": "AWS::Serverless::Function",
+                  "Properties": {
+                    "Handler": "MyFunction",
+                    "Runtime": "dotnet6"
+                  }
+                }
+              }
+            }
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+        await fixture.Project.AddFileAsync("template.json", invalidYaml);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.201"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.None);
+        fixture.LogContext.Changelog.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Ignores_Yaml_That_Unknown_Template_Version()
+    {
+        // Arrange
+        string invalidYaml =
+            """
+            AWSTemplateFormatVersion: '2024-04-01'
+            Globals:
+              Function:
+                Runtime: dotnet6
+            Resources:
+              MyFunction:
+                Type: AWS::Serverless::Function
+                Properties:
+                  Handler: MyFunction
+                  Runtime: dotnet6
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+        await fixture.Project.AddFileAsync("template.yml", invalidYaml);
 
         var upgrade = new UpgradeInfo()
         {
