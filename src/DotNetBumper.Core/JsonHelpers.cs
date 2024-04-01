@@ -21,4 +21,45 @@ internal static class JsonHelpers
         root = JsonNode.Parse(stream, documentOptions: DocumentOptions) as JsonObject;
         return root is not null;
     }
+
+    public static bool UpdateStringNodes<T>(JsonObject root, T state, Func<JsonValue, T, bool> processValue)
+    {
+        return Visit(root, state, processValue);
+
+        static bool Visit(JsonObject node, T state, Func<JsonValue, T, bool> processValue)
+        {
+            bool edited = false;
+
+            foreach (var property in node.ToArray())
+            {
+                if (property.Value is JsonValue value)
+                {
+                    if (value.GetValueKind() is JsonValueKind.String)
+                    {
+                        edited |= processValue(value, state);
+                    }
+                }
+                else if (property.Value is JsonArray array)
+                {
+                    foreach (var item in array.ToArray())
+                    {
+                        if (item is JsonObject obj)
+                        {
+                            edited |= Visit(obj, state, processValue);
+                        }
+                        else if (item is JsonValue arrayValue && arrayValue.GetValueKind() is JsonValueKind.String)
+                        {
+                            edited |= processValue(arrayValue, state);
+                        }
+                    }
+                }
+                else if (property.Value is JsonObject obj)
+                {
+                    edited |= Visit(obj, state, processValue);
+                }
+            }
+
+            return edited;
+        }
+    }
 }

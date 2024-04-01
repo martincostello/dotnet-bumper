@@ -9,7 +9,8 @@ internal sealed partial class AwsSamTemplateUpgrader
 {
     private abstract class SamTemplate(string fileName)
     {
-        protected const string AWSTemplateFormatVersion = "AWSTemplateFormatVersion";
+        protected const string FormatVersionProperty = "AWSTemplateFormatVersion";
+        protected const string RuntimeProperty = "Runtime";
 
         public string FileName { get; } = fileName;
 

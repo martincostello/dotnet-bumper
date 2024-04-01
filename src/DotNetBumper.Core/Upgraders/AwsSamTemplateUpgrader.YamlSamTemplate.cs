@@ -31,7 +31,7 @@ internal sealed partial class AwsSamTemplateUpgrader
             return false;
 
             static bool IsAwsTemplate(KeyValuePair<YamlNode, YamlNode> pair) =>
-                pair.Key is YamlScalarNode key && key.Value is AWSTemplateFormatVersion &&
+                pair.Key is YamlScalarNode key && key.Value is FormatVersionProperty &&
                 pair.Value is YamlScalarNode value && AWSTemplateFormatVersions.Contains(value.Value, StringComparer.Ordinal);
         }
 
@@ -41,7 +41,7 @@ internal sealed partial class AwsSamTemplateUpgrader
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var finder = new YamlRuntimeFinder("Runtime", upgrade.Channel);
+            var finder = new YamlRuntimeFinder(RuntimeProperty, upgrade.Channel);
             Template.Accept(finder);
 
             if (finder.LineIndexes.Count is 0)
