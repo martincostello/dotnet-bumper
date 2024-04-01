@@ -89,7 +89,7 @@ internal sealed partial class ServerlessUpgrader(
 
             context.Status = StatusMessage($"Updating {name}...");
 
-            await UpdateRuntimesAsync(path, runtime, finder, cancellationToken);
+            await UpdateRuntimesAsync(path, runtime, finder, Logger, cancellationToken);
 
             result = ProcessingResult.Success;
         }

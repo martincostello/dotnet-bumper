@@ -6,7 +6,6 @@ using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
-using YamlDotNet.RepresentationModel;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
@@ -21,7 +20,13 @@ internal sealed partial class AwsSamTemplateUpgrader(
 
     protected override string InitialStatus => "Update AWS SAM templates";
 
-    protected override IReadOnlyList<string> Patterns { get; } = [WellKnownFileNames.AwsLambdaToolsDefaults, "*.yml", "*.yaml"];
+    protected override IReadOnlyList<string> Patterns { get; } =
+    [
+        WellKnownFileNames.AwsLambdaToolsDefaults,
+        "*.json",
+        "*.yml",
+        "*.yaml"
+    ];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
@@ -64,27 +69,6 @@ internal sealed partial class AwsSamTemplateUpgrader(
         }
 
         return result;
-    }
-
-    private static bool IsSamTemplate(YamlStream yaml)
-    {
-        foreach (var document in yaml.Documents)
-        {
-            if (document.RootNode is not YamlMappingNode mapping)
-            {
-                continue;
-            }
-
-            if (mapping.Children.Any(IsAwsTemplate))
-            {
-                return true;
-            }
-        }
-
-        return false;
-
-        static bool IsAwsTemplate(KeyValuePair<YamlNode, YamlNode> pair)
-            => pair.Key is YamlScalarNode scalar && scalar.Value is "AWSTemplateFormatVersion";
     }
 
     private List<string> GetTemplatePaths(IReadOnlyList<string> filePaths)
@@ -154,47 +138,62 @@ internal sealed partial class AwsSamTemplateUpgrader(
 
         context.Status = StatusMessage($"Parsing {name}...");
 
-        if (!TryParseSamTemplate(path, out var template) || !IsSamTemplate(template))
+        if (!TryParseSamTemplate(path, out var template))
         {
             return (ProcessingResult.Warning, false);
         }
 
-        var finder = new YamlRuntimeFinder("Runtime", upgrade.Channel);
-        template.Accept(finder);
-
-        var result = ProcessingResult.None;
-
-        if (finder.LineIndexes.Count > 0)
-        {
-            if (runtime is null)
-            {
-                return (ProcessingResult.Warning, true);
-            }
-
-            context.Status = StatusMessage($"Updating {name}...");
-
-            await UpdateRuntimesAsync(path, runtime, finder, cancellationToken);
-
-            result = ProcessingResult.Success;
-        }
-
-        return (result, false);
+        context.Status = StatusMessage($"Updating {name}...");
+        return await template.TryUpgradeAsync(runtime, upgrade, logger, cancellationToken);
     }
 
     private bool TryParseSamTemplate(
         string fileName,
-        [NotNullWhen(true)] out YamlStream? template)
+        [NotNullWhen(true)] out SamTemplate? template)
     {
+        return Path.GetExtension(fileName) switch
+        {
+            ".json" => TryParseSamJsonTemplate(fileName, out template),
+            _ => TryParseSamYamlTemplate(fileName, out template),
+        };
+    }
+
+    private bool TryParseSamJsonTemplate(
+        string fileName,
+        [NotNullWhen(true)] out SamTemplate? template)
+    {
+        template = null;
+
+        if (!TryLoadJsonObject(fileName, out var document))
+        {
+            return false;
+        }
+
+        template = new JsonSamTemplate(fileName, document);
+        return template.IsValid();
+    }
+
+    private bool TryParseSamYamlTemplate(
+        string fileName,
+        [NotNullWhen(true)] out SamTemplate? template)
+    {
+        template = null;
+
         try
         {
-            template = YamlHelpers.ParseFile(fileName);
-            return template is not null;
+            var stream = YamlHelpers.ParseFile(fileName);
+
+            if (stream is null)
+            {
+                return false;
+            }
+
+            template = new YamlSamTemplate(fileName, stream);
+            return template.IsValid();
         }
         catch (Exception ex)
         {
-            Log.ParseAwsSamTemplateFailed(logger, fileName, ex);
-
-            template = null;
+            Log.ParseTemplateYamlFailed(logger, fileName, ex);
             return false;
         }
     }
@@ -211,8 +210,8 @@ internal sealed partial class AwsSamTemplateUpgrader(
         [LoggerMessage(
             EventId = 5,
             Level = LogLevel.Warning,
-            Message = "Unable to parse AWS SAM template file {FileName}.")]
-        public static partial void ParseAwsSamTemplateFailed(
+            Message = "Unable to parse AWS SAM YAML template file {FileName}.")]
+        public static partial void ParseTemplateYamlFailed(
             ILogger logger,
             string fileName,
             Exception exception);

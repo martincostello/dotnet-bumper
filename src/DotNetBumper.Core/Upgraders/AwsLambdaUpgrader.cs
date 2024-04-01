@@ -57,36 +57,11 @@ internal abstract partial class AwsLambdaUpgrader(
         return null;
     }
 
-    protected void LogUnsupportedRuntime(UpgradeInfo upgrade)
-    {
-        Console.WriteUnsupportedLambdaRuntimeWarning(upgrade);
-        Log.LambdaRuntimeNotSupported(Logger, upgrade.Channel);
-    }
-
-    protected bool TryLoadJsonObject(string path, [NotNullWhen(true)] out JsonObject? configuration)
-    {
-        configuration = null;
-
-        try
-        {
-            if (!JsonHelpers.TryLoadObject(path, out configuration))
-            {
-                return false;
-            }
-
-            return configuration is not null;
-        }
-        catch (JsonException ex)
-        {
-            Log.ParseJsonObjectFailed(Logger, path, ex);
-            return false;
-        }
-    }
-
-    protected async Task UpdateRuntimesAsync(
+    protected static async Task UpdateRuntimesAsync(
         string path,
         string runtime,
         YamlRuntimeFinder finder,
+        ILogger logger,
         CancellationToken cancellationToken)
     {
         using var buffered = new MemoryStream();
@@ -141,7 +116,33 @@ internal abstract partial class AwsLambdaUpgrader(
 
         buffered.SetLength(buffered.Position);
 
-        Log.UpgradedManagedRuntimes(Logger, path, runtime);
+        Log.UpgradedManagedRuntimes(logger, path, runtime);
+    }
+
+    protected void LogUnsupportedRuntime(UpgradeInfo upgrade)
+    {
+        Console.WriteUnsupportedLambdaRuntimeWarning(upgrade);
+        Log.LambdaRuntimeNotSupported(Logger, upgrade.Channel);
+    }
+
+    protected bool TryLoadJsonObject(string path, [NotNullWhen(true)] out JsonObject? configuration)
+    {
+        configuration = null;
+
+        try
+        {
+            if (!JsonHelpers.TryLoadObject(path, out configuration))
+            {
+                return false;
+            }
+
+            return configuration is not null;
+        }
+        catch (JsonException ex)
+        {
+            Log.ParseJsonObjectFailed(Logger, path, ex);
+            return false;
+        }
     }
 
     protected sealed class YamlRuntimeFinder(string propertyName, Version channel) : YamlVisitorBase
