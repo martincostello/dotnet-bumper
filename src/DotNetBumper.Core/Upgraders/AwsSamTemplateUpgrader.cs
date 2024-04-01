@@ -140,7 +140,7 @@ internal sealed partial class AwsSamTemplateUpgrader(
 
         if (!TryParseSamTemplate(path, out var template))
         {
-            return (ProcessingResult.Warning, false);
+            return (ProcessingResult.None, false);
         }
 
         context.Status = StatusMessage($"Updating {name}...");
