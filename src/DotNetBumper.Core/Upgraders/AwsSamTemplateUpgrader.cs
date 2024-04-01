@@ -99,8 +99,8 @@ internal sealed partial class AwsSamTemplateUpgrader(
                 // The template file could be either relative to the tools defaults file or the project path
                 string[] candidates =
                 [
-                    Path.Combine(Path.GetDirectoryName(path)!, templateFile),
-                    Path.Combine(Options.ProjectPath, templateFile)
+                    Path.GetDirectoryName(path)!,
+                    Options.ProjectPath,
                 ];
 
                 foreach (var candidate in candidates)
