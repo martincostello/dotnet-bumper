@@ -194,7 +194,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         string[] targetFrameworks = ["net6.0"];
 
         using var fixture = new UpgraderFixture(outputHelper);
+        fixture.Project.AddGitRepository();
 
+        await fixture.Project.AddGitIgnoreAsync();
         await fixture.Project.AddSolutionAsync("Project.sln");
         await fixture.Project.AddGlobalJsonAsync(sdkVersion);
         await fixture.Project.AddApplicationProjectAsync(targetFrameworks);
