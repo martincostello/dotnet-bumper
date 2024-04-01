@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,13 +13,13 @@ internal sealed partial class AwsLambdaToolsUpgrader(
     IAnsiConsole console,
     IEnvironment environment,
     IOptions<UpgradeOptions> options,
-    ILogger<AwsLambdaToolsUpgrader> logger) : FileUpgrader(console, environment, options, logger)
+    ILogger<AwsLambdaToolsUpgrader> logger) : AwsLambdaUpgrader(console, environment, options, logger)
 {
     protected override string Action => "Upgrading AWS Lambda Tools defaults";
 
     protected override string InitialStatus => "Update AWS Lambda Tools";
 
-    protected override IReadOnlyList<string> Patterns { get; } = ["aws-lambda-tools-defaults.json"];
+    protected override IReadOnlyList<string> Patterns { get; } = [WellKnownFileNames.AwsLambdaToolsDefaults];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
@@ -34,22 +33,29 @@ internal sealed partial class AwsLambdaToolsUpgrader(
 
         foreach (var path in fileNames)
         {
-            var name = RelativeName(path);
-
-            context.Status = StatusMessage($"Parsing {name}...");
-
-            var editResult = TryEditDefaults(path, upgrade, out var configuration);
-
-            if (editResult is ProcessingResult.Success && configuration is { })
-            {
-                context.Status = StatusMessage($"Updating {name}...");
-
-                await configuration.SaveAsync(path, cancellationToken);
-
-                result = result.Max(editResult);
-            }
-
+            var editResult = await TryUpgradeAsync(path, upgrade, context, cancellationToken);
             result = result.Max(editResult);
+        }
+
+        return result;
+    }
+
+    private async Task<ProcessingResult> TryUpgradeAsync(
+        string path,
+        UpgradeInfo upgrade,
+        StatusContext context,
+        CancellationToken cancellationToken)
+    {
+        var name = RelativeName(path);
+
+        context.Status = StatusMessage($"Parsing {name}...");
+
+        var result = TryEditDefaults(path, upgrade, out var configuration);
+
+        if (result is ProcessingResult.Success && configuration is { })
+        {
+            context.Status = StatusMessage($"Updating {name}...");
+            await configuration.SaveAsync(path, cancellationToken);
         }
 
         return result;
@@ -57,18 +63,8 @@ internal sealed partial class AwsLambdaToolsUpgrader(
 
     private ProcessingResult TryEditDefaults(string path, UpgradeInfo upgrade, [NotNullWhen(true)] out JsonObject? configuration)
     {
-        configuration = null;
-
-        try
+        if (!TryLoadJsonObject(path, out configuration))
         {
-            if (!JsonHelpers.TryLoadObject(path, out configuration))
-            {
-                return ProcessingResult.Warning;
-            }
-        }
-        catch (JsonException ex)
-        {
-            Log.ParseConfigurationFailed(logger, path, ex);
             return ProcessingResult.Warning;
         }
 
@@ -87,20 +83,17 @@ internal sealed partial class AwsLambdaToolsUpgrader(
 
         if (configuration.TryGetStringProperty("function-runtime", out node, out var runtime))
         {
-            var version = runtime.ToVersionFromLambdaRuntime();
-
-            if (version is { } && version < upgrade.Channel)
+            if (IsSupportedRuntime(runtime, upgrade) is { } supported)
             {
-                if (upgrade.SupportPhase < DotNetSupportPhase.Active ||
-                    upgrade.ReleaseType != DotNetReleaseType.Lts)
-                {
-                    Console.WriteUnsupportedLambdaRuntimeWarning(upgrade);
-                    result = result.Max(ProcessingResult.Warning);
-                }
-                else
+                if (supported)
                 {
                     node.ReplaceWith(JsonValue.Create(upgrade.Channel.ToLambdaRuntime()));
                     result = result.Max(ProcessingResult.Success);
+                }
+                else
+                {
+                    Console.WriteUnsupportedLambdaRuntimeWarning(upgrade);
+                    result = result.Max(ProcessingResult.Warning);
                 }
             }
         }
@@ -112,18 +105,9 @@ internal sealed partial class AwsLambdaToolsUpgrader(
     private static partial class Log
     {
         [LoggerMessage(
-            EventId = 1,
+            EventId = 4,
             Level = LogLevel.Debug,
             Message = "Upgrading AWS Lambda Tools defaults.")]
         public static partial void UpgradingAwsLambdaTools(ILogger logger);
-
-        [LoggerMessage(
-            EventId = 2,
-            Level = LogLevel.Warning,
-            Message = "Unable to parse configuration file {FileName}.")]
-        public static partial void ParseConfigurationFailed(
-            ILogger logger,
-            string fileName,
-            Exception exception);
     }
 }
