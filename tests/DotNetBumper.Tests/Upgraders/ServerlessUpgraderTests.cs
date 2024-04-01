@@ -92,6 +92,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
 
         string actualContent = await File.ReadAllTextAsync(serverlessFile);
         actualContent.ShouldBe(expectedContent);
+        fixture.LogContext.Changelog.ShouldNotBeEmpty();
 
         // Act
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -135,6 +136,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
+        fixture.LogContext.Changelog.ShouldBeEmpty();
     }
 
     [Theory]
@@ -213,6 +215,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actual.ShouldBe(ProcessingResult.Warning);
+        fixture.LogContext.Changelog.ShouldBeEmpty();
     }
 
     [Theory]

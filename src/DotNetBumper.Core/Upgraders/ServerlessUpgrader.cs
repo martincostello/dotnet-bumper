@@ -35,6 +35,7 @@ internal sealed partial class ServerlessUpgrader(
         var runtime = GetManagedRuntime(upgrade);
 
         var result = ProcessingResult.None;
+        var edited = false;
 
         foreach (var path in fileNames)
         {
@@ -46,10 +47,11 @@ internal sealed partial class ServerlessUpgrader(
                 warningEmitted = true;
             }
 
+            edited |= updateResult is ProcessingResult.Success;
             result = result.Max(updateResult);
         }
 
-        if (runtime is { })
+        if (edited && runtime is { })
         {
             logContext.Changelog.Add($"Update AWS Lambda runtime to `{runtime}`");
         }
