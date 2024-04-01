@@ -6,6 +6,8 @@ using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
+#pragma warning disable JSON002
+
 public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
 {
     [Theory]
@@ -146,7 +148,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string vsconfig = await fixture.Project.AddFileAsync("aws-lambda-tools-defaults.json", content);
+        await fixture.Project.AddFileAsync("aws-lambda-tools-defaults.json", content);
 
         var upgrade = new UpgradeInfo()
         {
