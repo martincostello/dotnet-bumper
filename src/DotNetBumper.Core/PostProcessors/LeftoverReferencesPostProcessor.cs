@@ -210,7 +210,7 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
         if (gitDirectory is not null)
         {
-            var gitignore = Path.GetFullPath(Path.Combine(gitDirectory, "..", GitIgnoreFile));
+            var gitignore = FileHelpers.FindFileInProject(Options.ProjectPath, GitIgnoreFile);
 
             if (File.Exists(gitignore))
             {

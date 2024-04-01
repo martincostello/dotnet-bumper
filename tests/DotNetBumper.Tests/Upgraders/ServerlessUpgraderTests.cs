@@ -92,6 +92,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
 
         string actualContent = await File.ReadAllTextAsync(serverlessFile);
         actualContent.ShouldBe(expectedContent);
+        fixture.LogContext.Changelog.ShouldNotBeEmpty();
 
         // Act
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
@@ -135,6 +136,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
+        fixture.LogContext.Changelog.ShouldBeEmpty();
     }
 
     [Theory]
@@ -162,8 +164,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
             """;
 
         using var fixture = new UpgraderFixture(outputHelper);
-
-        string serverlessFile = await fixture.Project.AddFileAsync("serverless.yml", serverless);
+        await fixture.Project.AddFileAsync("serverless.yml", serverless);
 
         var upgrade = new UpgradeInfo()
         {
@@ -194,8 +195,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
             """;
 
         using var fixture = new UpgraderFixture(outputHelper);
-
-        string serverlessFile = await fixture.Project.AddFileAsync("serverless.yml", invalidServerless);
+        await fixture.Project.AddFileAsync("serverless.yml", invalidServerless);
 
         var upgrade = new UpgradeInfo()
         {
@@ -213,6 +213,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actual.ShouldBe(ProcessingResult.Warning);
+        fixture.LogContext.Changelog.ShouldBeEmpty();
     }
 
     [Theory]

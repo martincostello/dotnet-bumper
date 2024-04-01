@@ -97,7 +97,7 @@ internal sealed partial class VisualStudioCodeUpgrader(
             return false;
         }
 
-        return UpdateStringNodes(configuration, channel, TryUpdatePathTfm);
+        return JsonHelpers.UpdateStringNodes(configuration, channel, TryUpdatePathTfm);
 
         static bool TryUpdatePathTfm(JsonValue node, Version channel)
         {
@@ -112,47 +112,6 @@ internal sealed partial class VisualStudioCodeUpgrader(
             }
 
             return false;
-        }
-
-        static bool UpdateStringNodes(JsonObject root, Version channel, Func<JsonValue, Version, bool> processValue)
-        {
-            return Visit(root, channel, processValue);
-
-            static bool Visit(JsonObject node, Version channel, Func<JsonValue, Version, bool> processValue)
-            {
-                bool edited = false;
-
-                foreach (var property in node.ToArray())
-                {
-                    if (property.Value is JsonValue value)
-                    {
-                        if (value.GetValueKind() is JsonValueKind.String)
-                        {
-                            edited |= processValue(value, channel);
-                        }
-                    }
-                    else if (property.Value is JsonArray array)
-                    {
-                        foreach (var item in array.ToArray())
-                        {
-                            if (item is JsonObject obj)
-                            {
-                                edited |= Visit(obj, channel, processValue);
-                            }
-                            else if (item is JsonValue arrayValue && arrayValue.GetValueKind() is JsonValueKind.String)
-                            {
-                                edited |= processValue(arrayValue, channel);
-                            }
-                        }
-                    }
-                    else if (property.Value is JsonObject obj)
-                    {
-                        edited |= Visit(obj, channel, processValue);
-                    }
-                }
-
-                return edited;
-            }
         }
     }
 
