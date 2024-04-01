@@ -31,12 +31,44 @@ internal static partial class LogReader
 
                 if (logs.Outcomes.Count > 0)
                 {
-                    result.Outcomes = result.Outcomes.Concat(logs.Outcomes).ToDictionary();
+                    foreach ((var container, var outcomes) in logs.Outcomes)
+                    {
+                        if (!result.Outcomes.TryGetValue(container, out var existing))
+                        {
+                            existing = outcomes;
+                        }
+                        else
+                        {
+                            existing = [.. existing, .. outcomes];
+                        }
+
+                        result.Outcomes[container] = existing;
+                    }
                 }
 
                 if (logs.Summary.Count > 0)
                 {
-                    result.Summary = result.Summary.Concat(logs.Summary).ToDictionary();
+                    foreach ((var container, var summary) in logs.Summary)
+                    {
+                        if (!result.Summary.TryGetValue(container, out var existing))
+                        {
+                            existing = summary;
+                        }
+                        else
+                        {
+                            foreach ((var outcome, var count) in summary)
+                            {
+                                if (!existing.TryGetValue(outcome, out var existingCount))
+                                {
+                                    existingCount = 0;
+                                }
+
+                                existing[outcome] = existingCount + count;
+                            }
+                        }
+
+                        result.Summary[container] = existing;
+                    }
                 }
             }
         }

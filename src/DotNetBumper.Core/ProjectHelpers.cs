@@ -15,13 +15,14 @@ internal static class ProjectHelpers
     {
         List<string> projects =
         [
-            ..Directory.GetFiles(path, "*.sln", searchOption),
+            .. Directory.GetFiles(path, WellKnownFileNames.SolutionFiles, searchOption),
         ];
 
         if (projects.Count == 0)
         {
-            projects.AddRange(Directory.GetFiles(path, "*.csproj", searchOption));
-            projects.AddRange(Directory.GetFiles(path, "*.fsproj", searchOption));
+            projects.AddRange(Directory.GetFiles(path, WellKnownFileNames.CSharpProjects, searchOption));
+            projects.AddRange(Directory.GetFiles(path, WellKnownFileNames.FSharpProjects, searchOption));
+            projects.AddRange(Directory.GetFiles(path, WellKnownFileNames.VisualBasicProjects, searchOption));
         }
 
         return projects

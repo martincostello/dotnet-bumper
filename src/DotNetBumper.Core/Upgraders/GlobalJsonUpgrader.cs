@@ -24,7 +24,7 @@ internal sealed partial class GlobalJsonUpgrader(
 
     protected override string InitialStatus => "Update SDK version";
 
-    protected override IReadOnlyList<string> Patterns => ["global.json"];
+    protected override IReadOnlyList<string> Patterns { get; } = [WellKnownFileNames.GlobalJson];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
@@ -67,6 +67,8 @@ internal sealed partial class GlobalJsonUpgrader(
                     path,
                     currentVersion.ToString(),
                     upgrade.SdkVersion.ToString());
+
+                logContext.DotNetSdkVersion = upgrade.SdkVersion.ToString();
 
                 result = result.Max(ProcessingResult.Success);
             }

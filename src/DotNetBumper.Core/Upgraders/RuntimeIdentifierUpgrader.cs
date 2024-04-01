@@ -20,7 +20,14 @@ internal sealed partial class RuntimeIdentifierUpgrader(
 
     protected override string InitialStatus => "Update RIDs";
 
-    protected override IReadOnlyList<string> Patterns => ["Directory.Build.props", "*.csproj", "*.fsproj", "*.pubxml"];
+    protected override IReadOnlyList<string> Patterns { get; } =
+    [
+        WellKnownFileNames.DirectoryBuildProps,
+        WellKnownFileNames.CSharpProjects,
+        WellKnownFileNames.FSharpProjects,
+        WellKnownFileNames.PublishProfiles,
+        WellKnownFileNames.VisualBasicProjects,
+    ];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,

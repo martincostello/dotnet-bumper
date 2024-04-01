@@ -22,7 +22,7 @@ internal sealed partial class VisualStudioCodeUpgrader(
 
     protected override string InitialStatus => "Update Visual Studio Code configuration";
 
-    protected override IReadOnlyList<string> Patterns => ["launch.json"];
+    protected override IReadOnlyList<string> Patterns { get; } = ["launch.json"];
 
     protected override IReadOnlyList<string> FindFiles()
     {

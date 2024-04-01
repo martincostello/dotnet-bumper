@@ -106,6 +106,7 @@ internal sealed class Project : IDisposable
 
     public async Task<string> AddToolManifestAsync(string path = ".config/dotnet-tools.json")
     {
+        /*lang=json,strict*/
         var manifest =
             """
             {
@@ -132,12 +133,16 @@ internal sealed class Project : IDisposable
     {
         var testClass =
             $$"""
+              using System.Collections.Generic;
               using Xunit;
               
               namespace MyProject.Tests;
               
               public static class UnitTests
               {
+                  public static List<string> Items { get; } = new List<string>(); // IDE0028
+                  public static bool IsTrue() => string.Equals(bool.TrueString, "true"); // CA1307
+
                   [Fact]
                   public static void {{testName}}()
                   {
@@ -247,6 +252,55 @@ internal sealed class Project : IDisposable
                """;
 
         return await AddFileAsync(path, script);
+    }
+
+    public async Task AddEditorConfigAsync(string? editorconfig = null)
+    {
+        editorconfig ??=
+            """
+            root = true
+
+            [*]
+            end_of_line = lf
+            indent_size = 4
+            indent_style = space
+            insert_final_newline = true
+            trim_trailing_whitespace = true
+
+            [*.{cs,vb}]
+            dotnet_analyzer_diagnostic.category-Style.severity = warning
+            dotnet_diagnostic.IDE0022.severity = silent
+            # Workaround for https://github.com/dotnet/format/issues/1623#issuecomment-1318594411
+            dotnet_diagnostic.IDE0130.severity = silent
+
+            [*.cs]
+            csharp_style_namespace_declarations = file_scoped
+            """;
+
+        await AddFileAsync(".editorconfig", editorconfig);
+    }
+
+    public async Task AddDirectoryBuildPropsAsync(
+        string? noWarn = null,
+        bool treatWarningsAsErrors = false)
+    {
+#pragma warning disable CA1308
+        string properties =
+            $"""
+             <Project>
+               <PropertyGroup>
+                 <AnalysisMode>All</AnalysisMode>
+                 <EnableNETAnalyzers>true</EnableNETAnalyzers>
+                 <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+                 <GenerateDocumentationFile>true</GenerateDocumentationFile>
+                 <NoWarn>$(NoWarn);{noWarn ?? "CA1002;CS419;CS1570;CS1573;CS1574;CS1584;CS1591"}</NoWarn>
+                 <TreatWarningsAsErrors>{treatWarningsAsErrors.ToString().ToLowerInvariant()}</TreatWarningsAsErrors>
+               </PropertyGroup>
+             </Project>
+             """;
+#pragma warning restore CA1308
+
+        await AddFileAsync("Directory.Build.props", properties);
     }
 
     public void Dispose() => _directory.Dispose();
