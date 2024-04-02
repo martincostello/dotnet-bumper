@@ -6,39 +6,94 @@ using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
-#pragma warning disable JSON002
-
 public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
 {
-    [Theory]
-    [ClassData(typeof(DotNetChannelTestData))]
-    public async Task UpgradeAsync_Upgrades_Json_Template(string channel)
-    {
-        // Arrange
-        string template =
-            """
-            {
-              "AWSTemplateFormatVersion": "2010-09-09",
-              "Globals": {
-                "Function": {
-                  "Runtime": "dotnet6"
-                }
-              },
-              "Resources": {
-                "MyFunction": {
-                  "Type": "AWS::Serverless::Function",
-                  "Properties": {
-                    "Handler": "MyFunction",
-                    "Runtime": "dotnet6"
-                  }
+    public static string AwsLambdaToolsDefaults(string template) =>
+        $$"""
+          {
+            "profile": "my-profile",
+            "region": "eu-west-1",
+            "configuration": "Release",
+            "template": "{{template}}"
+          }
+          """;
+
+    public static string JsonTemplate(string runtime = "dotnet6") =>
+        $$"""
+          {
+            "AWSTemplateFormatVersion": "2010-09-09",
+            "Globals": {
+              "Function": {
+                "Runtime": "{{runtime}}"
+              }
+            },
+            "Resources": {
+              "MyFunction": {
+                "Type": "AWS::Serverless::Function",
+                "Properties": {
+                  "Handler": "MyFunction",
+                  "Runtime": "{{runtime}}"
                 }
               }
             }
-            """;
+          }
+          """;
+
+    public static string YamlTemplate(string runtime = "dotnet6") =>
+        $"""
+         AWSTemplateFormatVersion: '2010-09-09'
+         Globals:
+           Function:
+             Runtime: {runtime}
+         Resources:
+           MyFunction:
+             Type: AWS::Serverless::Function
+             Properties:
+               Handler: MyFunction
+               Runtime: {runtime}
+         """;
+
+    public static TheoryData<string, string> ChannelsForJson()
+    {
+        var testCases = new TheoryData<string, string>();
+        var channels = new DotNetChannelTestData();
+
+        foreach (var data in channels)
+        {
+            string channel = (string)data[0];
+            testCases.Add(channel, "template.json");
+            testCases.Add(channel, "serverless.template");
+        }
+
+        return testCases;
+    }
+
+    public static TheoryData<string, string> ChannelsForYaml()
+    {
+        var testCases = new TheoryData<string, string>();
+        var channels = new DotNetChannelTestData();
+
+        foreach (var data in channels)
+        {
+            string channel = (string)data[0];
+            testCases.Add(channel, "template.yaml");
+            testCases.Add(channel, "template.yml");
+            testCases.Add(channel, "serverless.template");
+        }
+
+        return testCases;
+    }
+
+    [Theory]
+    [MemberData(nameof(ChannelsForJson))]
+    public async Task UpgradeAsync_Upgrades_Json_Template(string channel, string fileName)
+    {
+        // Arrange
+        string template = JsonTemplate();
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string templateFile = await fixture.Project.AddFileAsync("template.json", template);
+        string templateFile = await fixture.Project.AddFileAsync(fileName, template);
 
         var upgrade = new UpgradeInfo()
         {
@@ -83,27 +138,15 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [ClassData(typeof(DotNetChannelTestData))]
-    public async Task UpgradeAsync_Upgrades_Yaml_Template(string channel)
+    [MemberData(nameof(ChannelsForYaml))]
+    public async Task UpgradeAsync_Upgrades_Yaml_Template(string channel, string fileName)
     {
         // Arrange
-        string template =
-            """
-            AWSTemplateFormatVersion: '2010-09-09'
-            Globals:
-              Function:
-                Runtime: dotnet6
-            Resources:
-              MyFunction:
-                Type: AWS::Serverless::Function
-                Properties:
-                  Handler: MyFunction
-                  Runtime: dotnet6
-            """;
+        string template = YamlTemplate();
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string templateFile = await fixture.Project.AddFileAsync("template.yaml", template);
+        string templateFile = await fixture.Project.AddFileAsync(fileName, template);
 
         var upgrade = new UpgradeInfo()
         {
@@ -148,31 +191,8 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         DotNetSupportPhase supportPhase)
     {
         // Arrange
-        string template =
-            """
-            {
-              "AWSTemplateFormatVersion": "2010-09-09",
-              "Resources": {
-                "MyFunction": {
-                  "Type": "AWS::Serverless::Function",
-                  "Properties": {
-                    "Handler": "MyFunction",
-                    "Runtime": "dotnet6"
-                  }
-                }
-              }
-            }
-            """;
-
-        string toolsDefaults =
-            """
-            {
-              "profile": "alexa-london-travel",
-              "region": "eu-west-1",
-              "configuration": "Release",
-              "template": "../../my-template.json",
-            }
-            """;
+        string template = JsonTemplate();
+        string toolsDefaults = AwsLambdaToolsDefaults("../../my-template.json");
 
         using var fixture = new UpgraderFixture(outputHelper);
 
@@ -216,29 +236,8 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         DotNetSupportPhase supportPhase)
     {
         // Arrange
-        string template =
-            """
-            AWSTemplateFormatVersion: '2010-09-09'
-            Globals:
-              Function:
-                Runtime: dotnet6
-            Resources:
-              MyFunction:
-                Type: AWS::Serverless::Function
-                Properties:
-                  Handler: MyFunction
-                  Runtime: dotnet6
-            """;
-
-        string toolsDefaults =
-            """
-            {
-              "profile": "alexa-london-travel",
-              "region": "eu-west-1",
-              "configuration": "Release",
-              "template": "my-template.yml",
-            }
-            """;
+        string template = YamlTemplate();
+        string toolsDefaults = AwsLambdaToolsDefaults("my-template.yml");
 
         using var fixture = new UpgraderFixture(outputHelper);
 
@@ -275,16 +274,16 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("[]]")]
     [InlineData("\"value\"")]
     [InlineData("{}")]
-    [InlineData("{\"framework\":1}")]
-    [InlineData("{\"framework\":true}")]
-    [InlineData("{\"framework\":\"bar\"}")]
-    [InlineData("{\"framework\":{}}")]
-    [InlineData("{\"framework\":[]}")]
-    [InlineData("{\"function-runtime\":1}")]
-    [InlineData("{\"function-runtime\":true}")]
-    [InlineData("{\"function-runtime\":\"bar\"}")]
-    [InlineData("{\"function-runtime\":{}}")]
-    [InlineData("{\"function-runtime\":[]}")]
+    [InlineData(/*lang=json,strict*/ "{\"framework\":1}")]
+    [InlineData(/*lang=json,strict*/ "{\"framework\":true}")]
+    [InlineData(/*lang=json,strict*/ "{\"framework\":\"bar\"}")]
+    [InlineData(/*lang=json,strict*/ "{\"framework\":{}}")]
+    [InlineData(/*lang=json,strict*/ "{\"framework\":[]}")]
+    [InlineData(/*lang=json,strict*/ "{\"function-runtime\":1}")]
+    [InlineData(/*lang=json,strict*/ "{\"function-runtime\":true}")]
+    [InlineData(/*lang=json,strict*/ "{\"function-runtime\":\"bar\"}")]
+    [InlineData(/*lang=json,strict*/ "{\"function-runtime\":{}}")]
+    [InlineData(/*lang=json,strict*/ "{\"function-runtime\":[]}")]
     public async Task UpgradeAsync_Handles_Invalid_Json(string content)
     {
         // Arrange
@@ -343,11 +342,14 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         fixture.LogContext.Changelog.ShouldBeEmpty();
     }
 
-    [Fact]
-    public async Task UpgradeAsync_Handles_Json_That_Is_Not_An_Aws_Template()
+    [Theory]
+    [InlineData("template.json")]
+    [InlineData("serverless.template")]
+    public async Task UpgradeAsync_Handles_Json_That_Is_Not_An_Aws_Template(string fileName)
     {
         // Arrange
-        string invalidYaml =
+        // lang=json,strict
+        string invalidJson =
             """
             {
               "Globals": {
@@ -368,7 +370,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
             """;
 
         using var fixture = new UpgraderFixture(outputHelper);
-        await fixture.Project.AddFileAsync("template.json", invalidYaml);
+        await fixture.Project.AddFileAsync(fileName, invalidJson);
 
         var upgrade = new UpgradeInfo()
         {
@@ -389,8 +391,11 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         fixture.LogContext.Changelog.ShouldBeEmpty();
     }
 
-    [Fact]
-    public async Task UpgradeAsync_Handles_Yaml_That_Is_Not_An_Aws_Template()
+    [Theory]
+    [InlineData("template.yaml")]
+    [InlineData("template.yml")]
+    [InlineData("serverless.template")]
+    public async Task UpgradeAsync_Handles_Yaml_That_Is_Not_An_Aws_Template(string fileName)
     {
         // Arrange
         string invalidYaml =
@@ -407,7 +412,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
             """;
 
         using var fixture = new UpgraderFixture(outputHelper);
-        await fixture.Project.AddFileAsync("template.yaml", invalidYaml);
+        await fixture.Project.AddFileAsync(fileName, invalidYaml);
 
         var upgrade = new UpgradeInfo()
         {
@@ -432,19 +437,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Ignores_Yaml_That_Is_In_Aws_Sam_Build_Directory()
     {
         // Arrange
-        string invalidYaml =
-            """
-            AWSTemplateFormatVersion: '2010-09-09'
-            Globals:
-              Function:
-                Runtime: dotnet6
-            Resources:
-              MyFunction:
-                Type: AWS::Serverless::Function
-                Properties:
-                  Handler: MyFunction
-                  Runtime: dotnet6
-            """;
+        string invalidYaml = YamlTemplate();
 
         using var fixture = new UpgraderFixture(outputHelper);
         await fixture.Project.AddFileAsync(".aws-sam/template.yaml", invalidYaml);
@@ -469,10 +462,11 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Fact]
-    public async Task UpgradeAsync_Ignores_Json_That_Unknown_Template_Version()
+    public async Task UpgradeAsync_Ignores_Json_With_Unknown_Template_Version()
     {
         // Arrange
-        string invalidYaml =
+        // lang=json,strict
+        string invalidJson =
             """
             {
               "AWSTemplateFormatVersion": "2024-04-01",
@@ -494,7 +488,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
             """;
 
         using var fixture = new UpgraderFixture(outputHelper);
-        await fixture.Project.AddFileAsync("template.json", invalidYaml);
+        await fixture.Project.AddFileAsync("template.json", invalidJson);
 
         var upgrade = new UpgradeInfo()
         {
@@ -516,7 +510,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Fact]
-    public async Task UpgradeAsync_Ignores_Yaml_That_Unknown_Template_Version()
+    public async Task UpgradeAsync_Ignores_Yaml_With_Unknown_Template_Version()
     {
         // Arrange
         string invalidYaml =

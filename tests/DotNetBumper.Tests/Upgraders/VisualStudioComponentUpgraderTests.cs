@@ -47,6 +47,7 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Upgrades_Component_Configuration_With_Multiple_Runtimes()
     {
         // Arrange
+        // lang=json,strict
         string content =
             $$"""
               {
@@ -63,6 +64,7 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
               }
               """;
 
+        // lang=json,strict
         string expectedContent =
             $$"""
               {
@@ -117,8 +119,8 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("[]]")]
     [InlineData("\"value\"")]
     [InlineData("{}")]
-    [InlineData("{\"foo\":\"bar\"}")]
-    [InlineData("{\"components\":{}}")]
+    [InlineData(/*lang=json,strict*/ "{\"foo\":\"bar\"}")]
+    [InlineData(/*lang=json,strict*/ "{\"components\":{}}")]
     public async Task UpgradeAsync_Handles_Invalid_Json(string content)
     {
         // Arrange

@@ -88,12 +88,12 @@ public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("[]]")]
     [InlineData("\"value\"")]
     [InlineData("{}")]
-    [InlineData("{\"sdk\":1}")]
-    [InlineData("{\"sdk\":null}")]
-    [InlineData("{\"sdk\":true}")]
-    [InlineData("{\"sdk\":\"bar\"}")]
-    [InlineData("{\"sdk\":{}}")]
-    [InlineData("{\"sdk\":[]}")]
+    [InlineData(/*lang=json,strict*/ "{\"sdk\":1}")]
+    [InlineData(/*lang=json,strict*/ "{\"sdk\":null}")]
+    [InlineData(/*lang=json,strict*/ "{\"sdk\":true}")]
+    [InlineData(/*lang=json,strict*/ "{\"sdk\":\"bar\"}")]
+    [InlineData(/*lang=json,strict*/ "{\"sdk\":{}}")]
+    [InlineData(/*lang=json,strict*/ "{\"sdk\":[]}")]
     public async Task UpgradeAsync_Handles_Invalid_Json(string content)
     {
         // Arrange

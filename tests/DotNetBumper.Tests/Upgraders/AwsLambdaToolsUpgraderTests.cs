@@ -6,8 +6,6 @@ using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
-#pragma warning disable JSON002
-
 public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
 {
     [Theory]
@@ -15,6 +13,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Upgrades_Properties(string channel)
     {
         // Arrange
+        // lang=json,strict
         string fileContents =
             """
             {
@@ -84,6 +83,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         DotNetSupportPhase supportPhase)
     {
         // Arrange
+        // lang=json,strict
         string fileContents =
             """
             {
@@ -133,16 +133,16 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("[]]", ProcessingResult.Warning)]
     [InlineData("\"value\"", ProcessingResult.Warning)]
     [InlineData("{}", ProcessingResult.None)]
-    [InlineData("{\"framework\":1}", ProcessingResult.None)]
-    [InlineData("{\"framework\":true}", ProcessingResult.None)]
-    [InlineData("{\"framework\":\"bar\"}", ProcessingResult.None)]
-    [InlineData("{\"framework\":{}}", ProcessingResult.None)]
-    [InlineData("{\"framework\":[]}", ProcessingResult.None)]
-    [InlineData("{\"function-runtime\":1}", ProcessingResult.None)]
-    [InlineData("{\"function-runtime\":true}", ProcessingResult.None)]
-    [InlineData("{\"function-runtime\":\"bar\"}", ProcessingResult.None)]
-    [InlineData("{\"function-runtime\":{}}", ProcessingResult.None)]
-    [InlineData("{\"function-runtime\":[]}", ProcessingResult.None)]
+    [InlineData(/*lang=json,strict*/ "{\"framework\":1}", ProcessingResult.None)]
+    [InlineData(/*lang=json,strict*/ "{\"framework\":true}", ProcessingResult.None)]
+    [InlineData(/*lang=json,strict*/ "{\"framework\":\"bar\"}", ProcessingResult.None)]
+    [InlineData(/*lang=json,strict*/ "{\"framework\":{}}", ProcessingResult.None)]
+    [InlineData(/*lang=json,strict*/ "{\"framework\":[]}", ProcessingResult.None)]
+    [InlineData(/*lang=json,strict*/ "{\"function-runtime\":1}", ProcessingResult.None)]
+    [InlineData(/*lang=json,strict*/ "{\"function-runtime\":true}", ProcessingResult.None)]
+    [InlineData(/*lang=json,strict*/ "{\"function-runtime\":\"bar\"}", ProcessingResult.None)]
+    [InlineData(/*lang=json,strict*/ "{\"function-runtime\":{}}", ProcessingResult.None)]
+    [InlineData(/*lang=json,strict*/ "{\"function-runtime\":[]}", ProcessingResult.None)]
     public async Task UpgradeAsync_Handles_Invalid_Json(string content, ProcessingResult expected)
     {
         // Arrange

@@ -69,11 +69,11 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("[]]")]
     [InlineData("\"value\"")]
     [InlineData("{}")]
-    [InlineData("{\"configurations\":1}")]
-    [InlineData("{\"configurations\":true}")]
-    [InlineData("{\"configurations\":\"bar\"}")]
-    [InlineData("{\"configurations\":{}}")]
-    [InlineData("{\"configurations\":[]}")]
+    [InlineData(/*lang=json,strict*/ "{\"configurations\":1}")]
+    [InlineData(/*lang=json,strict*/ "{\"configurations\":true}")]
+    [InlineData(/*lang=json,strict*/ "{\"configurations\":\"bar\"}")]
+    [InlineData(/*lang=json,strict*/ "{\"configurations\":{}}")]
+    [InlineData(/*lang=json,strict*/ "{\"configurations\":[]}")]
     public async Task UpgradeAsync_Handles_Invalid_Json(string content)
     {
         // Arrange
@@ -103,6 +103,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Updates_Tfm_Properties()
     {
         // Arrange
+        // lang=json,strict
         string fileContents =
             """
             {
@@ -151,6 +152,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
             }
             """;
 
+        // lang=json,strict
         string expectedContent =
             """
             {
