@@ -9,7 +9,6 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
 {
     public static string AwsLambdaToolsDefaults(string template) =>
-        /*lang=json,strict*/
         $$"""
           {
             "profile": "my-profile",
@@ -20,7 +19,6 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
           """;
 
     public static string JsonTemplate(string runtime = "dotnet6") =>
-        /*lang=json,strict*/
         $$"""
           {
             "AWSTemplateFormatVersion": "2010-09-09",
