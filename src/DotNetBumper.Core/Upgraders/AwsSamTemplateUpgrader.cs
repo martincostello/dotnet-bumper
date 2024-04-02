@@ -24,6 +24,7 @@ internal sealed partial class AwsSamTemplateUpgrader(
     [
         WellKnownFileNames.AwsLambdaToolsDefaults,
         "*.json",
+        "*.template",
         "*.yml",
         "*.yaml"
     ];
@@ -154,8 +155,18 @@ internal sealed partial class AwsSamTemplateUpgrader(
         return Path.GetExtension(fileName) switch
         {
             ".json" => TryParseSamJsonTemplate(fileName, out template),
-            _ => TryParseSamYamlTemplate(fileName, out template),
+            ".yaml" or ".yml" => TryParseSamYamlTemplate(fileName, out template),
+            _ => TryParseUnknownTemplate(fileName, out template),
         };
+    }
+
+    private bool TryParseUnknownTemplate(
+        string fileName,
+        [NotNullWhen(true)] out SamTemplate? template)
+    {
+        return TryLoadJsonObject(fileName, out _) ?
+            TryParseSamJsonTemplate(fileName, out template) :
+            TryParseSamYamlTemplate(fileName, out template);
     }
 
     private bool TryParseSamJsonTemplate(
