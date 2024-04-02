@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup>
     <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="All" />
-    <GlobalPackageReference Include="ReferenceTrimmer" Version="3.3.3" />
+    <GlobalPackageReference Include="ReferenceTrimmer" Version="3.3.6" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="coverlet.msbuild" Version="6.0.2" />
