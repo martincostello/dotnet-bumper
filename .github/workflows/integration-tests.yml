@@ -145,6 +145,7 @@ jobs:
             )
           }
           $config | ConvertTo-Json | Out-File -FilePath $tempFile | Out-Null
+          $configFile = $tempFile
         }
         "dotnet-bumper-config=${configFile}" >> $env:GITHUB_OUTPUT
 
