@@ -138,17 +138,29 @@ internal sealed partial class DotNetTestPostProcessor(
                 [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
             };
 
-            if (configuration.NoWarn.Count > 0)
+            TemporaryFile? propertiesOverrides = null;
+
+            if (configuration.NoWarn is { Count: > 0 } noWarn)
             {
-                environmentVariables["NoWarn"] = string.Join(";", configuration.NoWarn);
+                propertiesOverrides = await GenerateDirectoryBuildPropsAsync(noWarn, cancellationToken);
+                environmentVariables["DirectoryBuildPropsPath"] = propertiesOverrides.Path;
             }
 
-            // See https://learn.microsoft.com/dotnet/core/tools/dotnet-test
-            var result = await dotnet.RunWithLoggerAsync(
-                project,
-                ["test", "--nologo", "--verbosity", "quiet", "--logger", BumperTestLogger.ExtensionUri, "--test-adapter-path", adapterDirectory.Path],
-                environmentVariables,
-                cancellationToken);
+            DotNetResult result;
+
+            try
+            {
+                // See https://learn.microsoft.com/dotnet/core/tools/dotnet-test
+                result = await dotnet.RunWithLoggerAsync(
+                    project,
+                    ["test", "--nologo", "--verbosity", "quiet", "--logger", BumperTestLogger.ExtensionUri, "--test-adapter-path", adapterDirectory.Path],
+                    environmentVariables,
+                    cancellationToken);
+            }
+            finally
+            {
+                propertiesOverrides?.Dispose();
+            }
 
             result.TestLogs = await LogReader.GetTestLogsAsync(logsDirectory.Path, Logger, cancellationToken);
 
@@ -180,6 +192,109 @@ internal sealed partial class DotNetTestPostProcessor(
         }
 
         return overall;
+    }
+
+    private async Task<TemporaryFile> GenerateDirectoryBuildPropsAsync(
+        HashSet<string> suppressWarnings,
+        CancellationToken cancellationToken)
+    {
+        var artifactsPath = string.Empty;
+        var import = string.Empty;
+        var noWarn = string.Join(";", suppressWarnings);
+        var useArtifactsOutput = "false";
+
+        var existing = FileHelpers.FindFileInProject(Options.ProjectPath, WellKnownFileNames.DirectoryBuildProps);
+
+        if (existing is not null)
+        {
+            import = $"<Import Project=\"{existing}\" />";
+
+            // If the existing Directory.Build.props file has the UseArtifactsOutput property set to true
+            // then it needs to be manually set in our override file, otherwise an NETSDK1200 error occurs.
+            // See https://learn.microsoft.com/dotnet/core/tools/sdk-errors/.
+            (artifactsPath, useArtifactsOutput) = await EvaluateArtifactsPropertiesAsync(existing, cancellationToken);
+        }
+
+        var project =
+            $"""
+             <Project>
+               {import}
+               <PropertyGroup>
+                 <ArtifactsPath>{artifactsPath}</ArtifactsPath>
+                 <NoWarn>$(NoWarn);{noWarn}</NoWarn>
+                 <UseArtifactsOutput>{useArtifactsOutput}</UseArtifactsOutput>
+               </PropertyGroup>
+             </Project>
+             """;
+
+        var file = new TemporaryFile();
+
+        try
+        {
+            await File.WriteAllTextAsync(file.Path, project, cancellationToken);
+            return file;
+        }
+        catch (Exception)
+        {
+            file.Dispose();
+            throw;
+        }
+    }
+
+    private async Task<string> EvaluateMSBuildPropertyAsync(
+        string projectPath,
+        string propertyName,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var getProperty = await dotnet.RunAsync(
+                Options.ProjectPath,
+                ["msbuild", projectPath, $"-getProperty:{propertyName}"],
+                null,
+                cancellationToken);
+
+            if (getProperty.Success)
+            {
+                return getProperty.StandardOutput.Trim();
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.FailedToEvaluateProperty(Logger, propertyName, projectPath, ex);
+        }
+
+        return string.Empty;
+    }
+
+    private async Task<(string ArtifactsPath, string UseArtifactsOutput)> EvaluateArtifactsPropertiesAsync(
+        string projectFile,
+        CancellationToken cancellationToken)
+    {
+        var artifactsPath = string.Empty;
+        var useArtifactsOutput = "false";
+
+        var useArtifactsValue = await EvaluateMSBuildPropertyAsync(
+            projectFile,
+            "UseArtifactsOutput",
+            cancellationToken);
+
+        if (string.Equals(useArtifactsValue, bool.TrueString, StringComparison.OrdinalIgnoreCase))
+        {
+            useArtifactsOutput = "true";
+
+            artifactsPath = await EvaluateMSBuildPropertyAsync(
+                projectFile,
+                "ArtifactsPath",
+                cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(artifactsPath))
+            {
+                artifactsPath = Path.Combine(Path.GetDirectoryName(projectFile)!, "artifacts");
+            }
+        }
+
+        return (artifactsPath, useArtifactsOutput);
     }
 
     private void WriteBuildLogs(IDictionary<string, IDictionary<string, long>> summary)
@@ -260,5 +375,15 @@ internal sealed partial class DotNetTestPostProcessor(
 
             return new Markup($"[{color}]{count.ToString(CultureInfo.CurrentCulture)}[/]");
         }
+    }
+
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    private static partial class Log
+    {
+        [LoggerMessage(
+            EventId = 1,
+            Level = LogLevel.Debug,
+            Message = "Failed to evaluate MSBuild the value of the {PropertyName} MSBuild property from {ProjectFile}.")]
+        public static partial void FailedToEvaluateProperty(ILogger logger, string propertyName, string projectFile, Exception exception);
     }
 }

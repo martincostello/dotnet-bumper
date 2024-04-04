@@ -84,6 +84,19 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         return testCases;
     }
 
+    public static TheoryData<string, DotNetReleaseType, DotNetSupportPhase> UnsupportedLambdaRuntimes()
+    {
+        return new()
+        {
+            { "7.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active },
+            { "9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Preview },
+            { "9.0", DotNetReleaseType.Sts, DotNetSupportPhase.GoLive },
+            { "9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active },
+            { "10.0", DotNetReleaseType.Lts, DotNetSupportPhase.Preview },
+            { "10.0", DotNetReleaseType.Lts, DotNetSupportPhase.GoLive },
+        };
+    }
+
     [Theory]
     [MemberData(nameof(ChannelsForJson))]
     public async Task UpgradeAsync_Upgrades_Json_Template(string channel, string fileName)
@@ -224,12 +237,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData("7.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
-    [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Preview)]
-    [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.GoLive)]
-    [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
-    [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.Preview)]
-    [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.GoLive)]
+    [MemberData(nameof(UnsupportedLambdaRuntimes))]
     public async Task UpgradeAsync_Warns_If_Channel_Unsupported_Yaml(
         string channel,
         DotNetReleaseType releaseType,
@@ -266,6 +274,80 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
 
         string actualContent = await File.ReadAllTextAsync(templateFile);
         actualContent.NormalizeLineEndings().Trim().ShouldBe(template.NormalizeLineEndings().Trim());
+    }
+
+    [Theory]
+    [MemberData(nameof(UnsupportedLambdaRuntimes))]
+    public async Task UpgradeAsync_Does_Not_Warn_If_Channel_Unsupported_But_Not_DotNet_Managed_Runtime_Json(
+        string channel,
+        DotNetReleaseType releaseType,
+        DotNetSupportPhase supportPhase)
+    {
+        // Arrange
+        string template = JsonTemplate("nodejs20.x");
+        string toolsDefaults = AwsLambdaToolsDefaults("my-template.json");
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        await fixture.Project.AddFileAsync("src/Project/aws-lambda-tools-defaults.json", toolsDefaults);
+        string templateFile = await fixture.Project.AddFileAsync("my-template.json", template);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse(channel),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = releaseType,
+            SdkVersion = new($"{channel}.100"),
+            SupportPhase = supportPhase,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [MemberData(nameof(UnsupportedLambdaRuntimes))]
+    public async Task UpgradeAsync_Does_Not_Warn_If_Channel_Unsupported_But_Not_DotNet_Managed_Runtime_Yaml(
+        string channel,
+        DotNetReleaseType releaseType,
+        DotNetSupportPhase supportPhase)
+    {
+        // Arrange
+        string template = YamlTemplate("provided.al2023");
+        string toolsDefaults = AwsLambdaToolsDefaults("my-template.yml");
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        await fixture.Project.AddFileAsync("src/Project/aws-lambda-tools-defaults.json", toolsDefaults);
+        string templateFile = await fixture.Project.AddFileAsync("my-template.yml", template);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse(channel),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = releaseType,
+            SdkVersion = new($"{channel}.100"),
+            SupportPhase = supportPhase,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
     [Theory]

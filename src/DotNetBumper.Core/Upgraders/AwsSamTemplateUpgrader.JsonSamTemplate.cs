@@ -26,7 +26,7 @@ internal sealed partial class AwsSamTemplateUpgrader
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            if (!JsonHelpers.UpdateStringNodes(Template, (upgrade.Channel, runtime), TryUpdateRuntime))
+            if (!JsonHelpers.UpdateStringNodes(Template, (upgrade, runtime), TryUpdateRuntime))
             {
                 return (ProcessingResult.None, false);
             }
@@ -45,7 +45,7 @@ internal sealed partial class AwsSamTemplateUpgrader
 
             return (ProcessingResult.Success, false);
 
-            static bool TryUpdateRuntime(JsonValue node, (Version Channel, string? Runtime) state)
+            static bool TryUpdateRuntime(JsonValue node, (UpgradeInfo Upgrade, string? Runtime) state)
             {
                 Debug.Assert(node.GetValueKind() is JsonValueKind.String, $"JSON value {node.GetPath()} is not a string. Kind: {node.GetValueKind()}");
 
@@ -54,15 +54,22 @@ internal sealed partial class AwsSamTemplateUpgrader
                 {
                     return false;
                 }
-                else if (state.Runtime is null)
-                {
-                    return true;
-                }
 
                 string current = node.GetValue<string>();
 
+                if (IsSupportedRuntime(current, state.Upgrade) is null)
+                {
+                    // Nothing to upgrade
+                    return false;
+                }
+                else if (state.Runtime is null)
+                {
+                    // We would have upgraded, but this version is not supported
+                    return true;
+                }
+
                 if (current.ToVersionFromLambdaRuntime() is { } version &&
-                    version >= MinimumVersion && version < state.Channel)
+                    version >= MinimumVersion && version < state.Upgrade.Channel)
                 {
                     node.ReplaceWith(JsonValue.Create(state.Runtime));
                     return true;

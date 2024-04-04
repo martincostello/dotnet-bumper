@@ -3,6 +3,9 @@
   "excludeNuGetPackages": [
     "System.Text.Json"
   ],
+  "noWarn": [
+    "CA1515"
+  ],
   "remainingReferencesIgnore": [
     "docs/demo.yml",
     "tests/DotNetBumper.Tests/**/*.cs"
