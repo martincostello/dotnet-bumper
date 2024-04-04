@@ -5,9 +5,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
 {
-#pragma warning disable IDE0028 // See https://github.com/dotnet/roslyn/issues/72668
     public static TheoryData<string> Channels()
     {
+#pragma warning disable IDE0028 // See https://github.com/dotnet/roslyn/issues/72668
         return new()
         {
             "7.0",
