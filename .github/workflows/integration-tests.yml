@@ -84,9 +84,11 @@ jobs:
           - alexa-london-travel
           - alexa-london-travel-site
           - api
+          - apple-fitness-workout-mapper
           - costellobot
           - dependabot-helper
           - dotnet-bumper
+          - project-euler
           - website
         upgrade-type:
           - Lts
