@@ -91,7 +91,7 @@ jobs:
           - project-euler
           - website
         upgrade-type:
-          - Lts
+          - LTS
           - Latest
           - Preview
 
