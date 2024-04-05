@@ -113,7 +113,7 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.None);
     }
 
-    [Theory]
+    [Theory(Skip = "This test is flaky as sometimes on Windows dotnet format cannot find the .NET SDK.")]
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Honors_User_Project_Settings(string channel)
     {
