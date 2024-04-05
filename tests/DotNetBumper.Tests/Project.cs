@@ -133,14 +133,14 @@ internal sealed class Project : IDisposable
     {
         var testClass =
             $$"""
-              using System.Collections.Generic;
+              using System;
               using Xunit;
               
               namespace MyProject.Tests;
               
               public static class UnitTests
               {
-                  public static List<string> Items { get; } = new List<string>(); // IDE0028
+                  public static string[] Items { get; } = Array.Empty<string>(); // IDE0301
                   public static bool IsTrue() => string.Equals(bool.TrueString, "true"); // CA1307
 
                   [Fact]
@@ -293,7 +293,7 @@ internal sealed class Project : IDisposable
                  <EnableNETAnalyzers>true</EnableNETAnalyzers>
                  <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
                  <GenerateDocumentationFile>true</GenerateDocumentationFile>
-                 <NoWarn>$(NoWarn);{noWarn ?? "CA1002;CS419;CS1570;CS1573;CS1574;CS1584;CS1591"}</NoWarn>
+                 <NoWarn>$(NoWarn);{noWarn ?? "CA1002;CA1819;CS419;CS1570;CS1573;CS1574;CS1584;CS1591"}</NoWarn>
                  <TreatWarningsAsErrors>{treatWarningsAsErrors.ToString().ToLowerInvariant()}</TreatWarningsAsErrors>
                </PropertyGroup>
              </Project>

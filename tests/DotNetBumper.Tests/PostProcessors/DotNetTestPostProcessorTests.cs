@@ -86,7 +86,7 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
                  <AnalysisMode>All</AnalysisMode>
                  <ArtifactsPath>{artifactsPath}</ArtifactsPath>
                  <EnableNETAnalyzers>true</EnableNETAnalyzers>
-                 <NoWarn>$(NoWarn);CA1307;CA1309;CA1707</NoWarn>
+                 <NoWarn>$(NoWarn);CA1307;CA1309;CA1707;CA1819</NoWarn>
                  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
                  <UseArtifactsOutput>{useArtifactsOutput}</UseArtifactsOutput>
                </PropertyGroup>
