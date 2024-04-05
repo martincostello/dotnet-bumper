@@ -69,6 +69,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\integration-tests.yml = .github\workflows\integration-tests.yml
 		.github\workflows\lint.yml = .github\workflows\lint.yml
 		.github\workflows\ossf-scorecard.yml = .github\workflows\ossf-scorecard.yml
+		.github\workflows\release.yml = .github\workflows\release.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{CAE60372-3F77-4878-85D6-63AA223918BC}"
