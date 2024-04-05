@@ -6,10 +6,10 @@ using NSubstitute;
 
 namespace MartinCostello.DotNetBumper;
 
-public class BumperTestLoggerTests
+public static class BumperTestLoggerTests
 {
     [Fact]
-    public void BumperTestLoggerTests_Initialize_Throws_If_No_Path_Specified()
+    public static void BumperTestLoggerTests_Initialize_Throws_If_No_Path_Specified()
     {
         // Arrange
         var events = Substitute.For<TestLoggerEvents>();
@@ -17,8 +17,20 @@ public class BumperTestLoggerTests
 
         var logger = new BumperTestLogger();
 
-        // Act and Assert
-        Should.Throw<InvalidOperationException>(
-            () => logger.Initialize(events, testRunDirectory));
+        const string VariableName = "MartinCostello_DotNetBumper_TestLogPath";
+        var existing = Environment.GetEnvironmentVariable(VariableName);
+
+        try
+        {
+            Environment.SetEnvironmentVariable(VariableName, null);
+
+            // Act and Assert
+            Should.Throw<InvalidOperationException>(
+                () => logger.Initialize(events, testRunDirectory));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(VariableName, existing);
+        }
     }
 }
