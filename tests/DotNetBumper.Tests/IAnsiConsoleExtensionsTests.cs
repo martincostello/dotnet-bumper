@@ -52,8 +52,11 @@ public static class IAnsiConsoleExtensionsTests
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        // Act and Assert
-        Should.NotThrow(() => console.WriteRuntimeNearingEndOfSupportWarning(environment, upgrade, 90));
+        foreach (var daysRemaining in new[] { 90, 1, 0, -1, -90 })
+        {
+            // Act and Assert
+            Should.NotThrow(() => console.WriteRuntimeNearingEndOfSupportWarning(environment, upgrade, daysRemaining));
+        }
     }
 
     [Fact]
