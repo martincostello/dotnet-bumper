@@ -63,6 +63,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{0E685C90-528A-4C24-BC8B-9090C80B8B76}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\build.yml = .github\workflows\build.yml
+		.github\workflows\bump-version.yml = .github\workflows\bump-version.yml
 		.github\workflows\code-scan.yml = .github\workflows\code-scan.yml
 		.github\workflows\dependency-review.yml = .github\workflows\dependency-review.yml
 		.github\workflows\integration-tests.yml = .github\workflows\integration-tests.yml
