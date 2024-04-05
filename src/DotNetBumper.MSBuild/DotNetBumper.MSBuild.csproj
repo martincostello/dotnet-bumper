@@ -5,6 +5,7 @@
     <IsPackable>false</IsPackable>
     <OutputType>Library</OutputType>
     <PackageId>MartinCostello.DotNetBumper.MSBuild</PackageId>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
     <Summary>$(Description)</Summary>
     <TargetFramework>netstandard2.0</TargetFramework>
