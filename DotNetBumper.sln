@@ -5,6 +5,10 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AD637F2E-02F5-49F6-BFA6-881E8C77DE61}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBumper.MSBuild", "src\DotNetBumper.MSBuild\DotNetBumper.MSBuild.csproj", "{82C41299-BA66-4D81-A40D-2362312BE449}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBumper.TestLogger", "src\DotNetBumper.TestLogger\DotNetBumper.TestLogger.csproj", "{67391CF6-1ADF-45FB-9A32-D4E6ED7FF33C}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBumper.Core", "src\DotNetBumper.Core\DotNetBumper.Core.csproj", "{875BD719-675D-458B-B596-60347EB2F49B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBumper", "src\DotNetBumper\DotNetBumper.csproj", "{36BA84A1-789F-4A38-957F-30AFA47592E6}"
@@ -83,10 +87,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".config", ".config", "{1ADA
 	ProjectSection(SolutionItems) = preProject
 		.config\dotnet-tools.json = .config\dotnet-tools.json
 	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBumper.MSBuild", "src\DotNetBumper.MSBuild\DotNetBumper.MSBuild.csproj", "{82C41299-BA66-4D81-A40D-2362312BE449}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetBumper.TestLogger", "src\DotNetBumper.TestLogger\DotNetBumper.TestLogger.csproj", "{67391CF6-1ADF-45FB-9A32-D4E6ED7FF33C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
