@@ -67,7 +67,15 @@ public static class IAnsiConsoleExtensions
         double daysRemaining)
     {
         var eolUtc = upgrade.EndOfLife.GetValueOrDefault().ToDateTime(TimeOnly.MinValue);
-        console.WriteWarningLine($"Support for .NET {upgrade.Channel} ends in {daysRemaining:N0} days on {eolUtc:D}.");
+
+        if (daysRemaining > 0)
+        {
+            console.WriteWarningLine($"Support for .NET {upgrade.Channel} ends in {daysRemaining:N0} days on {eolUtc:D}.");
+        }
+        else
+        {
+            console.WriteWarningLine($"Support for .NET {upgrade.Channel} ended on {eolUtc:D}.");
+        }
 
         var supportPolicyTitle = ".NET and .NET Core Support Policy";
         var supportPolicyUrl = SupportPolicyUrl(upgrade.Channel);
