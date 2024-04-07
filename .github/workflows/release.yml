@@ -71,6 +71,7 @@ jobs:
               name,
               body,
               draft,
+              prerelease: true,
             });
 
             core.notice(`Created release ${release.name}: ${release.html_url}`);
