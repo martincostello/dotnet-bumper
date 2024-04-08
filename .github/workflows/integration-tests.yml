@@ -102,10 +102,11 @@ jobs:
       with:
         node-version: '20'
 
-    - name: Checkout ${{ github.repository_owner }}/${{ matrix.repo }}
+    - name: Checkout ${{ format('{0}/{1}', github.repository_owner, matrix.repo) }}
       uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
       with:
-        repository: "${{ github.repository_owner }}/${{ matrix.repo }}"
+        repository: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) }}
+        ref: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) == github.repository && github.ref || '' }}
 
     - name: Install .NET SDKs
       uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
