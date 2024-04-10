@@ -16,7 +16,7 @@
     <Company>https://github.com/martincostello/dotnet-bumper</Company>
     <ContinuousIntegrationBuild Condition=" '$(CI)' != '' ">true</ContinuousIntegrationBuild>
     <Copyright>Martin Costello (c) $([System.DateTime]::Now.ToString(yyyy))</Copyright>
-    <DebugType>portable</DebugType>
+    <DebugType>embedded</DebugType>
     <Deterministic Condition=" '$(IsTestProject)' == '' ">true</Deterministic>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
