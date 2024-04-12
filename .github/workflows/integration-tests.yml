@@ -94,6 +94,10 @@ jobs:
           - LTS
           - Latest
           - Preview
+        include:
+          - repo: dotnet-bumper
+            upgrade-type: Preview
+            warnings-as-errors: false
 
     steps:
 
@@ -157,6 +161,7 @@ jobs:
       env:
         DOTNET_BUMPER_CONFIG: ${{ steps.generate-config.outputs.dotnet-bumper-config }}
         DOTNET_BUMPER_UPGRADE_TYPE: ${{ matrix.upgrade-type }}
+        DOTNET_BUMPER_WARNINGS_AS_ERRORS: ${{ matrix.warnings-as-errors || 'true' }}
       run: |
         $bumperArgs = @(
           ".",
@@ -166,6 +171,9 @@ jobs:
           "--upgrade-type",
           ${env:DOTNET_BUMPER_UPGRADE_TYPE}
         )
+        if (${env:DOTNET_BUMPER_WARNINGS_AS_ERRORS} -eq "true") {
+          $bumperArgs += "--warnings-as-errors"
+        }
         if (-Not [string]::IsNullOrEmpty(${env:DOTNET_BUMPER_CONFIG})) {
           $bumperArgs += "--configuration-file"
           $bumperArgs += ${env:DOTNET_BUMPER_CONFIG}
