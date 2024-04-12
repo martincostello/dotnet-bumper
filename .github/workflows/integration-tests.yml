@@ -158,7 +158,7 @@ jobs:
           "--upgrade-type",
           ${env:DOTNET_BUMPER_UPGRADE_TYPE}
         )
-        if (${env:DOTNET_BUMPER_WARNINGS_AS_ERRORS} -eq "true") {
+        if (${env:DOTNET_BUMPER_WARNINGS_AS_ERRORS} -ne "false") {
           $bumperArgs += "--warnings-as-errors"
         }
         if (-Not [string]::IsNullOrEmpty(${env:DOTNET_BUMPER_CONFIG})) {
