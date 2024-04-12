@@ -79,21 +79,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo:
-          # - adventofcode HACK Disabled due to https://github.com/dotnet/sdk/issues/39909
-          - alexa-london-travel
-          - alexa-london-travel-site
-          - api
-          - apple-fitness-workout-mapper
-          - costellobot
-          - dependabot-helper
-          - dotnet-bumper
-          - project-euler
-          - website
-        upgrade-type:
-          - LTS
-          - Latest
-          - Preview
+        repo: [ alexa-london-travel, alexa-london-travel-site, api, apple-fitness-workout-mapper, costellobot, dependabot-helper, dotnet-bumper, project-euler, website ]
+        upgrade-type: [ LTS, Latest, Preview ]
         include:
           - repo: dotnet-bumper
             upgrade-type: Preview
