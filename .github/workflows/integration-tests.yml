@@ -82,6 +82,9 @@ jobs:
         repo: [ alexa-london-travel, alexa-london-travel-site, api, apple-fitness-workout-mapper, costellobot, dependabot-helper, dotnet-bumper, project-euler, website ]
         upgrade-type: [ LTS, Latest, Preview ]
         include:
+          - repo: alexa-london-travel-site
+            upgrade-type: Preview
+            warnings-as-errors: false
           - repo: dotnet-bumper
             upgrade-type: Preview
             warnings-as-errors: false
