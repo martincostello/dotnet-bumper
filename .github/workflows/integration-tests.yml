@@ -165,6 +165,9 @@ jobs:
           $bumperArgs += "--configuration-file"
           $bumperArgs += ${env:DOTNET_BUMPER_CONFIG}
         }
+        if (${env:RUNNER_DEBUG} -eq "1") {
+          $bumperArgs += "--verbose"
+        }
         dotnet bumper $bumperArgs
 
     - name: Show git diff
