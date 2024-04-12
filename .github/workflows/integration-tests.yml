@@ -161,7 +161,7 @@ jobs:
       env:
         DOTNET_BUMPER_CONFIG: ${{ steps.generate-config.outputs.dotnet-bumper-config }}
         DOTNET_BUMPER_UPGRADE_TYPE: ${{ matrix.upgrade-type }}
-        DOTNET_BUMPER_WARNINGS_AS_ERRORS: ${{ matrix.warnings-as-errors || 'true' }}
+        DOTNET_BUMPER_WARNINGS_AS_ERRORS: ${{ format('{0}', matrix.warnings-as-errors) }}
       run: |
         $bumperArgs = @(
           ".",
