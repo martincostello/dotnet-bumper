@@ -5,6 +5,7 @@ using System.Text.Json;
 using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Versioning;
 using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
@@ -50,7 +51,7 @@ internal sealed partial class PackageVersionUpgrader(
 
                 context.Status = StatusMessage($"Update NuGet packages for {name}...");
 
-                result = result.Max(await TryUpgradePackagesAsync(project, cancellationToken));
+                result = result.Max(await TryUpgradePackagesAsync(project, upgrade.SdkVersion, cancellationToken));
             }
         }
 
@@ -108,7 +109,10 @@ internal sealed partial class PackageVersionUpgrader(
         }
     }
 
-    private async Task<ProcessingResult> TryUpgradePackagesAsync(string directory, CancellationToken cancellationToken)
+    private async Task<ProcessingResult> TryUpgradePackagesAsync(
+        string directory,
+        NuGetVersion sdkVersion,
+        CancellationToken cancellationToken)
     {
         using var tempFile = new TemporaryFile();
 
@@ -123,6 +127,16 @@ internal sealed partial class PackageVersionUpgrader(
         if (Options.UpgradeType is UpgradeType.Preview)
         {
             arguments.Add("--pre-release:Always");
+
+            // Requires .NET Outdated v4.6.1+.
+            // See https://github.com/dotnet-outdated/dotnet-outdated/pull/467.
+            if (sdkVersion.IsPrerelease && sdkVersion.ReleaseLabels.Count() > 2)
+            {
+                var label = string.Join('.', sdkVersion.ReleaseLabels.Take(2));
+
+                arguments.Add("--pre-release-label");
+                arguments.Add(label);
+            }
         }
 
         var configuration = await configurationProvider.GetAsync(cancellationToken);
