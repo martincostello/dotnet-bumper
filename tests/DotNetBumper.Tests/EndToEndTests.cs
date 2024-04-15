@@ -10,6 +10,19 @@ namespace MartinCostello.DotNetBumper;
 
 public class EndToEndTests(ITestOutputHelper outputHelper)
 {
+    [Fact]
+    public static async Task Application_Validates_Project_Exists()
+    {
+        // Arrange
+        string projectPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        // Act
+        int actual = await Program.Main([projectPath]);
+
+        // Assert
+        actual.ShouldBe(1);
+    }
+
     public static TheoryData<BumperTestCase> TestCases()
     {
         var testCases = new TheoryData<BumperTestCase>
@@ -42,7 +55,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
+#pragma warning disable xUnit1044 // Avoid using TheoryData type arguments that are not serializable
     [MemberData(nameof(TestCases))]
+#pragma warning restore xUnit1044 // Avoid using TheoryData type arguments that are not serializable
     public async Task Application_Upgrades_Project(BumperTestCase testCase)
     {
         // Arrange
@@ -333,19 +348,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         logContent.ShouldNotBeNullOrWhiteSpace();
         logContent.ShouldContain("Error");
-    }
-
-    [Fact]
-    public async Task Application_Validates_Project_Exists()
-    {
-        // Arrange
-        string projectPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-        // Act
-        int actual = await Program.Main([projectPath]);
-
-        // Assert
-        actual.ShouldBe(1);
     }
 
     [Fact]

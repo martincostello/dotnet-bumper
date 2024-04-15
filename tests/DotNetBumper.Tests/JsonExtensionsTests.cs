@@ -46,7 +46,7 @@ public static class JsonExtensionsTests
     private static string WriteJsonToFile(bool writeBom)
     {
         var bom = writeBom ? Encoding.UTF8.Preamble : [];
-        var json = "{\"foo\":\"bar\"}"u8;
+        var json = /*lang=json,strict*/ "{\"foo\":\"bar\"}"u8;
 
         string path = Path.GetTempFileName();
 

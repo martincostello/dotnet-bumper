@@ -68,8 +68,8 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData("custom.json", @"{""noWarn"":[""warning-42""]}")]
-    [InlineData("CUSTOM.JSON", @"{""noWarn"":[""warning-42""]}")]
+    [InlineData("custom.json", /*lang=json,strict*/ @"{""noWarn"":[""warning-42""]}")]
+    [InlineData("CUSTOM.JSON", /*lang=json,strict*/ @"{""noWarn"":[""warning-42""]}")]
     [InlineData("custom.yml", "noWarn:\n- warning-42")]
     [InlineData("custom.YML", "noWarn:\n- warning-42")]
     public async Task LoadAsync_When_Custom_Configuration(string fileName, string content)
@@ -182,6 +182,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
     {
         var path = Path.Combine(fixture.Project.DirectoryName, ".dotnet-bumper.json");
 
+        /*lang=json*/
         string content =
             """
             {
