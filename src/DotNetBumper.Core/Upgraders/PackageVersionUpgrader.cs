@@ -130,7 +130,7 @@ internal sealed partial class PackageVersionUpgrader(
 
             // Requires .NET Outdated v4.6.1+.
             // See https://github.com/dotnet-outdated/dotnet-outdated/pull/467.
-            if (sdkVersion.IsPrerelease && sdkVersion.ReleaseLabels.Count() > 1)
+            if (sdkVersion.IsPrerelease && sdkVersion.ReleaseLabels.Count() > 2)
             {
                 var label = string.Join('.', sdkVersion.ReleaseLabels.Take(2));
 
