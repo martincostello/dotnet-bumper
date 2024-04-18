@@ -99,7 +99,7 @@ public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string globalJson = await fixture.Project.AddFileAsync("global.json", content);
+        await fixture.Project.AddFileAsync("global.json", content);
 
         var upgrade = new UpgradeInfo()
         {

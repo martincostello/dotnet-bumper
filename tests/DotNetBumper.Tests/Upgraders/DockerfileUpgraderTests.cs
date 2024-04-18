@@ -380,7 +380,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string vsconfig = await fixture.Project.AddFileAsync("Dockerfile", content);
+        await fixture.Project.AddFileAsync("Dockerfile", content);
 
         var upgrade = new UpgradeInfo()
         {

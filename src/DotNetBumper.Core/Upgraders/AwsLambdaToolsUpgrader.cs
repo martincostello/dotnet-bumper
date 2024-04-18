@@ -81,20 +81,18 @@ internal sealed partial class AwsLambdaToolsUpgrader(
             }
         }
 
-        if (configuration.TryGetStringProperty("function-runtime", out node, out var runtime))
+        if (configuration.TryGetStringProperty("function-runtime", out node, out var runtime) &&
+            IsSupportedRuntime(runtime, upgrade) is { } supported)
         {
-            if (IsSupportedRuntime(runtime, upgrade) is { } supported)
+            if (supported)
             {
-                if (supported)
-                {
-                    node.ReplaceWith(JsonValue.Create(upgrade.Channel.ToLambdaRuntime()));
-                    result = result.Max(ProcessingResult.Success);
-                }
-                else
-                {
-                    Console.WriteUnsupportedLambdaRuntimeWarning(upgrade);
-                    result = result.Max(ProcessingResult.Warning);
-                }
+                node.ReplaceWith(JsonValue.Create(upgrade.Channel.ToLambdaRuntime()));
+                result = result.Max(ProcessingResult.Success);
+            }
+            else
+            {
+                Console.WriteUnsupportedLambdaRuntimeWarning(upgrade);
+                result = result.Max(ProcessingResult.Warning);
             }
         }
 

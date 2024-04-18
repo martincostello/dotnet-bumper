@@ -80,7 +80,7 @@ internal sealed partial class DotNetTestPostProcessor(
                     Console.WriteProgressLine(TaskEnvironment, result.StandardOutput);
                 }
 
-                if (result.BuildLogs?.Summary.Count > 0)
+                if (result.BuildLogs?.Summary?.Count > 0)
                 {
                     WriteBuildLogs(result.BuildLogs.Summary);
                 }
@@ -184,13 +184,10 @@ internal sealed partial class DotNetTestPostProcessor(
             TestLogs = new(),
         };
 
-        foreach (var result in results)
+        foreach (var result in results.Where((p) => p.TestLogs is not null))
         {
-            if (result.TestLogs is not null)
-            {
-                overall.TestLogs.Outcomes = overall.TestLogs.Outcomes.Concat(result.TestLogs.Outcomes).ToDictionary();
-                overall.TestLogs.Summary = overall.TestLogs.Summary.Concat(result.TestLogs.Summary).ToDictionary();
-            }
+            overall.TestLogs.Outcomes = overall.TestLogs.Outcomes.Concat(result.TestLogs!.Outcomes).ToDictionary();
+            overall.TestLogs.Summary = overall.TestLogs.Summary.Concat(result.TestLogs.Summary).ToDictionary();
         }
 
         return overall;

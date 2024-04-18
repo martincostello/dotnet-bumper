@@ -266,9 +266,6 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
-        // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Warning);
 
@@ -290,7 +287,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         await fixture.Project.AddFileAsync("src/Project/aws-lambda-tools-defaults.json", toolsDefaults);
-        string templateFile = await fixture.Project.AddFileAsync("my-template.json", template);
+        await fixture.Project.AddFileAsync("my-template.json", template);
 
         var upgrade = new UpgradeInfo()
         {
@@ -305,9 +302,6 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
 
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -327,7 +321,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         using var fixture = new UpgraderFixture(outputHelper);
 
         await fixture.Project.AddFileAsync("src/Project/aws-lambda-tools-defaults.json", toolsDefaults);
-        string templateFile = await fixture.Project.AddFileAsync("my-template.yml", template);
+        await fixture.Project.AddFileAsync("my-template.yml", template);
 
         var upgrade = new UpgradeInfo()
         {
@@ -342,9 +336,6 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
 
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);

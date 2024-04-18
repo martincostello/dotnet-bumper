@@ -66,18 +66,11 @@ internal static class TargetFrameworkHelpers
         var newTfm = channel.ToTargetFramework();
         var append = validTfms > 1;
 
-        if (append)
-        {
-            updated = new StringBuilder()
-                .Append(value)
-                .Append(Delimiter)
-                .Append(newTfm)
-                .ToString();
-        }
-        else
-        {
-            updated = newTfm;
-        }
+        updated = !append ? newTfm : new StringBuilder()
+            .Append(value)
+            .Append(Delimiter)
+            .Append(newTfm)
+            .ToString();
 
         return !value.SequenceEqual(updated);
     }

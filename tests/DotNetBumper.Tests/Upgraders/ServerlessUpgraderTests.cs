@@ -118,7 +118,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string serverlessFile = await fixture.Project.AddFileAsync("serverless.yml", serverless);
+        await fixture.Project.AddFileAsync("serverless.yml", serverless);
 
         var upgrade = new UpgradeInfo()
         {
