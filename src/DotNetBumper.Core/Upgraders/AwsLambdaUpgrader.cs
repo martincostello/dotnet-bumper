@@ -156,12 +156,10 @@ internal abstract partial class AwsLambdaUpgrader(
             if (key is YamlScalarNode keyName &&
                 keyName.Value == PropertyName &&
                 value is YamlScalarNode { Value.Length: > 0 } node &&
-                node.Value.ToVersionFromLambdaRuntime() is { } version)
+                node.Value.ToVersionFromLambdaRuntime() is { } version &&
+                version >= MinimumVersion && version < channel)
             {
-                if (version >= MinimumVersion && version < channel)
-                {
-                    LineIndexes.Add(node.Start.Line - 1);
-                }
+                LineIndexes.Add(node.Start.Line - 1);
             }
 
             base.VisitPair(key, value);

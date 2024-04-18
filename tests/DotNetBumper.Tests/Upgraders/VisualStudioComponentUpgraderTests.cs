@@ -126,7 +126,7 @@ public class VisualStudioComponentUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string vsconfig = await fixture.Project.AddFileAsync(".vsconfig", content);
+        await fixture.Project.AddFileAsync(".vsconfig", content);
 
         var upgrade = new UpgradeInfo()
         {

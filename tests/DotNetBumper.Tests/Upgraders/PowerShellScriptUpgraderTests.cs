@@ -407,8 +407,6 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
-
-        string actualContent = await File.ReadAllTextAsync(workflow);
     }
 
     [Fact]
@@ -441,8 +439,6 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
-
-        string actualContent = await File.ReadAllTextAsync(workflow);
     }
 
     [Theory]
@@ -454,7 +450,7 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string script = await fixture.Project.AddFileAsync("script.ps1", content);
+        await fixture.Project.AddFileAsync("script.ps1", content);
 
         var upgrade = new UpgradeInfo()
         {

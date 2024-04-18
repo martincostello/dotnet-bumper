@@ -79,7 +79,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string vsconfig = await fixture.Project.AddFileAsync(".vscode/launch.json", content);
+        await fixture.Project.AddFileAsync(".vscode/launch.json", content);
 
         var upgrade = new UpgradeInfo()
         {

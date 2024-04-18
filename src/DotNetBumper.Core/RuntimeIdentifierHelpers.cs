@@ -49,7 +49,7 @@ internal static class RuntimeIdentifierHelpers
                     rid = portable;
                 }
 
-                builder.Append(rid.ToString());
+                builder.Append(rid);
             }
 
             if (i < runtimeIds.Count - 1)

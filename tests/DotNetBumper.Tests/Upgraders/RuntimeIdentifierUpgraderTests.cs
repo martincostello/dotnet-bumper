@@ -97,8 +97,6 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
             bom.SequenceEqual(buffer).ShouldBe(hasByteOrderMark);
         }
 
-        string actualContent = await File.ReadAllTextAsync(projectFile, encoding);
-
         var xml = await fixture.Project.GetFileAsync(projectFile);
         var project = XDocument.Parse(xml);
 
@@ -185,8 +183,6 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         string actualContent = await File.ReadAllTextAsync(pubxml);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(pubxml);
-
         // Act
         actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
@@ -209,7 +205,7 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string project = await fixture.Project.AddFileAsync("Project.csproj", content);
+        await fixture.Project.AddFileAsync("Project.csproj", content);
 
         var upgrade = new UpgradeInfo()
         {
