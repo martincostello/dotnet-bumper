@@ -182,7 +182,16 @@ jobs:
 
   integration-tests:
     needs: [ package, test ]
-    if: always() && !cancelled() && !contains(needs.*.result, 'failure')
+    if: ${{ always() }
+    env:
+      TESTS_SUCCESS: ${{ !contains(needs.*.result, 'failure') }} 
     runs-on: ubuntu-latest
     steps:
-    - run: echo 'Integration tests successful ✅'
+    - run: |
+        if [ "$TESTS_SUCCESS" == "true" ]
+        then
+          echo 'Integration tests successful ✅'
+        else
+          echo 'Integration tests failed ❌'
+          exit 1
+        fi
