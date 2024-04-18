@@ -226,9 +226,6 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
 
-        // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Warning);
 
