@@ -389,7 +389,7 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+        await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
 
         var upgrade = new UpgradeInfo()
         {
@@ -421,7 +421,7 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+        await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
 
         var upgrade = new UpgradeInfo()
         {
