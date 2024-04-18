@@ -182,7 +182,7 @@ jobs:
 
   integration-tests:
     needs: [ package, test ]
-    if: ${{ always() }
+    if: ${{ always() }}
     env:
       TESTS_SUCCESS: ${{ !contains(needs.*.result, 'failure') }} 
     runs-on: ubuntu-latest
