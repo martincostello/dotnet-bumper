@@ -114,7 +114,7 @@ internal sealed class Project : IDisposable
               "isRoot": true,
               "tools": {
                 "dotnet-outdated-tool": {
-                  "version": "4.6.0",
+                  "version": "4.6.1",
                   "commands": [
                     "dotnet-outdated"
                   ]

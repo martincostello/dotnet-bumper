@@ -250,7 +250,6 @@ internal sealed partial class DotNetTestPostProcessor(
             var getProperty = await dotnet.RunAsync(
                 Options.ProjectPath,
                 ["msbuild", projectPath, $"-getProperty:{propertyName}"],
-                null,
                 cancellationToken);
 
             if (getProperty.Success)

@@ -18,6 +18,23 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
     /// </summary>
     /// <param name="workingDirectory">The working directory for the process.</param>
     /// <param name="arguments">The arguments to the command.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to use.</param>
+    /// <returns>
+    /// A <see cref="Task{DotNetResult}"/> representing the asynchronous operation to run the command.
+    /// </returns>
+    public async Task<DotNetResult> RunAsync(
+        string workingDirectory,
+        IReadOnlyList<string> arguments,
+        CancellationToken cancellationToken)
+    {
+        return await RunAsync(workingDirectory, null, arguments, null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Runs the specified dotnet command.
+    /// </summary>
+    /// <param name="workingDirectory">The working directory for the process.</param>
+    /// <param name="arguments">The arguments to the command.</param>
     /// <param name="environmentVariables">The environment variables to set for the process, if any.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to use.</param>
     /// <returns>
