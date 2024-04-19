@@ -112,7 +112,7 @@ internal partial class Bumper(ProjectUpgrader upgrader)
             if (!NoLogo)
             {
                 console.Write(new FigletText(".NET Bumper").Color(Color.Purple));
-                console.MarkupLineInterpolated($"[{Color.Blue}]{GetVersion()}[/]");
+                console.MarkupLineInterpolated($"[{Color.Blue}]v{GetVersion()} (.NET v{Environment.Version})[/]");
                 console.WriteLine();
             }
 
