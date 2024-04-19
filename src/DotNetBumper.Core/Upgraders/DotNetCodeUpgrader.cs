@@ -40,8 +40,6 @@ internal sealed partial class DotNetCodeUpgrader(
     {
         Log.UpgradingDotNetCode(Logger);
 
-        string sdkVersion = upgrade.SdkVersion.ToString();
-
         var diagnostics = new Dictionary<string, int>();
         var result = ProcessingResult.None;
 
