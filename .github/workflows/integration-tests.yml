@@ -87,21 +87,12 @@ jobs:
           - repo: alexa-london-travel
             test: false
             upgrade-type: LTS
-            warnings-as-errors: false
           - repo: alexa-london-travel
             test: false
             upgrade-type: Latest
-            warnings-as-errors: false
           - repo: alexa-london-travel
             test: false
             upgrade-type: Preview
-            warnings-as-errors: false
-          - repo: alexa-london-travel-site
-            upgrade-type: Preview
-            warnings-as-errors: false
-          - repo: dotnet-bumper
-            upgrade-type: Preview
-            warnings-as-errors: false
 
     steps:
 
