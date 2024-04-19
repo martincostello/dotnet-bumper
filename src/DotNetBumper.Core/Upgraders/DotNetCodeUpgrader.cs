@@ -5,6 +5,7 @@ using System.Text.Json;
 using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Versioning;
 using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
@@ -49,7 +50,11 @@ internal sealed partial class DotNetCodeUpgrader(
             var relativePath = PathHelpers.Normalize(RelativeName(fileName));
             context.Status = StatusMessage($"Updating .NET code for {relativePath}...");
 
-            (var fileResult, var fixes) = await ApplyFixesAsync(upgrade.Channel, fileName, sdkVersion, cancellationToken);
+            (var fileResult, var fixes) = await ApplyFixesAsync(
+                upgrade.Channel,
+                fileName,
+                upgrade.SdkVersion,
+                cancellationToken);
 
             foreach ((var diagnosticId, var count) in fixes)
             {
@@ -114,10 +119,12 @@ internal sealed partial class DotNetCodeUpgrader(
     private async Task<(ProcessingResult Result, Dictionary<string, int> Fixes)> ApplyFixesAsync(
         Version channel,
         string projectOrSolution,
-        string sdkVersion,
+        NuGetVersion sdkVersion,
         CancellationToken cancellationToken)
     {
         var workingDirectory = Path.GetDirectoryName(projectOrSolution)!;
+
+        using var globalJson = await PatchedGlobalJsonFile.TryPatchAsync(workingDirectory, sdkVersion, cancellationToken);
         using var tempDirectory = new TemporaryDirectory();
 
         // See https://learn.microsoft.com/dotnet/core/tools/dotnet-format#analyzers
@@ -133,7 +140,7 @@ internal sealed partial class DotNetCodeUpgrader(
             "diagnostic",
         ];
 
-        var environmentVariables = GetFormatEnvironment(channel, sdkVersion);
+        var environmentVariables = GetFormatEnvironment(channel, sdkVersion.ToString());
 
         var formatResult = await dotnet.RunAsync(
             workingDirectory,
