@@ -80,7 +80,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo: [ alexa-london-travel, alexa-london-travel-site, api, apple-fitness-workout-mapper, costellobot, dependabot-helper, dotnet-bumper, project-euler, website ]
+        # alexa-london-travel removed due to https://github.com/microsoft/testfx/issues/2733
+        repo: [ alexa-london-travel-site, api, apple-fitness-workout-mapper, costellobot, dependabot-helper, dotnet-bumper, project-euler, website ]
         upgrade-type: [ LTS, Latest, Preview ]
         include:
           - repo: alexa-london-travel-site
