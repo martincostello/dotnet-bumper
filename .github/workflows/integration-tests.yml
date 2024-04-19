@@ -34,6 +34,7 @@ jobs:
 
     outputs:
       dotnet-outdated-version: ${{ steps.get-dotnet-outdated-version.outputs.dotnet-outdated-version }}
+      dotnet-sdk-version: ${{ steps.get-dotnet-sdk-version.outputs.dotnet-sdk-version }}
 
     steps:
 
@@ -64,6 +65,13 @@ jobs:
         name: packages
         path: ./artifacts/package/release
         if-no-files-found: error
+
+    - name: Get .NET SDK version
+      id: get-dotnet-sdk-version
+      shell: pwsh
+      run: |
+        $dotnetSdkVersion = (Get-Content "./global.json" | Out-String | ConvertFrom-Json).sdk.version
+        "dotnet-sdk-version=${dotnetSdkVersion}" >> $env:GITHUB_OUTPUT
 
     - name: Get dotnet-outdated version
       id: get-dotnet-outdated-version
@@ -127,6 +135,11 @@ jobs:
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+
+    - name: Setup .NET SDK for .NET Bumper
+      uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
+      with:
+        dotnet-version: ${{ needs.package.outputs.dotnet-sdk-version }}
 
     - name: Download packages
       uses: actions/download-artifact@8caf195ad4b1dee92908e23f56eeb0696f1dd42d # v4.1.5
