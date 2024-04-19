@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -42,7 +43,7 @@ internal sealed partial class PackageVersionUpgrader(
 
             context.Status = StatusMessage($"Updating {name}...");
 
-            using (await TryPatchGlobalJsonAsync(project, cancellationToken))
+            using (await TryPatchGlobalJsonAsync(project, upgrade.SdkVersion.IsPrerelease, cancellationToken))
             {
                 if (HasDotNetToolManifest(project))
                 {
@@ -68,7 +69,10 @@ internal sealed partial class PackageVersionUpgrader(
         return result;
     }
 
-    private static async Task<PatchedGlobalJsonFile?> TryPatchGlobalJsonAsync(string path, CancellationToken cancellationToken)
+    private static async Task<PatchedGlobalJsonFile?> TryPatchGlobalJsonAsync(
+        string path,
+        bool isPrerelease,
+        CancellationToken cancellationToken)
     {
         var globalJson = FileHelpers.FindFileInProject(path, WellKnownFileNames.GlobalJson);
 
@@ -78,7 +82,7 @@ internal sealed partial class PackageVersionUpgrader(
 
             try
             {
-                await patched.TryRemoveSdkVersionAsync(cancellationToken);
+                await patched.TryRemoveSdkVersionAsync(isPrerelease, cancellationToken);
                 return patched;
             }
             catch (Exception)
@@ -293,26 +297,42 @@ internal sealed partial class PackageVersionUpgrader(
         public void Dispose()
             => File.Move(_backupPath, _filePath, overwrite: true);
 
-        public async Task TryRemoveSdkVersionAsync(CancellationToken cancellationToken)
+        public async Task TryRemoveSdkVersionAsync(bool isPrerelease, CancellationToken cancellationToken)
         {
             if (!JsonHelpers.TryLoadObject(_filePath, out var globalJson))
             {
                 return;
             }
 
+            const string AllowPrereleaseProperty = "allowPrerelease";
+            const string SdkProperty = "sdk";
+            const string VersionProperty = "version";
+
             // Drop the version from the SDK property in the global.json file
             // but keep any other content, such as versions for MSBuild SDKs.
-            if (globalJson.TryGetPropertyValue("sdk", out var property) &&
+            if (globalJson.TryGetPropertyValue(SdkProperty, out var property) &&
                 property?.GetValueKind() is JsonValueKind.Object)
             {
                 var sdk = property.AsObject();
 
-                const string VersionProperty = "version";
+                var edited = false;
 
                 if (sdk.TryGetPropertyValue(VersionProperty, out var version) &&
                     version?.GetValueKind() is JsonValueKind.String)
                 {
-                    sdk.Remove(VersionProperty);
+                    edited = sdk.Remove(VersionProperty);
+                }
+
+                if (isPrerelease &&
+                    (!sdk.TryGetPropertyValue(AllowPrereleaseProperty, out var allowPrerelease) ||
+                     allowPrerelease?.GetValueKind() is not JsonValueKind.True))
+                {
+                    sdk.Add(new(AllowPrereleaseProperty, JsonValue.Create(true)));
+                    edited = true;
+                }
+
+                if (edited)
+                {
                     await globalJson.SaveAsync(_filePath, cancellationToken);
                 }
             }
