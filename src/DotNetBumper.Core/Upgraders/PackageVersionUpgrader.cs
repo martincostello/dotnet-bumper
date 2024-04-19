@@ -327,6 +327,7 @@ internal sealed partial class PackageVersionUpgrader(
                     (!sdk.TryGetPropertyValue(AllowPrereleaseProperty, out var allowPrerelease) ||
                      allowPrerelease?.GetValueKind() is not JsonValueKind.True))
                 {
+                    sdk.Remove(AllowPrereleaseProperty);
                     sdk.Add(new(AllowPrereleaseProperty, JsonValue.Create(true)));
                     edited = true;
                 }
