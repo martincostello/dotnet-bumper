@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -42,9 +43,14 @@ internal sealed partial class PackageVersionUpgrader(
 
             context.Status = StatusMessage($"Updating {name}...");
 
-            using (TryHideGlobalJson(project))
-            using (TryDotNetToolManifest(project))
+            using (await TryPatchGlobalJsonAsync(project, upgrade.SdkVersion.IsPrerelease, cancellationToken))
             {
+                if (HasDotNetToolManifest(project))
+                {
+                    context.Status = StatusMessage($"Restore .NET tools for {name}...");
+                    await TryRestoreToolsAsync(project, cancellationToken);
+                }
+
                 context.Status = StatusMessage($"Restore NuGet packages for {name}...");
 
                 await TryRestoreNuGetPackagesAsync(project, cancellationToken);
@@ -63,38 +69,46 @@ internal sealed partial class PackageVersionUpgrader(
         return result;
     }
 
-    private static HiddenFile? TryHideGlobalJson(string path)
+    private static async Task<PatchedGlobalJsonFile?> TryPatchGlobalJsonAsync(
+        string path,
+        bool isPrerelease,
+        CancellationToken cancellationToken)
     {
         var globalJson = FileHelpers.FindFileInProject(path, WellKnownFileNames.GlobalJson);
 
         if (globalJson != null)
         {
-            return new HiddenFile(globalJson);
+            var patched = new PatchedGlobalJsonFile(globalJson);
+
+            try
+            {
+                await patched.TryRemoveSdkVersionAsync(isPrerelease, cancellationToken);
+                return patched;
+            }
+            catch (Exception)
+            {
+                patched.Dispose();
+                throw;
+            }
         }
 
         return null;
     }
 
-    private static HiddenFile? TryDotNetToolManifest(string path)
-    {
-        var toolManifest = FileHelpers.FindFileInProject(path, Path.Join(".config", WellKnownFileNames.ToolsManifest));
-
-        if (toolManifest != null)
-        {
-            return new HiddenFile(toolManifest);
-        }
-
-        return null;
-    }
+    private static bool HasDotNetToolManifest(string path)
+        => FileHelpers.FindFileInProject(path, Path.Join(".config", WellKnownFileNames.ToolsManifest)) is not null;
 
     private List<string> FindProjects()
         => ProjectHelpers.FindProjects(Options.ProjectPath, SearchOption.AllDirectories);
+
+    private string GetVerbosity()
+        => Logger.IsEnabled(LogLevel.Debug) ? "detailed" : "quiet";
 
     private async Task TryRestoreNuGetPackagesAsync(string directory, CancellationToken cancellationToken)
     {
         var result = await dotnet.RunWithLoggerAsync(
             directory,
-            ["restore", "--verbosity", "quiet"],
+            ["restore", "--verbosity", GetVerbosity()],
             cancellationToken);
 
         logContext.Add(result);
@@ -106,6 +120,25 @@ internal sealed partial class PackageVersionUpgrader(
         else
         {
             Log.UnableToRestorePackages(logger, directory);
+        }
+    }
+
+    private async Task TryRestoreToolsAsync(string directory, CancellationToken cancellationToken)
+    {
+        var result = await dotnet.RunAsync(
+            directory,
+            ["tool", "restore", "--verbosity", GetVerbosity()],
+            cancellationToken);
+
+        logContext.Add(result);
+
+        if (result.Success)
+        {
+            Log.RestoredTools(logger, directory);
+        }
+        else
+        {
+            Log.UnableToRestoreTools(logger, directory);
         }
     }
 
@@ -235,21 +268,75 @@ internal sealed partial class PackageVersionUpgrader(
             Level = LogLevel.Warning,
             Message = "Unable to restore NuGet packages for {Directory}.")]
         public static partial void UnableToRestorePackages(ILogger logger, string directory);
+
+        [LoggerMessage(
+            EventId = 5,
+            Level = LogLevel.Debug,
+            Message = "Restored .NET tools for {Directory}.")]
+        public static partial void RestoredTools(ILogger logger, string directory);
+
+        [LoggerMessage(
+            EventId = 6,
+            Level = LogLevel.Warning,
+            Message = "Unable to restore .NET tools for {Directory}.")]
+        public static partial void UnableToRestoreTools(ILogger logger, string directory);
     }
 
-    private sealed class HiddenFile : IDisposable
+    private sealed class PatchedGlobalJsonFile : IDisposable
     {
-        private readonly string _original;
-        private readonly string _temporary;
+        private readonly string _filePath;
+        private readonly string _backupPath;
 
-        public HiddenFile(string source)
+        public PatchedGlobalJsonFile(string source)
         {
-            _original = source;
-            _temporary = $"{source}.{Guid.NewGuid().ToString()[0..8]}.tmp";
-            File.Move(_original, _temporary);
+            _filePath = source;
+            _backupPath = $"{source}.{Guid.NewGuid().ToString()[0..8]}.tmp";
+            File.Copy(_filePath, _backupPath, overwrite: true);
         }
 
         public void Dispose()
-            => File.Move(_temporary, _original, overwrite: true);
+            => File.Move(_backupPath, _filePath, overwrite: true);
+
+        public async Task TryRemoveSdkVersionAsync(bool isPrerelease, CancellationToken cancellationToken)
+        {
+            if (!JsonHelpers.TryLoadObject(_filePath, out var globalJson))
+            {
+                return;
+            }
+
+            const string AllowPrereleaseProperty = "allowPrerelease";
+            const string SdkProperty = "sdk";
+            const string VersionProperty = "version";
+
+            // Drop the version from the SDK property in the global.json file
+            // but keep any other content, such as versions for MSBuild SDKs.
+            if (globalJson.TryGetPropertyValue(SdkProperty, out var property) &&
+                property?.GetValueKind() is JsonValueKind.Object)
+            {
+                var sdk = property.AsObject();
+
+                var edited = false;
+
+                if (sdk.TryGetPropertyValue(VersionProperty, out var version) &&
+                    version?.GetValueKind() is JsonValueKind.String)
+                {
+                    edited = sdk.Remove(VersionProperty);
+                }
+
+                if (isPrerelease &&
+                    (!sdk.TryGetPropertyValue(AllowPrereleaseProperty, out var allowPrerelease) ||
+                     allowPrerelease?.GetValueKind() is not JsonValueKind.True))
+                {
+                    sdk.Remove(AllowPrereleaseProperty);
+                    sdk.Add(new(AllowPrereleaseProperty, JsonValue.Create(true)));
+                    edited = true;
+                }
+
+                if (edited)
+                {
+                    await globalJson.SaveAsync(_filePath, cancellationToken);
+                }
+            }
+        }
     }
 }
