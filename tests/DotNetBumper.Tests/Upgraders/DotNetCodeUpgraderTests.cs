@@ -12,7 +12,7 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
         {
             "7.0",
             //// "8.0", See https://github.com/dotnet/sdk/issues/39742
-            //// "9.0", See https://github.com/dotnet/sdk/issues/39909
+            //// "9.0", See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174
         };
 #pragma warning restore IDE0028
     }
