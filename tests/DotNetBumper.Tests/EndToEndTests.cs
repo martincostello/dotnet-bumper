@@ -55,9 +55,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-#pragma warning disable xUnit1044 // Avoid using TheoryData type arguments that are not serializable
     [MemberData(nameof(TestCases))]
-#pragma warning restore xUnit1044 // Avoid using TheoryData type arguments that are not serializable
     public async Task Application_Upgrades_Project(BumperTestCase testCase)
     {
         // Arrange
