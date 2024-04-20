@@ -156,7 +156,10 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.Add(package);
         }
 
-        var environmentVariables = new Dictionary<string, string?>(1);
+        var environmentVariables = new Dictionary<string, string?>(2)
+        {
+            ["DOTNET_ROLL_FORWARD"] = "Major",
+        };
 
         if (configuration.NoWarn.Count > 0)
         {

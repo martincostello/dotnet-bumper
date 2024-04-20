@@ -96,7 +96,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         {
             EnvironmentVariables =
             {
-                ["DOTNET_ROLL_FORWARD"] = "Major",
+                ["DOTNET_ROLL_FORWARD"] = "Minor",
                 ["MSBuildSDKsPath"] = null,
                 [BumperBuildLogger.LoggerFilePathVariableName] = customLoggerFileName,
             },
