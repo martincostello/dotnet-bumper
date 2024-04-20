@@ -81,7 +81,7 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         using var serviceProvider = new ServiceCollection()
             .AddSingleton<IModelAccessor>(app)
             .AddSingleton<IPostConfigureOptions<UpgradeOptions>, UpgradePostConfigureOptions>()
-            .AddProjectUpgrader(configuration, console, (builder) => configureLogging(builder).SetMinimumLevel(logLevel))
+            .AddProjectUpgrader(configuration, console, (builder) => ConfigureLogging(configureLogging(builder), logLevel))
             .BuildServiceProvider();
 
         app.Conventions
@@ -98,6 +98,10 @@ internal partial class Bumper(ProjectUpgrader upgrader)
             console.WriteWarningLine(ex.Message);
             return 1;
         }
+
+        static ILoggingBuilder ConfigureLogging(ILoggingBuilder builder, LogLevel logLevel)
+            => builder.SetMinimumLevel(logLevel)
+                      .AddFilter("Microsoft.Extensions.Http.DefaultHttpClientFactory", (p) => p > LogLevel.Debug);
     }
 
     public static string GetVersion() => ProjectUpgrader.Version;
