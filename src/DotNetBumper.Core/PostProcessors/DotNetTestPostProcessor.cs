@@ -53,7 +53,7 @@ internal sealed partial class DotNetTestPostProcessor(
         }
         else
         {
-            var result = await RunTestsAsync(projects, context, cancellationToken);
+            var result = await RunTestsAsync(upgrade.SdkVersion.ToString(), projects, context, cancellationToken);
 
             logContext.Add(result);
 
@@ -117,6 +117,7 @@ internal sealed partial class DotNetTestPostProcessor(
     }
 
     private async Task<DotNetResult> RunTestsAsync(
+        string sdkVersion,
         List<string> projects,
         StatusContext context,
         CancellationToken cancellationToken)
@@ -130,7 +131,7 @@ internal sealed partial class DotNetTestPostProcessor(
             string name = ProjectHelpers.RelativeName(Options.ProjectPath, project);
             context.Status = StatusMessage($"Running tests for {name}...");
 
-            var result = await RunTestsAsync(project, configuration, cancellationToken);
+            var result = await RunTestsAsync(sdkVersion, project, configuration, cancellationToken);
 
             if (!result.Success)
             {
@@ -160,6 +161,7 @@ internal sealed partial class DotNetTestPostProcessor(
     }
 
     private async Task<DotNetResult> RunTestsAsync(
+        string sdkVersion,
         string project,
         BumperConfiguration configuration,
         CancellationToken cancellationToken)
@@ -171,6 +173,8 @@ internal sealed partial class DotNetTestPostProcessor(
         {
             [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
         };
+
+        MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion);
 
         TemporaryFile? propertiesOverrides = null;
 
