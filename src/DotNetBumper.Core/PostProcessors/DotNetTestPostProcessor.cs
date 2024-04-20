@@ -381,7 +381,7 @@ internal sealed partial class DotNetTestPostProcessor(
         [LoggerMessage(
             EventId = 1,
             Level = LogLevel.Debug,
-            Message = "Failed to evaluate MSBuild the value of the {PropertyName} MSBuild property from {ProjectFile}.")]
+            Message = "Failed to evaluate the value of the {PropertyName} MSBuild property from {ProjectFile}.")]
         public static partial void FailedToEvaluateProperty(ILogger logger, string propertyName, string projectFile, Exception exception);
     }
 }
