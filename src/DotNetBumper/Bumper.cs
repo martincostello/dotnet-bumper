@@ -58,6 +58,11 @@ internal partial class Bumper(ProjectUpgrader upgrader)
     public bool TestUpgrade { get; set; }
 
     [Option(
+        "-timeout|--timeout <TIMESPAN>",
+        Description = "The optional period to timeout the upgrade after.")]
+    public TimeSpan? Timeout { get; set; }
+
+    [Option(
         "-e|--warnings-as-errors",
         Description = "Treat any warnings encountered during the upgrade as errors.")]
     public bool WarningsAsErrors { get; set; }
@@ -111,6 +116,8 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         ILogger<Bumper> logger,
         CancellationToken cancellationToken)
     {
+        CancellationTokenSource? timeoutSource = null;
+
         try
         {
             if (!NoLogo)
@@ -122,7 +129,17 @@ internal partial class Bumper(ProjectUpgrader upgrader)
 
             var stopwatch = Stopwatch.StartNew();
 
-            int status = await upgrader.UpgradeAsync(cancellationToken);
+            int status;
+
+            if (Timeout is { } timeout)
+            {
+                timeoutSource = new CancellationTokenSource(timeout);
+            }
+
+            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource?.Token ?? CancellationToken.None))
+            {
+                status = await upgrader.UpgradeAsync(cts.Token);
+            }
 
             stopwatch.Stop();
 
@@ -135,11 +152,17 @@ internal partial class Bumper(ProjectUpgrader upgrader)
         {
             Log.UpgradeFailed(logger, ex);
 
-            if (ex is OperationCanceledException oce && oce.CancellationToken == cancellationToken)
+            if (ex is OperationCanceledException && cancellationToken.IsCancellationRequested)
             {
                 console.WriteLine();
                 console.WriteWarningLine("Upgrade cancelled by user.");
                 return 2;
+            }
+            else if (ex is OperationCanceledException && timeoutSource?.Token.IsCancellationRequested is true)
+            {
+                console.WriteLine();
+                console.WriteErrorLine($"Upgrade timed out after {Timeout!.Value}.");
+                return 3;
             }
             else if (ex is OptionsValidationException)
             {
@@ -153,6 +176,10 @@ internal partial class Bumper(ProjectUpgrader upgrader)
             }
 
             return 1;
+        }
+        finally
+        {
+            timeoutSource?.Dispose();
         }
     }
 

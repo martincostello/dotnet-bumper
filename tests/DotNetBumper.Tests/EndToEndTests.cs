@@ -427,6 +427,23 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
     }
 
     [Fact]
+    public async Task Application_Returns_Three_If_Timeout()
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        // Act
+        int actual = await Bumper.RunAsync(
+            fixture.Console,
+            [fixture.Project.DirectoryName, "--verbose", "--timeout", "00:00:00"],
+            (builder) => builder.AddXUnit(fixture),
+            CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(3);
+    }
+
+    [Fact]
     public async Task Application_Validates_Project_Is_Specified()
     {
         // Arrange
