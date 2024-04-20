@@ -130,41 +130,7 @@ internal sealed partial class DotNetTestPostProcessor(
             string name = ProjectHelpers.RelativeName(Options.ProjectPath, project);
             context.Status = StatusMessage($"Running tests for {name}...");
 
-            using var adapterDirectory = GetTestAdapter();
-            using var logsDirectory = new TemporaryDirectory();
-
-            var environmentVariables = new Dictionary<string, string?>(2)
-            {
-                [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
-            };
-
-            TemporaryFile? propertiesOverrides = null;
-
-            if (configuration.NoWarn is { Count: > 0 } noWarn)
-            {
-                propertiesOverrides = await GenerateDirectoryBuildPropsAsync(noWarn, cancellationToken);
-                environmentVariables["DirectoryBuildPropsPath"] = propertiesOverrides.Path;
-            }
-
-            var verbosity = Logger.IsEnabled(LogLevel.Debug) ? "detailed" : "quiet";
-
-            DotNetResult result;
-
-            try
-            {
-                // See https://learn.microsoft.com/dotnet/core/tools/dotnet-test
-                result = await dotnet.RunWithLoggerAsync(
-                    project,
-                    ["test", "--nologo", "--verbosity", verbosity, "--logger", BumperTestLogger.ExtensionUri, "--test-adapter-path", adapterDirectory.Path],
-                    environmentVariables,
-                    cancellationToken);
-            }
-            finally
-            {
-                propertiesOverrides?.Dispose();
-            }
-
-            result.TestLogs = await LogReader.GetTestLogsAsync(logsDirectory.Path, Logger, cancellationToken);
+            var result = await RunTestsAsync(project, configuration, cancellationToken);
 
             if (!result.Success)
             {
@@ -191,6 +157,50 @@ internal sealed partial class DotNetTestPostProcessor(
         }
 
         return overall;
+    }
+
+    private async Task<DotNetResult> RunTestsAsync(
+        string project,
+        BumperConfiguration configuration,
+        CancellationToken cancellationToken)
+    {
+        using var adapterDirectory = GetTestAdapter();
+        using var logsDirectory = new TemporaryDirectory();
+
+        var environmentVariables = new Dictionary<string, string?>()
+        {
+            [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
+        };
+
+        TemporaryFile? propertiesOverrides = null;
+
+        if (configuration.NoWarn is { Count: > 0 } noWarn)
+        {
+            propertiesOverrides = await GenerateDirectoryBuildPropsAsync(noWarn, cancellationToken);
+            environmentVariables["DirectoryBuildPropsPath"] = propertiesOverrides.Path;
+        }
+
+        var verbosity = Logger.IsEnabled(LogLevel.Debug) ? "detailed" : "quiet";
+
+        DotNetResult result;
+
+        try
+        {
+            // See https://learn.microsoft.com/dotnet/core/tools/dotnet-test
+            result = await dotnet.RunWithLoggerAsync(
+                project,
+                ["test", "--nologo", "--verbosity", verbosity, "--logger", BumperTestLogger.ExtensionUri, "--test-adapter-path", adapterDirectory.Path],
+                environmentVariables,
+                cancellationToken);
+        }
+        finally
+        {
+            propertiesOverrides?.Dispose();
+        }
+
+        result.TestLogs = await LogReader.GetTestLogsAsync(logsDirectory.Path, Logger, cancellationToken);
+
+        return result;
     }
 
     private async Task<TemporaryFile> GenerateDirectoryBuildPropsAsync(
