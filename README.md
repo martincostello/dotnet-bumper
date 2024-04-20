@@ -107,6 +107,7 @@ Options:
   -t|--upgrade-type <TYPE>         The type of upgrade to perform.
                                    Allowed values are: Lts, Latest, Preview.
   -test|--test                     Test the upgrade by running dotnet test on completion.
+  -timeout|--timeout <TIMESPAN>    The optional period to timeout the upgrade after.
   -e|--warnings-as-errors          Treat any warnings encountered during the upgrade as errors.
 ```
 
