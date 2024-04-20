@@ -7,17 +7,22 @@ public sealed class BumperTestCase(
     string sdkVersion,
     IList<string>? targetFrameworks = null,
     IList<string>? args = null,
-    IDictionary<string, string>? packageReferences = null)
+    IDictionary<string, string>? packageReferences = null) : IXunitSerializable
 {
     private Version? _channel;
 
-    public string SdkVersion { get; } = sdkVersion;
+    public BumperTestCase()
+        : this(string.Empty)
+    {
+    }
 
-    public IList<string> TargetFrameworks { get; } = targetFrameworks ?? [];
+    public string SdkVersion { get; set; } = sdkVersion;
 
-    public IDictionary<string, string> PackageReferences { get; } = packageReferences ?? new Dictionary<string, string>(0);
+    public IList<string> TargetFrameworks { get; set; } = targetFrameworks ?? [];
 
-    public IList<string> Arguments { get; } = args ?? [];
+    public IDictionary<string, string> PackageReferences { get; set; } = packageReferences ?? new Dictionary<string, string>(0);
+
+    public IList<string> Arguments { get; set; } = args ?? [];
 
     public Version Channel
     {
@@ -30,6 +35,44 @@ public sealed class BumperTestCase(
             }
 
             return _channel;
+        }
+    }
+
+    public void Deserialize(IXunitSerializationInfo info)
+    {
+        Arguments = info.GetValue<string[]>(nameof(Arguments));
+        SdkVersion = info.GetValue<string>(nameof(SdkVersion));
+        TargetFrameworks = info.GetValue<string[]>(nameof(TargetFrameworks));
+
+        if (info.GetValue<string>(nameof(Channel)) is { Length: > 0 } channel)
+        {
+            _channel = new Version(channel);
+        }
+
+        if (info.GetValue<string[]>(nameof(PackageReferences)) is { Length: > 0 } references)
+        {
+            PackageReferences = new Dictionary<string, string>(references.Length);
+
+            for (int i = 0; i < references.Length; i++)
+            {
+                if (references[i].Split(':') is [var package, var version])
+                {
+                    PackageReferences[package] = version;
+                }
+            }
+        }
+    }
+
+    public void Serialize(IXunitSerializationInfo info)
+    {
+        info.AddValue(nameof(Arguments), Arguments.ToArray());
+        info.AddValue(nameof(Channel), _channel?.ToString());
+        info.AddValue(nameof(SdkVersion), SdkVersion);
+        info.AddValue(nameof(TargetFrameworks), TargetFrameworks.ToArray());
+
+        if (PackageReferences is { Count: > 0 })
+        {
+            info.AddValue(nameof(PackageReferences), PackageReferences.Select((p) => $"{p.Key}={p.Value}").ToArray());
         }
     }
 
