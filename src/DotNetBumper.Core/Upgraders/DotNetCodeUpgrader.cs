@@ -32,6 +32,9 @@ internal sealed partial class DotNetCodeUpgrader(
         WellKnownFileNames.VisualBasicProjects,
     ];
 
+    protected override IReadOnlyList<string> FindFiles()
+        => ProjectHelpers.FindProjectFiles(Options.ProjectPath, SearchOption);
+
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
         IReadOnlyList<string> fileNames,

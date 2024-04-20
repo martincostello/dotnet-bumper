@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Xml.Linq;
+using Microsoft.Build.Construction;
 
 namespace MartinCostello.DotNetBumper;
 
@@ -12,6 +13,14 @@ internal static class ProjectHelpers
     private static readonly XNamespace[] Namespaces = [None, MSBuild];
 
     public static List<string> FindProjects(string path, SearchOption searchOption = SearchOption.AllDirectories)
+    {
+        return FindProjectFiles(path, searchOption)
+            .Select(Path.GetDirectoryName)
+            .Cast<string>()
+            .ToList();
+    }
+
+    public static List<string> FindProjectFiles(string path, SearchOption searchOption = SearchOption.AllDirectories)
     {
         List<string> projects =
         [
@@ -25,10 +34,7 @@ internal static class ProjectHelpers
             projects.AddRange(Directory.GetFiles(path, WellKnownFileNames.VisualBasicProjects, searchOption));
         }
 
-        return projects
-            .Select(Path.GetDirectoryName)
-            .Cast<string>()
-            .ToList();
+        return TryReduceProjects(projects);
     }
 
     public static IEnumerable<XElement> EnumerateProperties(XElement project)
@@ -46,5 +52,36 @@ internal static class ProjectHelpers
     {
         var relative = Path.GetRelativePath(projectPath, path);
         return relative is "." ? Path.GetFileName(path) : relative;
+    }
+
+    private static List<string> TryReduceProjects(List<string> fileNames)
+    {
+        var solutionFiles = fileNames.Where((p) => Path.GetExtension(p) is ".sln").ToList();
+        var projectFiles = fileNames.Where((p) => Path.GetExtension(p) is not ".sln").ToList();
+
+        if (solutionFiles.Count is 0 || projectFiles.Count is 0)
+        {
+            return fileNames;
+        }
+
+        foreach (var solutionFile in solutionFiles)
+        {
+            try
+            {
+                var solution = SolutionFile.Parse(solutionFile);
+                var projects = solution.ProjectsInOrder.Where((p) => p.ProjectType != SolutionProjectType.SolutionFolder);
+
+                foreach (var projectFile in projects.Select((p) => p.AbsolutePath))
+                {
+                    projectFiles.Remove(projectFile);
+                }
+            }
+            catch (Exception)
+            {
+                // Ignore
+            }
+        }
+
+        return [.. solutionFiles, .. projectFiles];
     }
 }

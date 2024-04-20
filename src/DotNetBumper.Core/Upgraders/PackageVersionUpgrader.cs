@@ -36,7 +36,7 @@ internal sealed partial class PackageVersionUpgrader(
 
         context.Status = StatusMessage("Finding projects...");
 
-        foreach (string project in FindProjects())
+        foreach (string project in ProjectHelpers.FindProjects(Options.ProjectPath))
         {
             var name = RelativeName(project);
 
@@ -70,9 +70,6 @@ internal sealed partial class PackageVersionUpgrader(
 
     private static bool HasDotNetToolManifest(string path)
         => FileHelpers.FindFileInProject(path, Path.Join(".config", WellKnownFileNames.ToolsManifest)) is not null;
-
-    private List<string> FindProjects()
-        => ProjectHelpers.FindProjects(Options.ProjectPath, SearchOption.AllDirectories);
 
     private string GetVerbosity()
         => Logger.IsEnabled(LogLevel.Debug) ? "detailed" : "quiet";
