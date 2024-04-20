@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using MartinCostello.DotNetBumper.Logging;
+using Microsoft.Build.Construction;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Versioning;
@@ -39,6 +40,8 @@ internal sealed partial class DotNetCodeUpgrader(
         CancellationToken cancellationToken)
     {
         Log.UpgradingDotNetCode(Logger);
+
+        fileNames = TryReduceAnalysis(fileNames);
 
         var diagnostics = new Dictionary<string, int>();
         var result = ProcessingResult.None;
@@ -237,6 +240,40 @@ internal sealed partial class DotNetCodeUpgrader(
         return fixes;
     }
 
+    private IReadOnlyList<string> TryReduceAnalysis(IReadOnlyList<string> fileNames)
+    {
+        var solutionFiles = fileNames.Where((p) => Path.GetExtension(p) is ".sln").ToList();
+        var projectFiles = fileNames.Where((p) => Path.GetExtension(p) is not ".sln").ToList();
+
+        if (solutionFiles.Count is 0 || projectFiles.Count is 0)
+        {
+            return fileNames;
+        }
+
+        foreach (var solutionFile in solutionFiles)
+        {
+            try
+            {
+                var solution = SolutionFile.Parse(solutionFile);
+                var projects = solution.ProjectsInOrder.Where((p) => p.ProjectType != SolutionProjectType.SolutionFolder);
+
+                foreach (var project in projects)
+                {
+                    if (project.AbsolutePath is { Length: > 0 } projectFile)
+                    {
+                        projectFiles.Remove(projectFile);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.FailedToDetermineSolutionProjects(Logger, solutionFile, ex);
+            }
+        }
+
+        return [.. solutionFiles, .. projectFiles];
+    }
+
     private record struct DiagnosticFix(string FilePath, string DiagnosticId, int LineNumber);
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -259,5 +296,11 @@ internal sealed partial class DotNetCodeUpgrader(
             Level = LogLevel.Debug,
             Message = "Fixed diagnostic {DiagnosticId} in {FileName}:{LineNumber}.")]
         public static partial void FixedDiagnostic(ILogger logger, string diagnosticId, string fileName, int lineNumber);
+
+        [LoggerMessage(
+            EventId = 4,
+            Level = LogLevel.Debug,
+            Message = "Failed to determine projects included in the solution file {SolutionFile}.")]
+        public static partial void FailedToDetermineSolutionProjects(ILogger logger, string solutionFile, Exception exception);
     }
 }
