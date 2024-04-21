@@ -133,12 +133,9 @@ internal sealed partial class DotNetCodeUpgrader(
         [
             "format",
             "analyzers",
-            "--report",
-            tempDirectory.Path,
-            "--severity",
-            "warn",
-            "--verbosity",
-            "diagnostic",
+            "--report", tempDirectory.Path,
+            "--severity", "warn",
+            "--verbosity", Logger.GetMSBuildVerbosity(),
         ];
 
         var environmentVariables = GetFormatEnvironment(channel, sdkVersion.ToString());

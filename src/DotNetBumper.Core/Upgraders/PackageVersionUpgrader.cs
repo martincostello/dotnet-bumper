@@ -71,14 +71,11 @@ internal sealed partial class PackageVersionUpgrader(
     private static bool HasDotNetToolManifest(string path)
         => FileHelpers.FindFileInProject(path, Path.Join(".config", WellKnownFileNames.ToolsManifest)) is not null;
 
-    private string GetVerbosity()
-        => Logger.IsEnabled(LogLevel.Debug) ? "detailed" : "quiet";
-
     private async Task TryRestoreNuGetPackagesAsync(string directory, CancellationToken cancellationToken)
     {
         var result = await dotnet.RunWithLoggerAsync(
             directory,
-            ["restore", "--verbosity", GetVerbosity()],
+            ["restore", "--verbosity", Logger.GetMSBuildVerbosity()],
             cancellationToken);
 
         logContext.Add(result);
@@ -97,7 +94,7 @@ internal sealed partial class PackageVersionUpgrader(
     {
         var result = await dotnet.RunAsync(
             directory,
-            ["tool", "restore", "--verbosity", GetVerbosity()],
+            ["tool", "restore", "--verbosity", Logger.GetMSBuildVerbosity()],
             cancellationToken);
 
         logContext.Add(result);
