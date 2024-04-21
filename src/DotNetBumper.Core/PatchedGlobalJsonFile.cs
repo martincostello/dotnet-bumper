@@ -12,12 +12,14 @@ internal sealed class PatchedGlobalJsonFile : IDisposable
     private readonly string _filePath;
     private readonly string _backupPath;
 
-    public PatchedGlobalJsonFile(string source)
+    private PatchedGlobalJsonFile(string source)
     {
         _filePath = source;
         _backupPath = $"{source}.{Guid.NewGuid().ToString()[0..8]}.tmp";
         File.Copy(_filePath, _backupPath, overwrite: true);
     }
+
+    public string? SdkVersion { get; private set; }
 
     public static async Task<PatchedGlobalJsonFile?> TryPatchAsync(
         string path,
@@ -32,7 +34,7 @@ internal sealed class PatchedGlobalJsonFile : IDisposable
 
             try
             {
-                await patched.TryRemoveSdkVersionAsync(sdkVersion.ToString(), sdkVersion.IsPrerelease, cancellationToken);
+                await patched.TryPatchSdkVersionAsync(sdkVersion, cancellationToken);
                 return patched;
             }
             catch (Exception)
@@ -45,9 +47,11 @@ internal sealed class PatchedGlobalJsonFile : IDisposable
         return null;
     }
 
-    public async Task TryRemoveSdkVersionAsync(
-        string sdkVersion,
-        bool isPrerelease,
+    public void Dispose()
+        => File.Move(_backupPath, _filePath, overwrite: true);
+
+    private async Task TryPatchSdkVersionAsync(
+        NuGetVersion sdkVersion,
         CancellationToken cancellationToken)
     {
         if (!JsonHelpers.TryLoadObject(_filePath, out var globalJson))
@@ -67,16 +71,33 @@ internal sealed class PatchedGlobalJsonFile : IDisposable
             var sdk = property.AsObject();
 
             var edited = false;
+            var editVersion = false;
 
-            if (!sdk.TryGetPropertyValue(VersionProperty, out var version) ||
-                version?.GetValueKind() is JsonValueKind.String)
+            if (!sdk.TryGetPropertyValue(VersionProperty, out var version))
+            {
+                editVersion = true;
+            }
+            else if (version?.GetValueKind() is JsonValueKind.String)
+            {
+                SdkVersion = version.GetValue<string>();
+
+                if (NuGetVersion.TryParse(SdkVersion, out var existing) &&
+                    existing < sdkVersion)
+                {
+                    editVersion = true;
+                }
+            }
+
+            if (editVersion)
             {
                 sdk.Remove(VersionProperty);
                 sdk.Add(new(VersionProperty, JsonValue.Create(sdkVersion)));
+
                 edited = true;
+                SdkVersion = sdkVersion.ToString();
             }
 
-            if (isPrerelease &&
+            if (sdkVersion.IsPrerelease &&
                 (!sdk.TryGetPropertyValue(AllowPrereleaseProperty, out var allowPrerelease) ||
                  allowPrerelease?.GetValueKind() is not JsonValueKind.True))
             {
@@ -91,7 +112,4 @@ internal sealed class PatchedGlobalJsonFile : IDisposable
             }
         }
     }
-
-    public void Dispose()
-        => File.Move(_backupPath, _filePath, overwrite: true);
 }
