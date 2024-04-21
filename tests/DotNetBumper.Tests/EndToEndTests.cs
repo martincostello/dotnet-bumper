@@ -241,7 +241,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Act
         int actual = await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, "--verbose", .. args],
+            [fixture.Project.DirectoryName, .. args],
             (builder) => builder.AddXUnit(fixture),
             CancellationToken.None);
 
@@ -333,7 +333,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Act
         int actual = await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, "--verbose", .. args],
+            [fixture.Project.DirectoryName, .. args],
             (builder) => builder.AddXUnit(fixture),
             CancellationToken.None);
 
@@ -414,7 +414,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Act
         int actual = await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, "--verbose"],
+            [fixture.Project.DirectoryName],
             (builder) =>
             {
                 cts.Cancel();
@@ -525,9 +525,24 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(3));
 
+        string[] arguments =
+        [
+            fixture.Project.DirectoryName,
+            "--warnings-as-errors",
+            .. args,
+        ];
+
+#if DEBUG
+        const string Verbose = "--verbose";
+        if (!arguments.Contains(Verbose) && Environment.GetEnvironmentVariable("RUNNER_DEBUG") is "1")
+        {
+            arguments = [.. arguments, Verbose];
+        }
+#endif
+
         return await Bumper.RunAsync(
             fixture.Console,
-            [fixture.Project.DirectoryName, "--verbose", "--warnings-as-errors", .. args],
+            arguments,
             (builder) => builder.AddXUnit(fixture).AddFilter(LogFilter),
             cts.Token);
     }
