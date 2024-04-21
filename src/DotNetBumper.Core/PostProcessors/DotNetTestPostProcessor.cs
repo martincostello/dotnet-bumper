@@ -4,6 +4,7 @@
 using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Versioning;
 using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper.PostProcessors;
@@ -53,7 +54,11 @@ internal sealed partial class DotNetTestPostProcessor(
         }
         else
         {
-            var result = await RunTestsAsync(projects, context, cancellationToken);
+            var result = await RunTestsAsync(
+                projects,
+                upgrade.SdkVersion,
+                context,
+                cancellationToken);
 
             logContext.Add(result);
 
@@ -118,6 +123,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
     private async Task<DotNetResult> RunTestsAsync(
         List<string> projects,
+        NuGetVersion sdkVersion,
         StatusContext context,
         CancellationToken cancellationToken)
     {
@@ -130,7 +136,7 @@ internal sealed partial class DotNetTestPostProcessor(
             string name = ProjectHelpers.RelativeName(Options.ProjectPath, project);
             context.Status = StatusMessage($"Running tests for {name}...");
 
-            var result = await RunTestsAsync(project, configuration, cancellationToken);
+            var result = await RunTestsAsync(project, sdkVersion, configuration, cancellationToken);
 
             if (!result.Success)
             {
@@ -161,6 +167,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
     private async Task<DotNetResult> RunTestsAsync(
         string project,
+        NuGetVersion sdkVersion,
         BumperConfiguration configuration,
         CancellationToken cancellationToken)
     {
@@ -176,7 +183,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
         if (configuration.NoWarn is { Count: > 0 } noWarn)
         {
-            propertiesOverrides = await GenerateDirectoryBuildPropsAsync(noWarn, cancellationToken);
+            propertiesOverrides = await GenerateDirectoryBuildPropsAsync(sdkVersion, noWarn, cancellationToken);
             environmentVariables["DirectoryBuildPropsPath"] = propertiesOverrides.Path;
         }
 
@@ -212,6 +219,7 @@ internal sealed partial class DotNetTestPostProcessor(
     }
 
     private async Task<TemporaryFile> GenerateDirectoryBuildPropsAsync(
+        NuGetVersion sdkVersion,
         HashSet<string> suppressWarnings,
         CancellationToken cancellationToken)
     {
@@ -229,7 +237,7 @@ internal sealed partial class DotNetTestPostProcessor(
             // If the existing Directory.Build.props file has the UseArtifactsOutput property set to true
             // then it needs to be manually set in our override file, otherwise an NETSDK1200 error occurs.
             // See https://learn.microsoft.com/dotnet/core/tools/sdk-errors/.
-            (artifactsPath, useArtifactsOutput) = await EvaluateArtifactsPropertiesAsync(existing, cancellationToken);
+            (artifactsPath, useArtifactsOutput) = await EvaluateArtifactsPropertiesAsync(sdkVersion, existing, cancellationToken);
         }
 
         var project =
@@ -284,11 +292,18 @@ internal sealed partial class DotNetTestPostProcessor(
     }
 
     private async Task<(string ArtifactsPath, string UseArtifactsOutput)> EvaluateArtifactsPropertiesAsync(
+        NuGetVersion sdkVersion,
         string projectFile,
         CancellationToken cancellationToken)
     {
         var artifactsPath = string.Empty;
         var useArtifactsOutput = "false";
+
+        if (sdkVersion.Major < 8)
+        {
+            // "dotnet msbuild -getProperty" is not available before .NET 8
+            return (artifactsPath, useArtifactsOutput);
+        }
 
         var useArtifactsValue = await EvaluateMSBuildPropertyAsync(
             projectFile,
