@@ -104,9 +104,6 @@ jobs:
             test: false
             upgrade-type: Preview
             warnings-as-errors: false
-          - repo: alexa-london-travel-site
-            upgrade-type: Preview
-            warnings-as-errors: false
           - repo: dotnet-bumper
             upgrade-type: Preview
             warnings-as-errors: false
