@@ -5,6 +5,8 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
 {
+    private static TimeSpan Timeout { get; } = TimeSpan.FromMinutes(1);
+
     public static TheoryData<string> Channels()
     {
 #pragma warning disable IDE0028 // See https://github.com/dotnet/roslyn/issues/72668
@@ -54,15 +56,17 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
 
         var target = CreateTarget(fixture);
 
+        using var cts = new CancellationTokenSource(Timeout);
+
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, cts.Token);
 
         // Assert
         actual.ShouldBe(ProcessingResult.Success);
         fixture.LogContext.Changelog.ShouldContain("Fix IDE0057 warning");
 
         // Act
-        actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actual = await target.UpgradeAsync(upgrade, cts.Token);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -109,15 +113,17 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
 
         var target = CreateTarget(fixture);
 
+        using var cts = new CancellationTokenSource(Timeout);
+
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, cts.Token);
 
         // Assert
         actual.ShouldBe(ProcessingResult.Success);
         fixture.LogContext.Changelog.ShouldContain("Fix IDE0057 warnings");
 
         // Act
-        actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actual = await target.UpgradeAsync(upgrade, cts.Token);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -160,8 +166,10 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
 
         var target = CreateTarget(fixture);
 
+        using var cts = new CancellationTokenSource(Timeout);
+
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, cts.Token);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -204,8 +212,10 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
 
         var target = CreateTarget(fixture);
 
+        using var cts = new CancellationTokenSource(Timeout);
+
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, cts.Token);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -272,7 +282,9 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
             Microsoft.Extensions.Options.Options.Create(new UpgradeOptions() { DotNetChannel = channel }),
             outputHelper.ToLogger<DotNetUpgradeFinder>());
 
-        var upgrade = await finder.GetUpgradeAsync(CancellationToken.None);
+        using var cts = new CancellationTokenSource(Timeout);
+
+        var upgrade = await finder.GetUpgradeAsync(cts.Token);
         upgrade.ShouldNotBeNull();
 
         return upgrade;
