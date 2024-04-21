@@ -188,8 +188,8 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             Process process,
             CancellationToken cancellationToken)
         {
-            var processErrors = ConsumeStreamAsync(process.StandardError, cancellationToken);
-            var processOutput = ConsumeStreamAsync(process.StandardOutput, cancellationToken);
+            var processErrors = ConsumeStreamAsync(process.StandardError, process.StartInfo.RedirectStandardError, cancellationToken);
+            var processOutput = ConsumeStreamAsync(process.StandardOutput, process.StartInfo.RedirectStandardOutput, cancellationToken);
 
             await Task.WhenAll([processErrors, processOutput]);
 
@@ -211,9 +211,12 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 
         static Task<StringBuilder> ConsumeStreamAsync(
             StreamReader reader,
+            bool isRedirected,
             CancellationToken cancellationToken)
         {
-            return Task.Run<StringBuilder>(() => ProcessStream(reader, cancellationToken), cancellationToken);
+            return isRedirected ?
+                Task.Run<StringBuilder>(() => ProcessStream(reader, cancellationToken), cancellationToken) :
+                Task.FromResult(new StringBuilder(0));
 
             static async Task<StringBuilder> ProcessStream(
                 StreamReader reader,
