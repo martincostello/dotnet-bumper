@@ -183,6 +183,7 @@ internal sealed partial class DotNetTestPostProcessor(
         string[] arguments =
         [
             "test",
+            "--configuration", "Release",
             "--logger", BumperTestLogger.ExtensionUri,
             "--nologo",
             "--test-adapter-path", adapterDirectory.Path,
