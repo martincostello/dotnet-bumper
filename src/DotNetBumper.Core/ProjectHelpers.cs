@@ -37,6 +37,21 @@ internal static class ProjectHelpers
         return TryReduceProjects(projects);
     }
 
+    public static List<string> GetSolutionProjects(string solutionFile)
+    {
+        try
+        {
+            var solution = SolutionFile.Parse(solutionFile);
+            var projects = solution.ProjectsInOrder.Where((p) => p.ProjectType != SolutionProjectType.SolutionFolder);
+
+            return projects.Select((p) => p.AbsolutePath).ToList();
+        }
+        catch (Exception)
+        {
+            return [];
+        }
+    }
+
     public static IEnumerable<XElement> EnumerateProperties(XElement project)
     {
         foreach (var ns in Namespaces)
@@ -66,19 +81,11 @@ internal static class ProjectHelpers
 
         foreach (var solutionFile in solutionFiles)
         {
-            try
-            {
-                var solution = SolutionFile.Parse(solutionFile);
-                var projects = solution.ProjectsInOrder.Where((p) => p.ProjectType != SolutionProjectType.SolutionFolder);
+            var projects = GetSolutionProjects(solutionFile);
 
-                foreach (var projectFile in projects.Select((p) => p.AbsolutePath))
-                {
-                    projectFiles.Remove(projectFile);
-                }
-            }
-            catch (Exception)
+            foreach (var projectFile in projects)
             {
-                // Ignore
+                projectFiles.Remove(projectFile);
             }
         }
 

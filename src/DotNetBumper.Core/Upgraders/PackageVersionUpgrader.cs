@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -36,28 +37,34 @@ internal sealed partial class PackageVersionUpgrader(
 
         context.Status = StatusMessage("Finding projects...");
 
-        foreach (string project in ProjectHelpers.FindProjects(Options.ProjectPath))
+        foreach (string projectFile in ProjectHelpers.FindProjectFiles(Options.ProjectPath))
         {
+            var project = Path.GetDirectoryName(projectFile)!;
             var name = RelativeName(project);
 
             context.Status = StatusMessage($"Updating {name}...");
 
-            using (await PatchedGlobalJsonFile.TryPatchAsync(project, upgrade.SdkVersion, cancellationToken))
+            using var globalJson = await PatchedGlobalJsonFile.TryPatchAsync(project, upgrade.SdkVersion, cancellationToken);
+
+            if (await HasWorkloadsAsync(projectFile, upgrade.SdkVersion, cancellationToken))
             {
-                if (HasDotNetToolManifest(project))
-                {
-                    context.Status = StatusMessage($"Restore .NET tools for {name}...");
-                    await TryRestoreToolsAsync(project, cancellationToken);
-                }
-
-                context.Status = StatusMessage($"Restore NuGet packages for {name}...");
-
-                await TryRestoreNuGetPackagesAsync(project, cancellationToken);
-
-                context.Status = StatusMessage($"Update NuGet packages for {name}...");
-
-                result = result.Max(await TryUpgradePackagesAsync(project, upgrade.SdkVersion, cancellationToken));
+                context.Status = StatusMessage($"Restore .NET workloads for {name}...");
+                await TryRestoreWorkloadsAsync(project, globalJson?.SdkVersion ?? upgrade.SdkVersion.ToString(), cancellationToken);
             }
+
+            if (HasDotNetToolManifest(project))
+            {
+                context.Status = StatusMessage($"Restore .NET tools for {name}...");
+                await TryRestoreToolsAsync(project, cancellationToken);
+            }
+
+            context.Status = StatusMessage($"Restore NuGet packages for {name}...");
+
+            await TryRestoreNuGetPackagesAsync(project, cancellationToken);
+
+            context.Status = StatusMessage($"Update NuGet packages for {name}...");
+
+            result = result.Max(await TryUpgradePackagesAsync(project, upgrade.SdkVersion, cancellationToken));
         }
 
         if (result is ProcessingResult.Success)
@@ -106,6 +113,33 @@ internal sealed partial class PackageVersionUpgrader(
         else
         {
             Log.UnableToRestoreTools(logger, directory);
+        }
+    }
+
+    private async Task TryRestoreWorkloadsAsync(
+        string directory,
+        string sdkVersion,
+        CancellationToken cancellationToken)
+    {
+        var environmentVariables = MSBuildHelper.GetSdkProperties(sdkVersion);
+
+        // This will require elevated permissions if anything needs to be installed
+        var result = await dotnet.RunAsync(
+            directory,
+            ["workload", "restore", "--verbosity", Logger.GetMSBuildVerbosity()],
+            environmentVariables,
+            cancellationToken);
+
+        logContext.Add(result);
+
+        if (result.Success)
+        {
+            Log.RestoredWorkloads(logger, directory);
+        }
+        else
+        {
+            Log.UnableToRestoreWorkloads(logger, directory);
+            Console.WriteWarningLine("Failed to restore .NET workloads. Elevated permissions may be required.");
         }
     }
 
@@ -212,6 +246,95 @@ internal sealed partial class PackageVersionUpgrader(
         return updatedDependencies > 0 ? ProcessingResult.Success : ProcessingResult.None;
     }
 
+    private async Task<bool> HasWorkloadsAsync(
+        string projectFile,
+        NuGetVersion sdkVersion,
+        CancellationToken cancellationToken)
+    {
+        if (sdkVersion.Major < 8)
+        {
+            // "dotnet msbuild -getTargetResult" is not available before .NET 8
+            // so just assume there are no workloads that need to be installed.
+            return false;
+        }
+
+        // See https://github.com/dotnet/sdk/blob/051c52977e668544b58f60ff4d4ff84fe67d33f2/src/Cli/dotnet/commands/dotnet-workload/restore/WorkloadRestoreCommand.cs#L46-L81
+        var projects = Path.GetExtension(projectFile) is ".sln"
+            ? ProjectHelpers.GetSolutionProjects(projectFile)
+            : [projectFile];
+
+        var environment = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["SkipResolvePackageAssets"] = bool.TrueString,
+        };
+
+        MSBuildHelper.TryAddSdkProperties(environment, sdkVersion.ToString());
+
+        foreach (var project in projects)
+        {
+            if (await HasWorkloadsAsync(project, environment, cancellationToken))
+            {
+                return true;
+            }
+        }
+
+        return false;
+
+        async Task<bool> HasWorkloadsAsync(
+            string projectFile,
+            Dictionary<string, string?> environment,
+            CancellationToken cancellationToken)
+        {
+            const string WorkloadsTarget = "_GetRequiredWorkloads";
+
+            var json = await EvaluateMSBuildTargetAsync(projectFile, WorkloadsTarget, environment, cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(json) || !JsonHelpers.TryLoadObjectFromString(json, out var document))
+            {
+                return false;
+            }
+
+            if (document.TryGetPropertyValue("TargetResults", out var results) &&
+                results is JsonObject targetResults &&
+                targetResults.TryGetPropertyValue(WorkloadsTarget, out var targetResult) &&
+                targetResult is JsonObject result &&
+                result.TryGetPropertyValue("Items", out var items) &&
+                items is JsonArray array)
+            {
+                return array.Count > 0;
+            }
+
+            return false;
+        }
+
+        async Task<string?> EvaluateMSBuildTargetAsync(
+            string projectPath,
+            string targetName,
+            Dictionary<string, string?> environment,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var getTargetResult = await dotnet.RunAsync(
+                    Options.ProjectPath,
+                    ["msbuild", projectPath, $"-getTargetResult:{targetName}"],
+                    environment,
+                    cancellationToken);
+
+                if (getTargetResult.Success)
+                {
+                    return getTargetResult.StandardOutput.Trim();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.FailedToEvaluateTarget(Logger, targetName, projectPath, ex);
+            }
+
+            return null;
+        }
+    }
+
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private static partial class Log
     {
@@ -250,5 +373,23 @@ internal sealed partial class PackageVersionUpgrader(
             Level = LogLevel.Warning,
             Message = "Unable to restore .NET tools for {Directory}.")]
         public static partial void UnableToRestoreTools(ILogger logger, string directory);
+
+        [LoggerMessage(
+            EventId = 7,
+            Level = LogLevel.Debug,
+            Message = "Restored .NET workloads for {Directory}.")]
+        public static partial void RestoredWorkloads(ILogger logger, string directory);
+
+        [LoggerMessage(
+            EventId = 8,
+            Level = LogLevel.Warning,
+            Message = "Unable to restore .NET workloads for {Directory}.")]
+        public static partial void UnableToRestoreWorkloads(ILogger logger, string directory);
+
+        [LoggerMessage(
+            EventId = 9,
+            Level = LogLevel.Debug,
+            Message = "Failed to evaluate the result of the {TargetName} MSBuild target from {ProjectFile}.")]
+        public static partial void FailedToEvaluateTarget(ILogger logger, string targetName, string projectFile, Exception exception);
     }
 }

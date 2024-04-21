@@ -22,6 +22,12 @@ internal static class JsonHelpers
         return root is not null;
     }
 
+    public static bool TryLoadObjectFromString(string json, [NotNullWhen(true)] out JsonObject? root)
+    {
+        root = JsonNode.Parse(json, documentOptions: DocumentOptions) as JsonObject;
+        return root is not null;
+    }
+
     public static bool UpdateStringNodes<T>(JsonObject root, T state, Func<JsonValue, T, bool> processValue)
     {
         return Visit(root, state, processValue);
