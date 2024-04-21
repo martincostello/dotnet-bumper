@@ -8,6 +8,7 @@ using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper;
 
+[Collection("End-to-End")]
 public class EndToEndTests(ITestOutputHelper outputHelper)
 {
     [Fact]
