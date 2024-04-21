@@ -180,7 +180,14 @@ internal sealed partial class DotNetTestPostProcessor(
             environmentVariables["DirectoryBuildPropsPath"] = propertiesOverrides.Path;
         }
 
-        var verbosity = Logger.IsEnabled(LogLevel.Debug) ? "detailed" : "quiet";
+        string[] arguments =
+        [
+            "test",
+            "--logger", BumperTestLogger.ExtensionUri,
+            "--nologo",
+            "--test-adapter-path", adapterDirectory.Path,
+            "--verbosity", Logger.GetMSBuildVerbosity(),
+        ];
 
         DotNetResult result;
 
@@ -189,7 +196,7 @@ internal sealed partial class DotNetTestPostProcessor(
             // See https://learn.microsoft.com/dotnet/core/tools/dotnet-test
             result = await dotnet.RunWithLoggerAsync(
                 project,
-                ["test", "--nologo", "--verbosity", verbosity, "--logger", BumperTestLogger.ExtensionUri, "--test-adapter-path", adapterDirectory.Path],
+                arguments,
                 environmentVariables,
                 cancellationToken);
         }
