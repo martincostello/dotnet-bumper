@@ -123,7 +123,7 @@ internal sealed partial class PackageVersionUpgrader(
     {
         var environmentVariables = MSBuildHelper.GetSdkProperties(sdkVersion);
 
-        // TODO This will require elevated permissions if anything needs to be installed
+        // This will require elevated permissions if anything needs to be installed
         var result = await dotnet.RunAsync(
             directory,
             ["workload", "restore", "--verbosity", Logger.GetMSBuildVerbosity()],
@@ -134,11 +134,12 @@ internal sealed partial class PackageVersionUpgrader(
 
         if (result.Success)
         {
-            Log.RestoredTools(logger, directory);
+            Log.RestoredWorkloads(logger, directory);
         }
         else
         {
-            Log.UnableToRestoreTools(logger, directory);
+            Log.UnableToRestoreWorkloads(logger, directory);
+            Console.WriteWarningLine("Failed to restore .NET workloads. Elevated permissions may be required.");
         }
     }
 
@@ -253,8 +254,8 @@ internal sealed partial class PackageVersionUpgrader(
         if (sdkVersion.Major < 8)
         {
             // "dotnet msbuild -getTargetResult" is not available before .NET 8
-            // so just assume there are workloads that need to be installed.
-            return true;
+            // so just assume there are no workloads that need to be installed.
+            return false;
         }
 
         // See https://github.com/dotnet/sdk/blob/051c52977e668544b58f60ff4d4ff84fe67d33f2/src/Cli/dotnet/commands/dotnet-workload/restore/WorkloadRestoreCommand.cs#L46-L81
