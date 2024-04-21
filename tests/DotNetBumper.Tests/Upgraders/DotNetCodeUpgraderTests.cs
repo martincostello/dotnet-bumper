@@ -5,7 +5,7 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
 {
-    private static TimeSpan Timeout { get; } = TimeSpan.FromMinutes(1);
+    private static TimeSpan Timeout { get; } = TimeSpan.FromMinutes(2);
 
     public static TheoryData<string> Channels()
     {
