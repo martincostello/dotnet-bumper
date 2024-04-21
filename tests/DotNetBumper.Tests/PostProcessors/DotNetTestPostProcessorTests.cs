@@ -8,6 +8,8 @@ namespace MartinCostello.DotNetBumper.PostProcessors;
 
 public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 {
+    private static TimeSpan Timeout { get; } = TimeSpan.FromMinutes(1);
+
     public static TheoryData<string> Channels()
     {
 #pragma warning disable IDE0028 // See https://github.com/dotnet/roslyn/issues/72668
@@ -31,8 +33,10 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 
         var target = CreateTarget(fixture);
 
+        using var cts = new CancellationTokenSource(Timeout);
+
         // Act
-        var actual = await target.PostProcessAsync(upgrade, CancellationToken.None);
+        var actual = await target.PostProcessAsync(upgrade, cts.Token);
 
         // Assert
         actual.ShouldBe(ProcessingResult.Success);
@@ -51,8 +55,10 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 
         var target = CreateTarget(fixture);
 
+        using var cts = new CancellationTokenSource(Timeout);
+
         // Act
-        var actual = await target.PostProcessAsync(upgrade, CancellationToken.None);
+        var actual = await target.PostProcessAsync(upgrade, cts.Token);
 
         // Assert
         actual.ShouldBe(ProcessingResult.Success);
@@ -97,8 +103,10 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 
         var target = CreateTarget(fixture);
 
+        using var cts = new CancellationTokenSource(Timeout);
+
         // Act
-        var actual = await target.PostProcessAsync(upgrade, CancellationToken.None);
+        var actual = await target.PostProcessAsync(upgrade, cts.Token);
 
         // Assert
         actual.ShouldBe(ProcessingResult.Success);
@@ -142,7 +150,9 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
             Microsoft.Extensions.Options.Options.Create(new UpgradeOptions() { DotNetChannel = channel }),
             outputHelper.ToLogger<DotNetUpgradeFinder>());
 
-        var upgrade = await finder.GetUpgradeAsync(CancellationToken.None);
+        using var cts = new CancellationTokenSource(Timeout);
+
+        var upgrade = await finder.GetUpgradeAsync(cts.Token);
         upgrade.ShouldNotBeNull();
 
         return upgrade;
