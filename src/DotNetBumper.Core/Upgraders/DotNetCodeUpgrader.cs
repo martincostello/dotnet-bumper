@@ -138,7 +138,7 @@ internal sealed partial class DotNetCodeUpgrader(
             "--verbosity", Logger.GetMSBuildVerbosity(),
         ];
 
-        var environmentVariables = GetFormatEnvironment(channel, sdkVersion.ToString());
+        var environmentVariables = GetFormatEnvironment(channel, globalJson?.SdkVersion ?? sdkVersion.ToString());
 
         var formatResult = await dotnet.RunAsync(
             workingDirectory,
