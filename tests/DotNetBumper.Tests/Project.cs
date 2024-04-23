@@ -94,7 +94,7 @@ internal sealed class Project : IDisposable
 
     public async Task<string> AddProjectAsync(string path, ProjectCreator project)
     {
-        // HACK dotet outdated does not determine whether the project is an SDK-style
+        // HACK dotnet outdated does not determine whether the project is an SDK-style
         // project correctly when the XML namespace is present in the project file.
         var xml = project.Xml.Replace(" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"", string.Empty, StringComparison.Ordinal);
         return await AddFileAsync(path, xml);
