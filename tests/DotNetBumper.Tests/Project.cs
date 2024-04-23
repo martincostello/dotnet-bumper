@@ -96,6 +96,7 @@ internal sealed class Project : IDisposable
     {
         // HACK dotnet outdated does not determine whether the project is an SDK-style
         // project correctly when the XML namespace is present in the project file.
+        // See https://github.com/dotnet-outdated/dotnet-outdated/pull/541.
         var xml = project.Xml.Replace(" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"", string.Empty, StringComparison.Ordinal);
         return await AddFileAsync(path, xml);
     }
