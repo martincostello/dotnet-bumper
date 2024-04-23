@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Xml.Linq;
+using Microsoft.Build.Utilities.ProjectCreation;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
@@ -55,19 +56,13 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         string expectedValue)
     {
         // Arrange
-        string fileContents =
-            $"""
-             <Project Sdk="Microsoft.NET.Sdk">
-               <PropertyGroup>
-                 <{propertyName}>{propertyValue}</{propertyName}>
-               </PropertyGroup>
-             </Project>
-             """;
+        var builder = ProjectCreator.Create(sdk: "Microsoft.NET.Sdk")
+            .Property(propertyName, propertyValue);
 
         using var fixture = new UpgraderFixture(outputHelper);
 
         var encoding = new UTF8Encoding(hasByteOrderMark);
-        string projectFile = await fixture.Project.AddFileAsync(fileName, fileContents, encoding);
+        string projectFile = await fixture.Project.AddFileAsync(fileName, builder.Xml, encoding);
 
         var upgrade = new UpgradeInfo()
         {
@@ -100,10 +95,13 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         var xml = await fixture.Project.GetFileAsync(projectFile);
         var project = XDocument.Parse(xml);
 
+        project.Root.ShouldNotBeNull();
+        var ns = project.Root.GetDefaultNamespace();
+
         var actualValue = project
-            .Root?
-            .Element("PropertyGroup")?
-            .Element(propertyName)?
+            .Root
+            .Element(ns + "PropertyGroup")?
+            .Element(ns + propertyName)?
             .Value;
 
         actualValue.ShouldBe(expectedValue);
@@ -115,6 +113,79 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
 
         fixture.LogContext.Changelog.ShouldContain("Update runtime identifiers");
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Handles_Files_Without_Xml_Namespace()
+    {
+        // Arrange
+        string fileContents =
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <Project ToolsVersion="4.0">
+             <PropertyGroup>
+               <Configuration>Release</Configuration>
+               <Platform>Any CPU</Platform>
+               <PublishDir>bin\Release\net6.0\publish\</PublishDir>
+               <PublishProtocol>FileSystem</PublishProtocol>
+               <TargetFramework>net6.0</TargetFramework>
+               <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+               <SelfContained>true</SelfContained>
+               <PublishSingleFile>False</PublishSingleFile>
+               <PublishReadyToRun>False</PublishReadyToRun>
+               <PublishTrimmed>True</PublishTrimmed>
+             </PropertyGroup>
+            </Project>
+            """;
+
+        string expectedContent =
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <Project ToolsVersion="4.0">
+             <PropertyGroup>
+               <Configuration>Release</Configuration>
+               <Platform>Any CPU</Platform>
+               <PublishDir>bin\Release\net6.0\publish\</PublishDir>
+               <PublishProtocol>FileSystem</PublishProtocol>
+               <TargetFramework>net6.0</TargetFramework>
+               <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+               <SelfContained>true</SelfContained>
+               <PublishSingleFile>False</PublishSingleFile>
+               <PublishReadyToRun>False</PublishReadyToRun>
+               <PublishTrimmed>True</PublishTrimmed>
+             </PropertyGroup>
+            </Project>
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string pubxml = await fixture.Project.AddFileAsync("src/Project/Properties/PublishProfiles/Profile.pubxml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse("10.0"),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("10.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(pubxml);
+        actualContent.ShouldBe(expectedContent);
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
     [Fact]
@@ -229,14 +300,10 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Does_Not_Change_DotNet_7_Runtime_Identifiers()
     {
         // Arrange
-        string fileContents =
-            """
-            <Project Sdk="Microsoft.NET.Sdk">
-              <PropertyGroup>
-                <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-              </PropertyGroup>
-            </Project>
-            """;
+        var builder = ProjectCreator.Create(sdk: "Microsoft.NET.Sdk")
+            .Property("RuntimeIdentifier", "win10-x64");
+
+        var fileContents = builder.Xml;
 
         using var fixture = new UpgraderFixture(outputHelper);
         var projectFile = await fixture.Project.AddFileAsync("Directory.Build.props", fileContents);
