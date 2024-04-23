@@ -89,9 +89,9 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
         var properties = ProjectCreator.Create()
             .Property("AnalysisMode", "All")
             .Property("ArtifactsPath", artifactsPath)
-            .Property("EnableNETAnalyzers", "true")
+            .Property("EnableNETAnalyzers", true)
             .Property("NoWarn", "$(NoWarn);CA1307;CA1309;CA1707;CA1819")
-            .Property("TreatWarningsAsErrors", "true")
+            .Property("TreatWarningsAsErrors", true)
             .Property("UseArtifactsOutput", useArtifactsOutput);
 
         await fixture.Project.AddFileAsync("Directory.Build.props", properties.Xml);

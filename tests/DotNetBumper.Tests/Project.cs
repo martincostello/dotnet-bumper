@@ -280,15 +280,13 @@ internal sealed class Project : IDisposable
         string? noWarn = null,
         bool treatWarningsAsErrors = false)
     {
-#pragma warning disable CA1308
         var builder = ProjectCreator.Create()
             .Property("AnalysisMode", "All")
-            .Property("EnableNETAnalyzers", "true")
-            .Property("EnforceCodeStyleInBuild", "true")
-            .Property("GenerateDocumentationFile", "true")
+            .Property("EnableNETAnalyzers", true)
+            .Property("EnforceCodeStyleInBuild", true)
+            .Property("GenerateDocumentationFile", true)
             .Property("NoWarn", $"$(NoWarn);{noWarn ?? "CA1002;CA1819;CS419;CS1570;CS1573;CS1574;CS1584;CS1591"}")
-            .Property("TreatWarningsAsErrors", treatWarningsAsErrors.ToString().ToLowerInvariant());
-#pragma warning restore CA1308
+            .Property("TreatWarningsAsErrors", treatWarningsAsErrors);
 
         await AddFileAsync("Directory.Build.props", builder.Xml);
     }
@@ -319,7 +317,7 @@ internal sealed class Project : IDisposable
         {
             project.Property("TargetFramework", targetFrameworks[0]);
         }
-        else if (targetFrameworks.Count > 0)
+        else if (targetFrameworks.Count > 1)
         {
             project.Property("TargetFrameworks", string.Join(";", targetFrameworks));
         }
