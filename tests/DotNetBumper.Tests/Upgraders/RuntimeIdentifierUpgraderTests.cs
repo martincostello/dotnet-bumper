@@ -56,7 +56,7 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         string expectedValue)
     {
         // Arrange
-        var builder = ProjectCreator.Create(sdk: "Microsoft.NET.Sdk")
+        var builder = ProjectCreator.Create(sdk: ProjectCreatorConstants.SdkCsprojDefaultSdk)
             .Property(propertyName, propertyValue);
 
         using var fixture = new UpgraderFixture(outputHelper);
@@ -300,7 +300,7 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Does_Not_Change_DotNet_7_Runtime_Identifiers()
     {
         // Arrange
-        var builder = ProjectCreator.Create(sdk: "Microsoft.NET.Sdk")
+        var builder = ProjectCreator.Create(sdk: ProjectCreatorConstants.SdkCsprojDefaultSdk)
             .Property("RuntimeIdentifier", "win10-x64");
 
         var fileContents = builder.Xml;

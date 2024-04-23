@@ -311,7 +311,7 @@ internal sealed class Project : IDisposable
         ICollection<KeyValuePair<string, string>>? packageReferences,
         ICollection<string>? projectReferences)
     {
-        var project = ProjectCreator.Create(sdk: "Microsoft.NET.Sdk");
+        var project = ProjectCreator.Create(sdk: ProjectCreatorConstants.SdkCsprojDefaultSdk);
 
         if (targetFrameworks.Count is 1)
         {

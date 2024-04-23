@@ -59,7 +59,7 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         string expectedValue)
     {
         // Arrange
-        var builder = ProjectCreator.Create(sdk: "Microsoft.NET.Sdk")
+        var builder = ProjectCreator.Create(sdk: ProjectCreatorConstants.SdkCsprojDefaultSdk)
             .Property(propertyName, propertyValue);
 
         using var fixture = new UpgraderFixture(outputHelper);
