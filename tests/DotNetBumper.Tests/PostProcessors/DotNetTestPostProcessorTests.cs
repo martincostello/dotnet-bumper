@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using MartinCostello.DotNetBumper.Upgraders;
+using Microsoft.Build.Utilities.ProjectCreation;
 using NSubstitute;
 
 namespace MartinCostello.DotNetBumper.PostProcessors;
@@ -85,21 +86,15 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 
         fixture.UserConfiguration.NoWarn = ["CA1002", "CA1515"];
 
-        string properties =
-            $"""
-             <Project>
-               <PropertyGroup>
-                 <AnalysisMode>All</AnalysisMode>
-                 <ArtifactsPath>{artifactsPath}</ArtifactsPath>
-                 <EnableNETAnalyzers>true</EnableNETAnalyzers>
-                 <NoWarn>$(NoWarn);CA1307;CA1309;CA1707;CA1819</NoWarn>
-                 <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-                 <UseArtifactsOutput>{useArtifactsOutput}</UseArtifactsOutput>
-               </PropertyGroup>
-             </Project>
-             """;
+        var properties = ProjectCreator.Create()
+            .Property("AnalysisMode", "All")
+            .Property("ArtifactsPath", artifactsPath)
+            .Property("EnableNETAnalyzers", true)
+            .Property("NoWarn", "$(NoWarn);CA1307;CA1309;CA1707;CA1819")
+            .Property("TreatWarningsAsErrors", true)
+            .Property("UseArtifactsOutput", useArtifactsOutput);
 
-        await fixture.Project.AddFileAsync("Directory.Build.props", properties);
+        await fixture.Project.AddFileAsync("Directory.Build.props", properties.Xml);
 
         var target = CreateTarget(fixture);
 

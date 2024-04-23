@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
@@ -9,35 +10,38 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
 {
     public static string AwsLambdaToolsDefaults(string template) =>
-        $$"""
-          {
-            "profile": "my-profile",
-            "region": "eu-west-1",
-            "configuration": "Release",
-            "template": "{{template}}"
-          }
-          """;
+        new JsonObject()
+        {
+            ["profile"] = "my-profile",
+            ["region"] = "eu-west-1",
+            ["configuration"] = "Release",
+            ["template"] = template,
+        }.PrettyPrint();
 
     public static string JsonTemplate(string runtime = "dotnet6") =>
-        $$"""
-          {
-            "AWSTemplateFormatVersion": "2010-09-09",
-            "Globals": {
-              "Function": {
-                "Runtime": "{{runtime}}"
-              }
+        new JsonObject()
+        {
+            ["AWSTemplateFormatVersion"] = "2010-09-09",
+            ["Globals"] = new JsonObject()
+            {
+                ["Function"] = new JsonObject()
+                {
+                    ["Runtime"] = runtime,
+                },
             },
-            "Resources": {
-              "MyFunction": {
-                "Type": "AWS::Serverless::Function",
-                "Properties": {
-                  "Handler": "MyFunction",
-                  "Runtime": "{{runtime}}"
-                }
-              }
-            }
-          }
-          """;
+            ["Resources"] = new JsonObject()
+            {
+                ["MyFunction"] = new JsonObject()
+                {
+                    ["Type"] = "AWS::Serverless::Function",
+                    ["Properties"] = new JsonObject()
+                    {
+                        ["Handler"] = "MyFunction",
+                        ["Runtime"] = runtime,
+                    },
+                },
+            },
+        }.PrettyPrint();
 
     public static string YamlTemplate(string runtime = "dotnet6") =>
         $"""
@@ -535,27 +539,29 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Ignores_Json_With_Unknown_Template_Version()
     {
         // Arrange
-        // lang=json,strict
-        string invalidJson =
-            """
+        var invalidJson = new JsonObject()
+        {
+            ["AWSTemplateFormatVersion"] = "2024-04-01",
+            ["Globals"] = new JsonObject()
             {
-              "AWSTemplateFormatVersion": "2024-04-01",
-              "Globals": {
-                "Function": {
-                  "Runtime": "dotnet6"
-                }
-              },
-              "Resources": {
-                "MyFunction": {
-                  "Type": "AWS::Serverless::Function",
-                  "Properties": {
-                    "Handler": "MyFunction",
-                    "Runtime": "dotnet6"
-                  }
-                }
-              }
-            }
-            """;
+                ["Function"] = new JsonObject()
+                {
+                    ["Runtime"] = "dotnet6",
+                },
+            },
+            ["Resources"] = new JsonObject()
+            {
+                ["MyFunction"] = new JsonObject()
+                {
+                    ["Type"] = "AWS::Serverless::Function",
+                    ["Properties"] = new JsonObject()
+                    {
+                        ["Handler"] = "MyFunction",
+                        ["Runtime"] = "dotnet6",
+                    },
+                },
+            },
+        }.PrettyPrint();
 
         using var fixture = new UpgraderFixture(outputHelper);
         await fixture.Project.AddFileAsync("template.json", invalidJson);

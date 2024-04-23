@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
@@ -13,25 +14,24 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Upgrades_Properties(string channel)
     {
         // Arrange
-        // lang=json,strict
-        string fileContents =
-            """
-            {
-              "profile": "alexa-london-travel",
-              "region": "eu-west-1",
-              "configuration": "Release",
-              "framework": "net6.0",
-              "function-architecture": "arm64",
-              "function-handler": "MyApplication",
-              "function-memory-size": 192,
-              "function-runtime": "dotnet6",
-              "function-timeout": 10
-            }
-            """;
+        var configuration = new JsonObject()
+        {
+            ["profile"] = "alexa-london-travel",
+            ["region"] = "eu-west-1",
+            ["configuration"] = "Release",
+            ["framework"] = "net6.0",
+            ["function-architecture"] = "arm64",
+            ["function-handler"] = "MyApplication",
+            ["function-memory-size"] = 192,
+            ["function-runtime"] = "dotnet6",
+            ["function-timeout"] = 10,
+        };
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string lambdaDefaultsFile = await fixture.Project.AddFileAsync("aws-lambda-tools-defaults.json", fileContents);
+        var lambdaDefaultsFile = await fixture.Project.AddFileAsync(
+            "aws-lambda-tools-defaults.json",
+            configuration.PrettyPrint());
 
         var upgrade = new UpgradeInfo()
         {
@@ -83,25 +83,26 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         DotNetSupportPhase supportPhase)
     {
         // Arrange
-        // lang=json,strict
-        string fileContents =
-            """
-            {
-              "profile": "alexa-london-travel",
-              "region": "eu-west-1",
-              "configuration": "Release",
-              "framework": "net6.0",
-              "function-architecture": "arm64",
-              "function-handler": "MyApplication",
-              "function-memory-size": 192,
-              "function-runtime": "dotnet6",
-              "function-timeout": 10
-            }
-            """;
+        var configuration = new JsonObject()
+        {
+            ["profile"] = "alexa-london-travel",
+            ["region"] = "eu-west-1",
+            ["configuration"] = "Release",
+            ["framework"] = "net6.0",
+            ["function-architecture"] = "arm64",
+            ["function-handler"] = "MyApplication",
+            ["function-memory-size"] = 192,
+            ["function-runtime"] = "dotnet6",
+            ["function-timeout"] = 10,
+        };
+
+        var fileContents = configuration.PrettyPrint();
 
         using var fixture = new UpgraderFixture(outputHelper);
 
-        string lambdaDefaultsFile = await fixture.Project.AddFileAsync("aws-lambda-tools-defaults.json", fileContents);
+        var lambdaDefaultsFile = await fixture.Project.AddFileAsync(
+            "aws-lambda-tools-defaults.json",
+            fileContents);
 
         var upgrade = new UpgradeInfo()
         {

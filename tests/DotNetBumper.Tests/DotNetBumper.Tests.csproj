@@ -16,6 +16,7 @@
     <PackageReference Include="GitHubActionsTestLogger" NoWarn="RT0003" />
     <PackageReference Include="MartinCostello.Logging.XUnit" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="ReportGenerator" />
     <PackageReference Include="Shouldly" />

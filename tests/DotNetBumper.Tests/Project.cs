@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Xml.Linq;
+using System.Text.Json.Nodes;
+using Microsoft.Build.Utilities.ProjectCreation;
 
 namespace MartinCostello.DotNetBumper;
 
@@ -10,12 +11,6 @@ internal sealed class Project : IDisposable
     private readonly TemporaryDirectory _directory = new();
 
     public string DirectoryName => _directory.Path;
-
-    public async Task<string> AddFileAsync(string path, XDocument content)
-    {
-        var xml = content.ToString(SaveOptions.DisableFormatting);
-        return await AddFileAsync(path, xml);
-    }
 
     public async Task<string> AddFileAsync(string path, string content, Encoding? encoding = null)
     {
@@ -42,13 +37,12 @@ internal sealed class Project : IDisposable
 
     public async Task AddGitIgnoreAsync(string? gitignore = null)
     {
-        gitignore ??=
-            """
-            .idea
-            .vs
-            bin
-            obj
-            """;
+        gitignore ??= new StringBuilder()
+            .AppendLine(".idea")
+            .AppendLine(".vs")
+            .AppendLine("bin")
+            .AppendLine("obj")
+            .ToString();
 
         await AddFileAsync(".gitignore", gitignore);
     }
@@ -81,8 +75,8 @@ internal sealed class Project : IDisposable
         packageReferences ??= new Dictionary<string, string>()
         {
             ["Microsoft.NET.Test.Sdk"] = "17.9.0",
-            ["xunit"] = "2.7.0",
-            ["xunit.runner.visualstudio"] = "2.5.7",
+            ["xunit"] = "2.7.1",
+            ["xunit.runner.visualstudio"] = "2.5.8",
         };
 
         return await AddProjectAsync(path, targetFrameworks, packageReferences, projectReferences);
@@ -94,8 +88,17 @@ internal sealed class Project : IDisposable
         ICollection<KeyValuePair<string, string>>? packageReferences = default,
         ICollection<string>? projectReferences = default)
     {
-        var project = CreateProjectXml(targetFrameworks, packageReferences, projectReferences);
-        return await AddFileAsync(path, project);
+        var project = CreateProject(targetFrameworks, packageReferences, projectReferences);
+        return await AddProjectAsync(path, project);
+    }
+
+    public async Task<string> AddProjectAsync(string path, ProjectCreator project)
+    {
+        // HACK dotnet outdated does not determine whether the project is an SDK-style
+        // project correctly when the XML namespace is present in the project file.
+        // See https://github.com/dotnet-outdated/dotnet-outdated/pull/541.
+        var xml = project.Xml.Replace(" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"", string.Empty, StringComparison.Ordinal);
+        return await AddFileAsync(path, xml);
     }
 
     public async Task<string> AddSolutionAsync(string path)
@@ -106,24 +109,24 @@ internal sealed class Project : IDisposable
 
     public async Task<string> AddToolManifestAsync(string path = ".config/dotnet-tools.json")
     {
-        // lang=json,strict
-        var manifest =
-            """
+        var manifest = new JsonObject()
+        {
+            ["version"] = 1,
+            ["isRoot"] = true,
+            ["tools"] = new JsonObject()
             {
-              "version": 1,
-              "isRoot": true,
-              "tools": {
-                "dotnet-outdated-tool": {
-                  "version": "4.6.1",
-                  "commands": [
-                    "dotnet-outdated"
-                  ]
-                }
-              }
-            }
-            """;
+                ["dotnet-outdated-tool"] = new JsonObject()
+                {
+                    ["version"] = "4.6.1",
+                    ["commands"] = new JsonArray()
+                    {
+                        "dotnet-outdated",
+                    },
+                },
+            },
+        };
 
-        return await AddFileAsync(path, manifest);
+        return await AddFileAsync(path, manifest.PrettyPrint());
     }
 
     public async Task<string> AddUnitTestsAsync(
@@ -193,22 +196,21 @@ internal sealed class Project : IDisposable
 
     public async Task<string> AddVisualStudioConfigurationAsync(string channel = "6.0", string path = ".vsconfig")
     {
-        var configuration =
-            $$"""
-              {
-                "version": "1.0",
-                "components": [
-                  "Component.GitHub.VisualStudio",
-                  "Microsoft.NetCore.Component.Runtime.{{channel}}",
-                  "Microsoft.NetCore.Component.SDK",
-                  "Microsoft.VisualStudio.Component.CoreEditor",
-                  "Microsoft.VisualStudio.Component.Git",
-                  "Microsoft.VisualStudio.Workload.CoreEditor"
-                ]
-              }
-              """;
+        var configuration = new JsonObject()
+        {
+            ["version"] = "1.0",
+            ["components"] = new JsonArray()
+            {
+                "Component.GitHub.VisualStudio",
+                $"Microsoft.NetCore.Component.Runtime.{channel}",
+                "Microsoft.NetCore.Component.SDK",
+                "Microsoft.VisualStudio.Component.CoreEditor",
+                "Microsoft.VisualStudio.Component.Git",
+                "Microsoft.VisualStudio.Workload.CoreEditor",
+            },
+        };
 
-        return await AddFileAsync(path, configuration);
+        return await AddFileAsync(path, configuration.PrettyPrint());
     }
 
     public async Task<string> AddPowerShellBuildScriptAsync(Version channel, string path = "build.ps1")
@@ -284,79 +286,62 @@ internal sealed class Project : IDisposable
         string? noWarn = null,
         bool treatWarningsAsErrors = false)
     {
-#pragma warning disable CA1308
-        string properties =
-            $"""
-             <Project>
-               <PropertyGroup>
-                 <AnalysisMode>All</AnalysisMode>
-                 <EnableNETAnalyzers>true</EnableNETAnalyzers>
-                 <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-                 <GenerateDocumentationFile>true</GenerateDocumentationFile>
-                 <NoWarn>$(NoWarn);{noWarn ?? "CA1002;CA1819;CS419;CS1570;CS1573;CS1574;CS1584;CS1591"}</NoWarn>
-                 <TreatWarningsAsErrors>{treatWarningsAsErrors.ToString().ToLowerInvariant()}</TreatWarningsAsErrors>
-               </PropertyGroup>
-             </Project>
-             """;
-#pragma warning restore CA1308
+        var builder = ProjectCreator.Create()
+            .Property("AnalysisMode", "All")
+            .Property("EnableNETAnalyzers", true)
+            .Property("EnforceCodeStyleInBuild", true)
+            .Property("GenerateDocumentationFile", true)
+            .Property("NoWarn", $"$(NoWarn);{noWarn ?? "CA1002;CA1819;CS419;CS1570;CS1573;CS1574;CS1584;CS1591"}")
+            .Property("TreatWarningsAsErrors", treatWarningsAsErrors);
 
-        await AddFileAsync("Directory.Build.props", properties);
+        await AddFileAsync("Directory.Build.props", builder.Xml);
     }
 
     public void Dispose() => _directory.Dispose();
 
     private static string CreateGlobalJson(string sdkVersion)
     {
-        return $$"""
-                 {
-                   "sdk": {
-                     "version": "{{sdkVersion}}"
-                   }
-                 }
-                 """;
+        var globalJson = new JsonObject()
+        {
+            ["sdk"] = new JsonObject()
+            {
+                ["version"] = sdkVersion,
+            },
+        };
+
+        return globalJson.PrettyPrint();
     }
 
-    private static XDocument CreateProjectXml(
+    private static ProjectCreator CreateProject(
         IList<string> targetFrameworks,
         ICollection<KeyValuePair<string, string>>? packageReferences,
         ICollection<string>? projectReferences)
     {
-        string tfms = targetFrameworks.Count == 1
-            ? $"<TargetFramework>{targetFrameworks[0]}</TargetFramework>"
-            : $"<TargetFrameworks>{string.Join(";", targetFrameworks)}</TargetFrameworks>";
+        var project = ProjectCreator.Create(sdk: ProjectCreatorConstants.SdkCsprojDefaultSdk);
 
-        string xml = $"""
-                      <Project Sdk="Microsoft.NET.Sdk">
-                        <PropertyGroup>
-                          {tfms}
-                        </PropertyGroup>
-                      </Project>
-                      """
-        ;
-
-        var project = XDocument.Parse(xml);
+        if (targetFrameworks.Count is 1)
+        {
+            project.Property("TargetFramework", targetFrameworks[0]);
+        }
+        else if (targetFrameworks.Count > 1)
+        {
+            project.Property("TargetFrameworks", string.Join(";", targetFrameworks));
+        }
 
         if (packageReferences?.Count > 0)
         {
-            project.Root!.Add(
-                new XElement(
-                    "ItemGroup",
-                    packageReferences.Select((p) =>
-                        new XElement(
-                            "PackageReference",
-                            new XAttribute("Include", p.Key),
-                            new XAttribute("Version", p.Value)))));
+            foreach (var package in packageReferences)
+            {
+                project.ItemPackageReference(package.Key, package.Value);
+            }
         }
 
         if (projectReferences?.Count > 0)
         {
-            project.Root!.Add(
-                new XElement(
-                    "ItemGroup",
-                    projectReferences.Select((p) =>
-                        new XElement(
-                            "ProjectReference",
-                            new XAttribute("Include", p)))));
+            foreach (var reference in projectReferences)
+            {
+                project.ItemProjectReference(reference);
+            }
         }
 
         return project;

@@ -588,10 +588,13 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         var xml = await fixture.Project.GetFileAsync(fileName);
         var project = XDocument.Parse(xml);
 
+        project.Root.ShouldNotBeNull();
+        var ns = project.Root.GetDefaultNamespace();
+
         var tfm = project
-            .Root?
-            .Element("PropertyGroup")?
-            .Element("TargetFramework")?
+            .Root
+            .Element(ns + "PropertyGroup")?
+            .Element(ns + "TargetFramework")?
             .Value;
 
         if (tfm is not null)
@@ -600,9 +603,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         }
 
         return project
-            .Root?
-            .Element("PropertyGroup")?
-            .Element("TargetFrameworks")?
+            .Root
+            .Element(ns + "PropertyGroup")?
+            .Element(ns + "TargetFrameworks")?
             .Value;
     }
 
