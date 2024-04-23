@@ -92,6 +92,7 @@ internal sealed partial class DotNetCodeUpgrader(
         [
             "format",
             "analyzers",
+            "--no-restore",
             "--report", tempDirectory.Path,
             "--severity", "warn",
             "--verbosity", Logger.GetMSBuildVerbosity(),
