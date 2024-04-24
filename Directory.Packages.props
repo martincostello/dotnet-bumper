@@ -12,15 +12,15 @@
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
     <PackageVersion Include="Microsoft.Build" Version="17.9.5" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.0-preview.4.24218.15" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0-preview.4.24218.15" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0-preview.4.24218.15" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0-preview.4.24218.15" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.0-preview.4.24218.15" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0-preview.4.24218.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0-preview.4.24218.15" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.4.24218.15" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.0-preview.4.24218.15" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.0-preview.4.24223.14" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0-preview.4.24223.14" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0-preview.4.24223.14" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0-preview.4.24223.14" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.0-preview.4.24223.14" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0-preview.4.24223.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0-preview.4.24223.14" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.4.24223.14" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.0-preview.4.24223.14" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.0.0" />
     <PackageVersion Include="NSubstitute" Version="5.1.0" />
