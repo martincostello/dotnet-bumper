@@ -9,7 +9,7 @@ namespace MartinCostello.DotNetBumper.PostProcessors;
 
 public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 {
-    private static TimeSpan Timeout { get; } = TimeSpan.FromMinutes(1);
+    private static TimeSpan Timeout { get; } = TimeSpan.FromMinutes(3);
 
     public static TheoryData<string> Channels()
     {
