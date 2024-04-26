@@ -7,6 +7,12 @@
       "commands": [
         "dotnet-outdated"
       ]
+    },
+    "dotnet-validate": {
+      "version": "0.0.1-preview.304",
+      "commands": [
+        "dotnet-validate"
+      ]
     }
   }
 }
