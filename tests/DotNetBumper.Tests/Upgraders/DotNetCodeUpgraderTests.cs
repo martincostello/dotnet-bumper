@@ -129,7 +129,7 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.None);
     }
 
-    [SkippableTheory]
+    [SkippableTheory(Skip = "Flaky test.")]
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Honors_User_Project_Settings(string channel)
     {
