@@ -85,6 +85,14 @@ jobs:
         flags: ${{ matrix.os_name }}
         token: ${{ secrets.CODECOV_TOKEN }}
 
+    - name: Publish crash dump
+      uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+      if: ${{ !cancelled() }}
+      with:
+        name: crashdump
+        path: ./tests/DotNetBumper.Tests/TestResults
+        if-no-files-found: ignore
+
     - name: Publish artifacts
       uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
       with:
