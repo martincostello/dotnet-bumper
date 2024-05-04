@@ -85,7 +85,10 @@ function DotNetPack {
 function DotNetTest {
     param([string]$Project)
 
-    $additionalArgs = @()
+    $additionalArgs = @(
+        "--blame-crash",
+        "--blame-crash-collect-always"
+    )
 
     if (![string]::IsNullOrEmpty($env:GITHUB_SHA)) {
         $additionalArgs += "--logger"
