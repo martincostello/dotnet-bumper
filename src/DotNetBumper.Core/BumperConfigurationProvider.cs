@@ -41,9 +41,6 @@ internal sealed partial class BumperConfigurationProvider(
             configuration.IncludeNuGetPackages.Add("Microsoft.NET.Test.Sdk");
         }
 
-        // HACK See https://github.com/dotnet-outdated/dotnet-outdated/pull/516
-        configuration.NoWarn.Add("NU1605");
-
         if (await loader.LoadAsync(cancellationToken) is { } custom)
         {
             configuration.IncludeNuGetPackages.UnionWith(custom.IncludeNuGetPackages);
