@@ -35,12 +35,6 @@ internal sealed partial class RuntimeIdentifierUpgrader(
         StatusContext context,
         CancellationToken cancellationToken)
     {
-        if (upgrade.Channel < DotNetVersions.EightPointZero)
-        {
-            // RIDs only need updating if upgrading to .NET 8.0+
-            return ProcessingResult.None;
-        }
-
         Log.UpgradingRuntimeIdentifier(Logger);
 
         var result = ProcessingResult.None;

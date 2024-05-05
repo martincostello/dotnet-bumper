@@ -131,8 +131,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
             name: build
             on: [push]
             jobs:
-              build:               
-                runs-on: ubuntu-latest             
+              build:
+                runs-on: ubuntu-latest
                 steps:
                   - uses: actions/checkout@v4
                   - uses: actions/setup-dotnet@v3
@@ -145,8 +145,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
             name: build
             on: [push]
             jobs:
-              build:               
-                runs-on: ubuntu-latest             
+              build:
+                runs-on: ubuntu-latest
                 steps:
                   - uses: actions/checkout@v4
                   - uses: actions/setup-dotnet@v3
@@ -196,8 +196,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
              name: build
              on: [push]
              jobs:
-               build:               
-                 runs-on: ubuntu-latest             
+               build:
+                 runs-on: ubuntu-latest
                  steps:
                    - uses: actions/checkout@v4
                    - uses: actions/setup-dotnet@v3
@@ -211,8 +211,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
              name: build
              on: [push]
              jobs:
-               build:               
-                 runs-on: ubuntu-latest             
+               build:
+                 runs-on: ubuntu-latest
                  steps:
                    - uses: actions/checkout@v4
                    - uses: actions/setup-dotnet@v3
@@ -264,8 +264,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
 
             jobs:
 
-              build:               
-                runs-on: ubuntu-latest             
+              build:
+                runs-on: ubuntu-latest
                 steps:
 
                   - name: Install .NET
@@ -305,8 +305,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
 
             jobs:
 
-              build:               
-                runs-on: ubuntu-latest             
+              build:
+                runs-on: ubuntu-latest
                 steps:
 
                   - name: Install .NET
@@ -378,8 +378,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
             name: build
             on: [push]
             jobs:
-              build:               
-                runs-on: ubuntu-latest             
+              build:
+                runs-on: ubuntu-latest
                 steps:
                   - uses: actions/checkout@v4
                   - uses: actions/setup-dotnet@v3
