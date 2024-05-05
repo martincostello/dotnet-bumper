@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
+using NuGet.Versioning;
 using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper;
@@ -92,7 +93,11 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actualStatus.ShouldBe(0);
 
         var actualSdk = await GetSdkVersionAsync(fixture, globalJson);
+
+        actualSdk.ShouldNotBeNull();
         actualSdk.ShouldNotBe(testCase.SdkVersion);
+
+        NuGetVersion.TryParse(actualSdk, out var actualSdkVersion).ShouldBeTrue();
 
         var appTfms = await GetTargetFrameworksAsync(fixture, appProject);
         var testTfms = await GetTargetFrameworksAsync(fixture, testProject);
@@ -112,7 +117,12 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
             foreach ((string key, string value) in testCase.PackageReferences)
             {
+                actualPackages.ShouldContainKey(key);
                 actualPackages.ShouldNotContainValueForKey(key, value);
+
+                NuGetVersion.TryParse(actualPackages[key], out var version).ShouldBeTrue();
+                version.Major.ShouldBeGreaterThan(testCase.Channel.Major);
+                version.IsPrerelease.ShouldBe(actualSdkVersion.IsPrerelease);
             }
         }
 
@@ -575,7 +585,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                 new
                 {
                     Key = p.Attribute("Include")?.Value ?? string.Empty,
-                    Value = p.Attribute("Version")?.Value ?? string.Empty,
+                    Value = p.Attribute("Version")?.Value ?? p.Element("Version")?.Value ?? string.Empty,
                 })
             .ToDictionary((p) => p.Key, (p) => p.Value) ?? [];
     }
