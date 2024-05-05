@@ -72,6 +72,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
 
     [Theory]
     [InlineData("7.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
+    [InlineData("7.0", DotNetReleaseType.Sts, DotNetSupportPhase.Eol)]
     [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Preview)]
     [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.GoLive)]
     [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]

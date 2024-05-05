@@ -7,9 +7,9 @@ public sealed class DotNetChannelTestData : TheoryData<string>
 {
     public DotNetChannelTestData()
     {
-        const int MinimumVersion = 7;
+        const int MinimumVersion = 8;
 
-        foreach (int version in Enumerable.Range(MinimumVersion, 4))
+        foreach (int version in Enumerable.Range(MinimumVersion, 3))
         {
             Add(version.ToString("N1", CultureInfo.InvariantCulture));
         }

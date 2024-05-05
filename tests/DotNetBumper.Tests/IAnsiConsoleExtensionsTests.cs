@@ -8,18 +8,13 @@ namespace MartinCostello.DotNetBumper;
 
 public static class IAnsiConsoleExtensionsTests
 {
-    public static TheoryData<IEnvironment> Environments()
+    public static TheoryData<bool, bool> Environments()
     {
-        var testCases = new TheoryData<IEnvironment>();
+        var testCases = new TheoryData<bool, bool>();
 
         foreach (bool isLocal in new[] { true, false })
         {
-            var environment = Substitute.For<IEnvironment>();
-
-            environment.IsGitHubActions.Returns(!isLocal);
-            environment.SupportsLinks.Returns(isLocal);
-
-            testCases.Add(environment);
+            testCases.Add(!isLocal, isLocal);
         }
 
         return testCases;
@@ -27,10 +22,11 @@ public static class IAnsiConsoleExtensionsTests
 
     [Theory]
     [MemberData(nameof(Environments))]
-    public static void WriteDisclaimer_Does_Not_Throw(IEnvironment environment)
+    public static void WriteDisclaimer_Does_Not_Throw(bool isGitHubActions, bool supportsLinks)
     {
         // Arrange
         var console = Substitute.For<IAnsiConsole>();
+        var environment = CreateEnvironment(isGitHubActions, supportsLinks);
 
         // Act and Assert
         Should.NotThrow(() => console.WriteDisclaimer(environment, new(8, 0)));
@@ -38,10 +34,11 @@ public static class IAnsiConsoleExtensionsTests
 
     [Theory]
     [MemberData(nameof(Environments))]
-    public static void WriteRuntimeNearingEndOfSupportWarning_Does_Not_Throw(IEnvironment environment)
+    public static void WriteRuntimeNearingEndOfSupportWarning_Does_Not_Throw(bool isGitHubActions, bool supportsLinks)
     {
         // Arrange
         var console = Substitute.For<IAnsiConsole>();
+        var environment = CreateEnvironment(isGitHubActions, supportsLinks);
 
         var upgrade = new UpgradeInfo()
         {
@@ -81,10 +78,11 @@ public static class IAnsiConsoleExtensionsTests
 
     [Theory]
     [MemberData(nameof(Environments))]
-    public static void WriteProgressLine_Does_Not_Throw(IEnvironment environment)
+    public static void WriteProgressLine_Does_Not_Throw(bool isGitHubActions, bool supportsLinks)
     {
         // Arrange
         var console = Substitute.For<IAnsiConsole>();
+        var environment = CreateEnvironment(isGitHubActions, supportsLinks);
 
         // Act and Assert
         Should.NotThrow(() => console.WriteProgressLine(environment, "A progress message."));
@@ -127,5 +125,15 @@ public static class IAnsiConsoleExtensionsTests
 
         // Act and Assert
         Should.NotThrow(() => console.WriteUnsupportedLambdaRuntimeWarning(upgrade));
+    }
+
+    private static IEnvironment CreateEnvironment(bool isGitHubActions, bool supportsLinks)
+    {
+        var environment = Substitute.For<IEnvironment>();
+
+        environment.IsGitHubActions.Returns(isGitHubActions);
+        environment.SupportsLinks.Returns(supportsLinks);
+
+        return environment;
     }
 }

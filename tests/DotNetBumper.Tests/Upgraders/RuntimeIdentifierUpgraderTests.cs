@@ -296,40 +296,6 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(expected);
     }
 
-    [Fact]
-    public async Task UpgradeAsync_Does_Not_Change_DotNet_7_Runtime_Identifiers()
-    {
-        // Arrange
-        var builder = Project
-            .Create(hasSdk: true)
-            .Property("RuntimeIdentifier", "win10-x64");
-
-        var fileContents = builder.Xml;
-
-        using var fixture = new UpgraderFixture(outputHelper);
-        var projectFile = await fixture.Project.AddFileAsync("Directory.Build.props", fileContents);
-
-        var upgrade = new UpgradeInfo()
-        {
-            Channel = Version.Parse("7.0"),
-            EndOfLife = DateOnly.MaxValue,
-            ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new("7.0.100"),
-            SupportPhase = DotNetSupportPhase.Active,
-        };
-
-        var target = CreateTarget(fixture);
-
-        // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.None);
-
-        string actualContent = await File.ReadAllTextAsync(projectFile);
-        actualContent.ShouldBe(fileContents);
-    }
-
     [Theory]
     [ClassData(typeof(FileEncodingTestData))]
     public async Task UpgradeAsync_Preserves_Bom(string newLine, bool hasUtf8Bom)

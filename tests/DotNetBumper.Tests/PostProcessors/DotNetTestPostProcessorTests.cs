@@ -16,7 +16,6 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 #pragma warning disable IDE0028 // See https://github.com/dotnet/roslyn/issues/72668
         return new()
         {
-            "7.0",
             "8.0",
             "9.0",
         };

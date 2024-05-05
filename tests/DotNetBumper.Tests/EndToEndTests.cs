@@ -29,7 +29,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         var testCases = new TheoryData<BumperTestCase>
         {
             new("7.0.100", ["net6.0", "net7.0"]),
-            new("6.0.100", ["net6.0"], ["--channel=7.0"]),
             new("6.0.100", ["net6.0"], ["--channel=8.0"]),
             new("6.0.100", ["net6.0"], ["--channel=9.0"]),
             new("6.0.100", ["net6.0"], ["--upgrade-type=latest"]),

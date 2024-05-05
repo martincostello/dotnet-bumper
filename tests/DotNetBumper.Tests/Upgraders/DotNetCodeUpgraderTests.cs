@@ -12,9 +12,8 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
 #pragma warning disable IDE0028 // See https://github.com/dotnet/roslyn/issues/72668
         return new()
         {
-            "7.0",
-            //// "8.0", See https://github.com/dotnet/sdk/issues/39742
-            //// "9.0", See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174
+            "8.0",
+            "9.0",
         };
 #pragma warning restore IDE0028
     }
@@ -23,10 +22,8 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Applies_Code_Fix(string channel)
     {
-#if NET9_0_OR_GREATER
-        // HACK For some yet-unknown reason, this test fails with .NET 9
-        Skip.If(true, "Fails with .NET 9.");
-#endif
+        Skip.If(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
+        Skip.If(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
@@ -76,10 +73,8 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Applies_Code_Fixes(string channel)
     {
-#if NET9_0_OR_GREATER
-        // HACK For some yet-unknown reason, this test fails with .NET 9
-        Skip.If(true, "Fails with .NET 9.");
-#endif
+        Skip.If(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
+        Skip.If(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
@@ -129,14 +124,12 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.None);
     }
 
-    [SkippableTheory(Skip = "Flaky test.")]
+    [SkippableTheory]
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Honors_User_Project_Settings(string channel)
     {
-#if NET9_0_OR_GREATER
-        // HACK For some yet-unknown reason, this test fails with .NET 9
-        Skip.If(true, "Fails with .NET 9.");
-#endif
+        Skip.If(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
+        Skip.If(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
@@ -179,10 +172,8 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Does_Not_Fix_Information_Diagnostics(string channel)
     {
-#if NET9_0_OR_GREATER
-        // HACK For some yet-unknown reason, this test fails with .NET 9
-        Skip.If(true, "Fails with .NET 9.");
-#endif
+        Skip.If(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
+        Skip.If(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
