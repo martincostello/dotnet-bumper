@@ -66,13 +66,10 @@ internal sealed partial class DockerfileUpgrader(
         if (edited)
         {
             updated = builder.ToString();
-
             Debug.Assert(!string.Equals(image, updated, StringComparison.Ordinal), "The container image was not updated.");
-
-            return true;
         }
 
-        return false;
+        return edited;
     }
 
     internal static bool TryUpdateImage(

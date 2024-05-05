@@ -18,7 +18,7 @@ internal sealed partial class ContainerBaseImageUpgrader(
 {
     protected override string Action => "Upgrading container base images";
 
-    protected override string InitialStatus => "Update RIDs";
+    protected override string InitialStatus => "Update container base images";
 
     protected override IReadOnlyList<string> Patterns { get; } =
     [
