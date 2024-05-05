@@ -103,18 +103,6 @@ jobs:
             test: false
             upgrade-type: Preview
             warnings-as-errors: false
-          # costellobot and dependabot-helper removed due to https://github.com/dotnet/aspire/issues/3941
-          - repo: costellobot
-            test: false
-            upgrade-type: Preview
-            warnings-as-errors: false
-          - repo: dependabot-helper
-            test: false
-            upgrade-type: Preview
-            warnings-as-errors: false
-          - repo: dotnet-bumper
-            upgrade-type: Preview
-            warnings-as-errors: false
 
     steps:
 
