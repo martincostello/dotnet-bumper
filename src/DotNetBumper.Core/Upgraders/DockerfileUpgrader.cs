@@ -48,6 +48,34 @@ internal sealed partial class DockerfileUpgrader(
     }
 
     internal static bool TryUpdateImage(
+        string image,
+        Version channel,
+        [NotNullWhen(true)] out string? updated)
+    {
+        updated = null;
+
+        if (IsDotNetImage(image) is false)
+        {
+            return false;
+        }
+
+        var builder = new StringBuilder();
+
+        bool edited = AppendImage(builder, image, channel);
+
+        if (edited)
+        {
+            updated = builder.ToString();
+
+            Debug.Assert(!string.Equals(image, updated, StringComparison.Ordinal), "The container image was not updated.");
+
+            return true;
+        }
+
+        return false;
+    }
+
+    internal static bool TryUpdateImage(
         string current,
         Version channel,
         DotNetSupportPhase supportPhase,
@@ -107,54 +135,6 @@ internal sealed partial class DockerfileUpgrader(
         }
 
         return false;
-
-        static bool AppendImage(
-            StringBuilder builder,
-            string image,
-            Version channel)
-        {
-            var matches = VersionNumbers().Matches(image);
-
-            bool edited = false;
-
-            if (matches.Count > 0)
-            {
-                var newVersion = channel.ToString();
-                var remaining = image;
-
-                for (int i = 0; i < matches.Count; i++)
-                {
-                    var match = matches[i];
-
-                    if (match.Index > 0)
-                    {
-                        builder.Append(remaining[..match.Index]);
-                    }
-
-                    var maybeVersion = match.ValueSpan;
-
-                    if (Version.TryParse(maybeVersion, out var version) && version < channel)
-                    {
-                        builder.Append(newVersion);
-                        edited = true;
-                    }
-                    else
-                    {
-                        builder.Append(maybeVersion);
-                    }
-
-                    remaining = remaining[(match.Index + match.Length)..];
-                }
-
-                builder.Append(remaining);
-            }
-            else
-            {
-                builder.Append(image);
-            }
-
-            return edited;
-        }
 
         static bool AppendTag(
             StringBuilder builder,
@@ -281,6 +261,54 @@ internal sealed partial class DockerfileUpgrader(
         }
 
         return result;
+    }
+
+    private static bool AppendImage(
+        StringBuilder builder,
+        string image,
+        Version channel)
+    {
+        var matches = VersionNumbers().Matches(image);
+
+        bool edited = false;
+
+        if (matches.Count > 0)
+        {
+            var newVersion = channel.ToString();
+            var remaining = image;
+
+            for (int i = 0; i < matches.Count; i++)
+            {
+                var match = matches[i];
+
+                if (match.Index > 0)
+                {
+                    builder.Append(remaining[..match.Index]);
+                }
+
+                var maybeVersion = match.ValueSpan;
+
+                if (Version.TryParse(maybeVersion, out var version) && version < channel)
+                {
+                    builder.Append(newVersion);
+                    edited = true;
+                }
+                else
+                {
+                    builder.Append(maybeVersion);
+                }
+
+                remaining = remaining[(match.Index + match.Length)..];
+            }
+
+            builder.Append(remaining);
+        }
+        else
+        {
+            builder.Append(image);
+        }
+
+        return edited;
     }
 
     [GeneratedRegex(@"^(?i)FROM(?-i) ((?<platform>--platform=[\$\w]+)\s)?(?<image>[\w\.\/\-]+)(:(?<tag>[\w\-\.]+))?(\s(?<name>(?i)AS(?-i) [\S]+))?$")]

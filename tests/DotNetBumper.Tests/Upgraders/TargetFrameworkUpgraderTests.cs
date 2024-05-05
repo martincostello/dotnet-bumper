@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Xml.Linq;
-using Microsoft.Build.Utilities.ProjectCreation;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
@@ -59,7 +58,8 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         string expectedValue)
     {
         // Arrange
-        var builder = ProjectCreator.Create(sdk: ProjectCreatorConstants.SdkCsprojDefaultSdk)
+        var builder = Project
+            .Create(hasSdk: true)
             .Property(propertyName, propertyValue);
 
         using var fixture = new UpgraderFixture(outputHelper);

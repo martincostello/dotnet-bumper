@@ -12,6 +12,9 @@ internal sealed class Project : IDisposable
 
     public string DirectoryName => _directory.Path;
 
+    public static ProjectCreator Create(bool hasSdk = false)
+        => ProjectCreator.Create(sdk: hasSdk ? ProjectCreatorConstants.SdkCsprojDefaultSdk : null);
+
     public async Task<string> AddFileAsync(string path, string content, Encoding? encoding = null)
     {
         EnsureDirectoryTree(path);
@@ -286,7 +289,7 @@ internal sealed class Project : IDisposable
         string? noWarn = null,
         bool treatWarningsAsErrors = false)
     {
-        var builder = ProjectCreator.Create()
+        var builder = Create()
             .Property("AnalysisMode", "All")
             .Property("EnableNETAnalyzers", true)
             .Property("EnforceCodeStyleInBuild", true)
@@ -317,7 +320,7 @@ internal sealed class Project : IDisposable
         ICollection<KeyValuePair<string, string>>? packageReferences,
         ICollection<string>? projectReferences)
     {
-        var project = ProjectCreator.Create(sdk: ProjectCreatorConstants.SdkCsprojDefaultSdk);
+        var project = Create(hasSdk: true);
 
         if (targetFrameworks.Count is 1)
         {
