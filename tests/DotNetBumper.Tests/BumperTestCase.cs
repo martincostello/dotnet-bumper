@@ -55,7 +55,7 @@ public sealed class BumperTestCase(
 
             for (int i = 0; i < references.Length; i++)
             {
-                if (references[i].Split(':') is [var package, var version])
+                if (references[i].Split('=') is [var package, var version])
                 {
                     PackageReferences[package] = version;
                 }
