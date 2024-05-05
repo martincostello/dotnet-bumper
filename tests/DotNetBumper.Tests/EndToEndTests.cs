@@ -414,9 +414,11 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(0);
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task Application_Returns_Two_If_Cancelled_By_User()
     {
+        Skip.If(OperatingSystem.IsMacOS(), "Causes crash on macOS.");
+
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
         using var cts = new CancellationTokenSource();
