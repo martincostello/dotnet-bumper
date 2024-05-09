@@ -13,6 +13,7 @@ public static class JsonLogWriterTests
         // Arrange
         var context = new BumperLogContext()
         {
+            DotNetVersion = "8.0",
             DotNetSdkVersion = "8.0.201",
             StartedAt = new(2024, 02, 27, 12, 34, 56, TimeSpan.Zero),
             FinishedAt = new(2024, 02, 27, 12, 35, 43, TimeSpan.Zero),
@@ -38,6 +39,7 @@ public static class JsonLogWriterTests
             ("startedAt", "2024-02-27T12:34:56+00:00"),
             ("finishedAt", "2024-02-27T12:35:43+00:00"),
             ("result", "Success"),
+            ("dotnetVersion", "8.0"),
             ("sdkVersion", "8.0.201"),
         };
 

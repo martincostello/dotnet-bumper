@@ -26,6 +26,11 @@ public sealed class BumperLogContext
     public string? Result { get; set; }
 
     /// <summary>
+    /// Gets or sets the .NET version that was upgraded to.
+    /// </summary>
+    public string? DotNetVersion { get; set; }
+
+    /// <summary>
     /// Gets or sets the version of the .NET SDK that was found to upgrade to, if any.
     /// </summary>
     public string? DotNetSdkVersion { get; set; }
