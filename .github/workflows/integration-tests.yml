@@ -103,6 +103,11 @@ jobs:
             test: false
             upgrade-type: Preview
             warnings-as-errors: false
+          # alexa-london-travel-site tests disabled due to breaking changes in .NET Aspire not yet in .NET 9 previews
+          - repo: alexa-london-travel-site
+            test: false
+            upgrade-type: Preview
+            warnings-as-errors: false
           # costellobot and dependabot-helper removed due to https://github.com/dotnet/aspire/issues/3941
           - repo: costellobot
             test: false
