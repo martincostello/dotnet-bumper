@@ -1,0 +1,11 @@
+exemptions:
+  - checks:
+      - pinned-dependencies
+    annotations:
+      # Unpinned dependencies are used only for testing purposes
+      - annotation: test-data
+  - checks:
+      - signed-releases
+    annotations:
+      # No artifacts are attached to releases as they are published to NuGet.org
+      - annotation: not-applicable
