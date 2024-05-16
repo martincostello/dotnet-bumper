@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Build.Utilities.ProjectCreation;
 
@@ -8,6 +10,8 @@ namespace MartinCostello.DotNetBumper;
 
 internal sealed class Project : IDisposable
 {
+    private static readonly string DotNetOutdatedVersion = GetDotNetOutdatedVersion();
+
     private readonly TemporaryDirectory _directory = new();
 
     public string DirectoryName => _directory.Path;
@@ -114,7 +118,7 @@ internal sealed class Project : IDisposable
             {
                 ["dotnet-outdated-tool"] = new JsonObject()
                 {
-                    ["version"] = "4.6.1",
+                    ["version"] = DotNetOutdatedVersion,
                     ["commands"] = new JsonArray()
                     {
                         "dotnet-outdated",
@@ -387,6 +391,24 @@ internal sealed class Project : IDisposable
             EndGlobal
             """";
 #pragma warning restore SA1027
+    }
+
+    private static string GetDotNetOutdatedVersion()
+    {
+        var solutionRoot = typeof(Project).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .First((p) => p.Key is "SolutionRoot")
+            .Value!;
+
+        var path = Path.Combine(solutionRoot, ".config", "dotnet-tools.json");
+        using var stream = File.OpenRead(path);
+        using var manifest = JsonDocument.Parse(stream);
+
+        return manifest.RootElement
+            .GetProperty("tools")
+            .GetProperty("dotnet-outdated-tool")
+            .GetProperty("version")
+            .GetString()!;
     }
 
     private void EnsureDirectoryTree(string path)
