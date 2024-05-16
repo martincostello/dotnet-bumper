@@ -577,15 +577,18 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         var xml = await fixture.Project.GetFileAsync(fileName);
         var project = XDocument.Parse(xml);
 
+        project.Root.ShouldNotBeNull();
+        var ns = project.Root.GetDefaultNamespace();
+
         return project
             .Root?
-            .Elements("ItemGroup")
-            .Elements("PackageReference")
+            .Elements(ns + "ItemGroup")
+            .Elements(ns + "PackageReference")
             .Select((p) =>
                 new
                 {
                     Key = p.Attribute("Include")?.Value ?? string.Empty,
-                    Value = p.Attribute("Version")?.Value ?? p.Element("Version")?.Value ?? string.Empty,
+                    Value = p.Attribute("Version")?.Value ?? p.Element(ns + "Version")?.Value ?? string.Empty,
                 })
             .ToDictionary((p) => p.Key, (p) => p.Value) ?? [];
     }
