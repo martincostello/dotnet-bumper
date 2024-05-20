@@ -175,39 +175,39 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
     {
         // Arrange
         string fileContents =
-            $"""
-             name: build
-             on: [push]
+            """
+            name: build
+            on: [push]
 
-             jobs:
-               build:
-                 runs-on: ubuntu-latest
+            jobs:
+              build:
+                runs-on: ubuntu-latest
 
-                 steps:
-                   - uses: actions/checkout@v4
-                   - name: Setup .NET
-                     uses: actions/setup-dotnet@v4
-                     with:
-                       dotnet-version: |
-                         6.0.x
+                steps:
+                  - uses: actions/checkout@v4
+                  - name: Setup .NET
+                    uses: actions/setup-dotnet@v4
+                    with:
+                      dotnet-version: |
+                        6.0.x
 
-                   - name: Publish app
-                     shell: pwsh
-                     run: dotnet publish
+                  - name: Publish app
+                    shell: pwsh
+                    run: dotnet publish
 
-               test:
-                 runs-on: ubuntu-latest
+              test:
+                runs-on: ubuntu-latest
 
-                 steps:
-                   - uses: actions/checkout@v4
-                   - uses: actions/setup-dotnet@v4
-                     with:
-                       dotnet-version: |
-                         6.0.x
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v4
+                    with:
+                      dotnet-version: |
+                        6.0.x
 
-                   - name: Test app
-                     run: dotnet test
-             """;
+                  - name: Test app
+                    run: dotnet test
+            """;
 
         string expectedContents =
             $"""
@@ -276,9 +276,29 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData("9.0")]
-    [InlineData("10.0")]
-    public async Task UpgradeAsync_Upgrades_Setup_DotNet_Action_With_Multiple_Sdk_Versions(string channel)
+    [InlineData("9.0", "9.0.100", "", "9")]
+    [InlineData("9.0", "9.0.100", ".0", "9.0")]
+    [InlineData("9.0", "9.0.100", ".x", "9.x")]
+    [InlineData("9.0", "9.0.100", ".0.x", "9.0.x")]
+    [InlineData("9.0", "9.0.100", ".0.123", "9.0.100")]
+    [InlineData("9.0", "9.0.100", ".0.4xx", "9.0.1xx")]
+    [InlineData("9.0", "9.0.200", ".0.423", "9.0.200")]
+    [InlineData("9.0", "9.0.234", ".0.423", "9.0.234")]
+    [InlineData("9.0", "9.0.200", ".0.4xx", "9.0.2xx")]
+    [InlineData("10.0", "10.0.100", "", "10")]
+    [InlineData("10.0", "10.0.100", ".0", "10.0")]
+    [InlineData("10.0", "10.0.100", ".x", "10.x")]
+    [InlineData("10.0", "10.0.100", ".0.x", "10.0.x")]
+    [InlineData("10.0", "10.0.100", ".0.123", "10.0.100")]
+    [InlineData("10.0", "10.0.100", ".0.4xx", "10.0.1xx")]
+    [InlineData("10.0", "10.0.200", ".0.423", "10.0.200")]
+    [InlineData("10.0", "10.0.234", ".0.423", "10.0.234")]
+    [InlineData("10.0", "10.0.200", ".0.4xx", "10.0.2xx")]
+    public async Task UpgradeAsync_Upgrades_Setup_DotNet_Action_With_Multiple_Sdk_Versions(
+        string channel,
+        string sdkVersion,
+        string suffix,
+        string expected)
     {
         // Arrange
         string fileContents =
@@ -296,8 +316,8 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
                      uses: actions/setup-dotnet@v4
                      with:
                        dotnet-version: |
-                         6.0.x
-                         8.0.x
+                         6{suffix}
+                         8{suffix}
 
                    - name: Publish app
                      shell: pwsh
@@ -311,8 +331,8 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
                    - uses: actions/setup-dotnet@v4
                      with:
                        dotnet-version: |
-                         6.0.x
-                         8.0.x
+                         6{suffix}
+                         8{suffix}
 
                    - name: Test app
                      run: dotnet test
@@ -333,9 +353,9 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
                      uses: actions/setup-dotnet@v4
                      with:
                        dotnet-version: |
-                         6.0.x
-                         8.0.x
-                         {channel}.x
+                         6{suffix}
+                         8{suffix}
+                         {expected}
 
                    - name: Publish app
                      shell: pwsh
@@ -349,9 +369,9 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
                    - uses: actions/setup-dotnet@v4
                      with:
                        dotnet-version: |
-                         6.0.x
-                         8.0.x
-                         {channel}.x
+                         6{suffix}
+                         8{suffix}
+                         {expected}
 
                    - name: Test app
                      run: dotnet test
@@ -366,7 +386,7 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
             Channel = Version.Parse(channel),
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new($"{channel}.200"),
+            SdkVersion = new(sdkVersion),
             SupportPhase = DotNetSupportPhase.Active,
         };
 

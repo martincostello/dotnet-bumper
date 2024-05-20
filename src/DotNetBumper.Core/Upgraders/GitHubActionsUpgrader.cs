@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Versioning;
 using Spectre.Console;
 using YamlDotNet.RepresentationModel;
 
@@ -123,8 +124,8 @@ internal sealed partial class GitHubActionsUpgrader(
 
         static string Update(SetupDotNetActionFinder finder)
         {
-            var contents = finder.Workflow.AsSpan();
-            var builder = new StringBuilder(contents.Length);
+            var remaining = finder.Contents.AsSpan();
+            var edited = new StringBuilder(remaining.Length);
 
             int offset = 0;
 
@@ -135,21 +136,21 @@ internal sealed partial class GitHubActionsUpgrader(
                 int length = location.End.Value - location.Start.Value;
 
                 // Add the existing content before the edit
-                builder.Append(contents[..index]);
+                edited.Append(remaining[..index]);
 
                 // Add the replacement text
-                builder.Append(replacement);
+                edited.Append(replacement);
 
                 // Consume the used content and update the offset to account
                 // for possible different lengths of content being replaced.
-                contents = contents[(index + length)..];
+                remaining = remaining[(index + length)..];
                 offset += index + length;
             }
 
             // Add any remaning content after the last edit
-            builder.Append(contents);
+            edited.Append(remaining);
 
-            return builder.ToString();
+            return edited.ToString();
         }
     }
 
@@ -180,15 +181,20 @@ internal sealed partial class GitHubActionsUpgrader(
             string fileName);
     }
 
-    private sealed class SetupDotNetActionFinder(UpgradeInfo upgrade, FileMetadata metadata, string workflow) : YamlVisitorBase
+    private sealed class SetupDotNetActionFinder(UpgradeInfo upgrade, FileMetadata metadata, string contents) : YamlVisitorBase
     {
         public const string VersionPropertyName = "dotnet-version";
 
+        private const int FeatureBandMultiplier = 100;
+        private const char FloatingVersionChar = 'x';
+        private const string FloatingVersionString = "x";
+        private const char VersionSeparator = '.';
+
         public List<(Range Location, string Replacement)> Edits { get; } = [];
 
-        public FileMetadata Metadata { get; } = metadata;
+        public string Contents { get; set; } = contents;
 
-        public string Workflow { get; set; } = workflow;
+        public FileMetadata Metadata { get; } = metadata;
 
         protected override void VisitPair(YamlNode key, YamlNode value)
         {
@@ -216,7 +222,7 @@ internal sealed partial class GitHubActionsUpgrader(
                         continue;
                     }
 
-                    TryUpdateVersion(version);
+                    TryUpdateVersions(version);
                 }
             }
 
@@ -245,64 +251,186 @@ internal sealed partial class GitHubActionsUpgrader(
             }
         }
 
-        private void TryUpdateVersion(YamlScalarNode dotnetVersion)
+        private static int FeatureBandFloor(int value)
         {
-            string original = Workflow[dotnetVersion.Start.Index..dotnetVersion.End.Index];
-            string[] versions = original.Split(Metadata.NewLine);
+            // Convert 1xx to 100, 2xx to 200, etc.
+            value /= FeatureBandMultiplier;
+            value *= FeatureBandMultiplier;
+            return value;
+        }
 
-            var builder = new StringBuilder();
+        private void TryUpdateVersions(YamlScalarNode node)
+        {
+            string original = Contents[node.Start.Index..node.End.Index];
+            List<string> values = [.. original.Split(Metadata.NewLine)];
 
-            if (versions.Length is 1)
+            var content = new StringBuilder(original.Length);
+
+            if (values.Count is 1)
             {
-                string version = versions[0];
+                // Only one version is specifed, so we just attempt to update it
+                string version = values[0];
 
                 if (TryUpdateVersion(version, out var edited))
                 {
                     version = edited;
                 }
 
-                builder.Append(version);
+                content.Append(version);
             }
-            else if (versions.Length > 1)
+            else if (values.Count > 1)
             {
-                for (int i = 0; i < versions.Length; i++)
+                // A multi-line string was specified, which may contain multiple versions.
+                // Scan through all the values to find the distinct major versions and make
+                // a note of the index of the last version in the list to either insert a
+                // new version after or replace if there is only one version in the value.
+                HashSet<int> majorVersions = [];
+                int lastIndex = -1;
+
+                for (int i = 0; i < values.Count; i++)
                 {
-                    var version = versions[i];
+                    var version = values[i];
+
+                    if (!string.IsNullOrWhiteSpace(version))
+                    {
+                        var index = version.AsSpan().IndexOfAny(Digits);
+
+                        if (index is -1)
+                        {
+                            continue;
+                        }
+
+                        var first = version[index..].Split('.')[0];
+
+                        if (int.TryParse(first, NumberStyles.None, CultureInfo.InvariantCulture, out var major))
+                        {
+                            majorVersions.Add(major);
+                            lastIndex = i;
+                        }
+                    }
+                }
+
+                // Do we not already have a version for the upgrade version?
+                if (!majorVersions.Contains(upgrade.SdkVersion.Major))
+                {
+                    var index = values[lastIndex].AsSpan().IndexOfAny(Digits);
+                    var prefix = values[lastIndex][..index];
+
+                    // Get all the unique version numbers and split into their parts
+                    var sdkVersions = values
+                        .Where((p) => !string.IsNullOrWhiteSpace(p))
+                        .Where((p) => p is not "|")
+                        .Select((p) => p.Split(VersionSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        .ToArray();
+
+                    var upgraded = GetUpgradeVersion(sdkVersions, prefix, lastIndex, upgrade.SdkVersion);
+
+                    if (!values.Contains(upgraded))
+                    {
+                        if (sdkVersions.Length is 1)
+                        {
+                            // Even though the value was a multi-line string
+                            // there was only one version, so just replace it.
+                            values[lastIndex] = upgraded;
+                        }
+                        else
+                        {
+                            // Add the new version at the last version in the list
+                            values.Insert(lastIndex + 1, upgraded);
+                        }
+                    }
+                }
+
+                // Create the updated content from the edited/updated versions
+                for (int i = 0; i < values.Count; i++)
+                {
+                    var version = values[i];
 
                     if (!string.IsNullOrEmpty(version))
                     {
-                        if (TryUpdateVersion(version, out var edited))
-                        {
-                            version = edited;
-                        }
-
-                        builder.Append(version);
+                        content.Append(version);
                     }
 
-                    if (i != versions.Length - 1)
+                    if (i != values.Count - 1)
                     {
-                        builder.Append(Metadata.NewLine);
+                        content.Append(Metadata.NewLine);
                     }
                 }
             }
 
-            string updated = builder.ToString();
+            string updated = content.ToString();
 
             if (updated != original)
             {
-                Edits.Add((new(dotnetVersion.Start.Index, dotnetVersion.End.Index), updated));
+                Edits.Add((new(node.Start.Index, node.End.Index), updated));
+            }
+
+            static string GetUpgradeVersion(
+                string[][] sdkVersionsParts,
+                string prefix,
+                int lastIndex,
+                NuGetVersion sdkVersion)
+            {
+                // At a minimum we need the prefix and the major version
+                var version = new StringBuilder()
+                    .Append(prefix)
+                    .Append(sdkVersion.Major);
+
+                // Only add more parts if any one of the versions has more than one
+                if (!sdkVersionsParts.All((p) => p.Length is 1))
+                {
+                    version.Append('.');
+
+                    if (sdkVersionsParts.All((p) => p.Length is 2))
+                    {
+                        if (sdkVersionsParts.All((p) => p[1] is FloatingVersionString))
+                        {
+                            // All versions are of the format "6.x"
+                            version.Append(FloatingVersionChar);
+                        }
+                        else
+                        {
+                            // Use the minor version from the upgrade SDK version
+                            version.Append(sdkVersion.Minor);
+                        }
+                    }
+                    else
+                    {
+                        version.Append(sdkVersion.Minor)
+                               .Append('.');
+
+                        if (sdkVersionsParts.All((p) => p[2] is FloatingVersionString))
+                        {
+                            // All versions are of the format "6.0.x"
+                            version.Append(FloatingVersionChar);
+                        }
+                        else if (sdkVersionsParts.All((p) => p[2].EndsWith(FloatingVersionChar)))
+                        {
+                            // All versions are of the format "6.0.1xx"
+                            int featureBand = (FeatureBandFloor(sdkVersion.Patch) / FeatureBandMultiplier) + '0';
+
+                            version.Append((char)featureBand)
+                                   .Append(FloatingVersionChar)
+                                   .Append(FloatingVersionChar);
+                        }
+                        else
+                        {
+                            // At least one version is fully-qualified (e.g.6.0.100)
+                            version.Append(sdkVersion.Patch);
+                        }
+                    }
+                }
+
+                return version.ToString();
             }
         }
 
         private bool TryUpdateVersion(string content, [NotNullWhen(true)] out string? updated)
         {
-            const int FeatureBandMultiplier = 100;
-            const char FloatingVersionChar = 'x';
-            const string FloatingVersionString = "x";
-            const char VersionSeparator = '.';
-
             updated = null;
 
+            // Find where the version starts in the string as it may
+            // contain leading whitespace if it's a multi-line value.
             int index = content.AsSpan().IndexOfAny(Digits);
 
             string prefix;
@@ -331,18 +459,14 @@ internal sealed partial class GitHubActionsUpgrader(
                 versionParts.Length > 1 &&
                 versionParts[^1].EndsWith(FloatingVersionChar);
 
-            int upgradeFeature = 0;
-
-            if (hasFloatingVersion)
-            {
-                upgradeFeature = FeatureBandFloor(upgrade.SdkVersion.Patch);
-            }
+            int targetFeature = upgrade.SdkVersion.Patch;
 
             Version? currentVersion;
             Version targetVersion;
 
             if (versionParts.Length is 1)
             {
+                // The version should be of the format "6"
                 if (!int.TryParse(versionString, NumberStyles.None, CultureInfo.InvariantCulture, out int major))
                 {
                     return false;
@@ -356,15 +480,18 @@ internal sealed partial class GitHubActionsUpgrader(
             {
                 if (hasFloatingVersion)
                 {
+                    // The version should be of the format "6.x"
                     if (!int.TryParse(versionParts[0], NumberStyles.None, CultureInfo.InvariantCulture, out int major))
                     {
                         return false;
                     }
 
+                    // Treat "6.x" as "6.0" to get the lowest possible version
                     currentVersion = new(major, 0);
                 }
                 else if (!Version.TryParse(versionString, out currentVersion))
                 {
+                    // The version was not of the format "6.0"
                     return false;
                 }
 
@@ -376,22 +503,28 @@ internal sealed partial class GitHubActionsUpgrader(
 
                 if (hasFloatingVersion)
                 {
+                    // The version should be of the format "6.0.x" or "6.0.1xx"
                     if (!Version.TryParse(string.Join(VersionSeparator, versionParts[0..2]), out var majorMinor))
                     {
                         return false;
                     }
 
-                    // Treat "6.0.x" as "6.0.100", "6.0.2x" as "6.0.200", etc.
+                    string feature = versionParts[^1];
+
+                    // Treat "6.0.x" as "6.0.100", "6.0.1xx" as "6.0.100", "6.0.2x" as "6.0.200", etc.
                     int currentFeature =
-                        versionParts[^1] == FloatingVersionString ?
+                        feature == FloatingVersionString ?
                         FeatureBandMultiplier :
-                        (versionParts[^1][0] - '0') * FeatureBandMultiplier;
+                        (feature[0] - '0') * FeatureBandMultiplier;
 
                     currentVersion = new(majorMinor.Major, majorMinor.Minor, currentFeature);
-                    targetVersion = new(upgrade.Channel.Major, upgrade.Channel.Minor, upgradeFeature);
+
+                    targetFeature = FeatureBandFloor(upgrade.SdkVersion.Patch);
+                    targetVersion = new(upgrade.SdkVersion.Major, upgrade.SdkVersion.Minor, targetFeature);
                 }
                 else
                 {
+                    // The version should be of the format "6.0.100"
                     if (!Version.TryParse(versionString, out currentVersion))
                     {
                         return false;
@@ -417,11 +550,13 @@ internal sealed partial class GitHubActionsUpgrader(
 
                 if (versionParts[^1] is FloatingVersionString)
                 {
+                    // The version specified in the last part ".x" so keep it as ".x"
                     upgradedVersion += FloatingVersionString;
                 }
                 else
                 {
-                    char featureBand = (char)('0' + (upgradeFeature / FeatureBandMultiplier));
+                    // The version specified in the last part ".1xx" so keep it as ".Nxx"
+                    char featureBand = (char)('0' + (targetFeature / FeatureBandMultiplier));
                     upgradedVersion += string.Create(3, featureBand, static (span, first) =>
                     {
                         span[0] = first;
@@ -440,19 +575,12 @@ internal sealed partial class GitHubActionsUpgrader(
 
             if (upgradedVersion == versionString)
             {
+                // Nothing was updated
                 return false;
             }
 
             updated = upgradedVersion;
             return true;
-
-            static int FeatureBandFloor(int value)
-            {
-                // Convert 1xx to 100, 2xx to 200, etc.
-                value /= FeatureBandMultiplier;
-                value *= FeatureBandMultiplier;
-                return value;
-            }
         }
     }
 }
