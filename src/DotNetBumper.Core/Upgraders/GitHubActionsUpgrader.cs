@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,8 @@ internal sealed partial class GitHubActionsUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<GitHubActionsUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
+    private static readonly SearchValues<char> Digits = SearchValues.Create("123456789");
+
     protected override string Action => "Upgrading GitHub Actions workflows";
 
     protected override string InitialStatus => "Update GitHub Actions";
@@ -81,8 +84,6 @@ internal sealed partial class GitHubActionsUpgrader(
         StatusContext context,
         CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(cancellationToken);
-
         var name = RelativeName(path);
 
         context.Status = StatusMessage($"Parsing {name}...");
@@ -92,10 +93,13 @@ internal sealed partial class GitHubActionsUpgrader(
             return ProcessingResult.None;
         }
 
-        var finder = new SetupDotNetActionFinder(upgrade);
+        var metadata = FileHelpers.GetMetadata(path);
+        var contents = await File.ReadAllTextAsync(path, metadata.Encoding, cancellationToken);
+
+        var finder = new SetupDotNetActionFinder(upgrade, metadata, contents);
         workflow.Accept(finder);
 
-        if (finder.LineIndexes.Count is 0)
+        if (finder.Edits.Count is 0)
         {
             return ProcessingResult.None;
         }
@@ -112,59 +116,41 @@ internal sealed partial class GitHubActionsUpgrader(
         SetupDotNetActionFinder finder,
         CancellationToken cancellationToken)
     {
-        using var buffered = new MemoryStream();
-
-        using (var input = FileHelpers.OpenRead(path, out var metadata))
-        using (var reader = new StreamReader(input, metadata.Encoding))
-        using (var writer = new StreamWriter(buffered, metadata.Encoding, leaveOpen: true))
-        {
-            writer.NewLine = metadata.NewLine;
-
-            int i = 0;
-
-            while (await reader.ReadLineAsync(cancellationToken) is { } line)
-            {
-                if (finder.LineIndexes.TryGetValue(i++, out var value))
-                {
-                    var updated = new StringBuilder(line.Length);
-
-                    int index = line.IndexOf(':', StringComparison.Ordinal);
-
-                    Debug.Assert(index != -1, $"The {SetupDotNetActionFinder.VersionPropertyName} line should contain a colon.");
-
-                    updated.Append(line[..(index + 1)]);
-                    updated.Append(' ');
-                    updated.Append(value);
-
-                    // Preserve any comments
-                    index = line.IndexOf('#', StringComparison.Ordinal);
-
-                    if (index != -1)
-                    {
-                        updated.Append(' ');
-                        updated.Append(line[index..]);
-                    }
-
-                    line = updated.ToString();
-                }
-
-                await writer.WriteAsync(line);
-                await writer.WriteLineAsync();
-            }
-
-            await writer.FlushAsync(cancellationToken);
-        }
-
-        buffered.Seek(0, SeekOrigin.Begin);
-
-        await using var output = File.OpenWrite(path);
-
-        await buffered.CopyToAsync(output, cancellationToken);
-        await buffered.FlushAsync(cancellationToken);
-
-        buffered.SetLength(buffered.Position);
+        var updated = Update(finder);
+        await File.WriteAllTextAsync(path, updated, finder.Metadata.Encoding, cancellationToken);
 
         Log.UpgradedSdkVersions(logger, path);
+
+        static string Update(SetupDotNetActionFinder finder)
+        {
+            var contents = finder.Workflow.AsSpan();
+            var builder = new StringBuilder(contents.Length);
+
+            int offset = 0;
+
+            foreach ((var location, var replacement) in finder.Edits)
+            {
+                // Determine how much of the original contents to copy
+                int index = location.Start.Value - offset;
+                int length = location.End.Value - location.Start.Value;
+
+                // Add the existing content before the edit
+                builder.Append(contents[..index]);
+
+                // Add the replacement text
+                builder.Append(replacement);
+
+                // Consume the used content and update the offset to account
+                // for possible different lengths of content being replaced.
+                contents = contents[(index + length)..];
+                offset += index + length;
+            }
+
+            // Add any remaning content after the last edit
+            builder.Append(contents);
+
+            return builder.ToString();
+        }
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -194,11 +180,15 @@ internal sealed partial class GitHubActionsUpgrader(
             string fileName);
     }
 
-    private sealed class SetupDotNetActionFinder(UpgradeInfo upgrade) : YamlVisitorBase
+    private sealed class SetupDotNetActionFinder(UpgradeInfo upgrade, FileMetadata metadata, string workflow) : YamlVisitorBase
     {
         public const string VersionPropertyName = "dotnet-version";
 
-        public Dictionary<int, string> LineIndexes { get; } = [];
+        public List<(Range Location, string Replacement)> Edits { get; } = [];
+
+        public FileMetadata Metadata { get; } = metadata;
+
+        public string Workflow { get; set; } = workflow;
 
         protected override void VisitPair(YamlNode key, YamlNode value)
         {
@@ -257,18 +247,86 @@ internal sealed partial class GitHubActionsUpgrader(
 
         private void TryUpdateVersion(YamlScalarNode dotnetVersion)
         {
+            string original = Workflow[dotnetVersion.Start.Index..dotnetVersion.End.Index];
+            string[] versions = original.Split(Metadata.NewLine);
+
+            var builder = new StringBuilder();
+
+            if (versions.Length is 1)
+            {
+                string version = versions[0];
+
+                if (TryUpdateVersion(version, out var edited))
+                {
+                    version = edited;
+                }
+
+                builder.Append(version);
+            }
+            else if (versions.Length > 1)
+            {
+                for (int i = 0; i < versions.Length; i++)
+                {
+                    var version = versions[i];
+
+                    if (!string.IsNullOrEmpty(version))
+                    {
+                        if (TryUpdateVersion(version, out var edited))
+                        {
+                            builder.Append(edited);
+                        }
+                        else
+                        {
+                            builder.Append(version);
+                        }
+                    }
+
+                    if (i != versions.Length - 1)
+                    {
+                        builder.Append(Metadata.NewLine);
+                    }
+                }
+            }
+
+            string updated = builder.ToString();
+
+            if (updated != original)
+            {
+                Edits.Add((new(dotnetVersion.Start.Index, dotnetVersion.End.Index), updated));
+            }
+        }
+
+        private bool TryUpdateVersion(string content, [NotNullWhen(true)] out string? updated)
+        {
             const int FeatureBandMultiplier = 100;
             const char FloatingVersionChar = 'x';
             const string FloatingVersionString = "x";
             const char VersionSeparator = '.';
 
-            string versionString = dotnetVersion.Value!;
+            updated = null;
+
+            int index = content.AsSpan().IndexOfAny(Digits);
+
+            string prefix;
+            string versionString;
+
+            if (index is -1)
+            {
+                prefix = string.Empty;
+                versionString = content;
+            }
+            else
+            {
+                prefix = content[..index];
+                versionString = content[index..];
+            }
+
             string[] versionParts = versionString.Split(VersionSeparator);
 
             // See https://github.com/actions/setup-dotnet?tab=readme-ov-file#supported-version-syntax
             if (versionParts.Length is not (1 or 2 or 3))
             {
-                return;
+                return false;
             }
 
             bool hasFloatingVersion =
@@ -289,7 +347,7 @@ internal sealed partial class GitHubActionsUpgrader(
             {
                 if (!int.TryParse(versionString, NumberStyles.None, CultureInfo.InvariantCulture, out int major))
                 {
-                    return;
+                    return false;
                 }
 
                 // Version requires at least two parts, so convert "6" to "6.0" etc.
@@ -302,14 +360,14 @@ internal sealed partial class GitHubActionsUpgrader(
                 {
                     if (!int.TryParse(versionParts[0], NumberStyles.None, CultureInfo.InvariantCulture, out int major))
                     {
-                        return;
+                        return false;
                     }
 
                     currentVersion = new(major, 0);
                 }
                 else if (!Version.TryParse(versionString, out currentVersion))
                 {
-                    return;
+                    return false;
                 }
 
                 targetVersion = upgrade.Channel;
@@ -322,7 +380,7 @@ internal sealed partial class GitHubActionsUpgrader(
                 {
                     if (!Version.TryParse(string.Join(VersionSeparator, versionParts[0..2]), out var majorMinor))
                     {
-                        return;
+                        return false;
                     }
 
                     // Treat "6.0.x" as "6.0.100", "6.0.2x" as "6.0.200", etc.
@@ -338,7 +396,7 @@ internal sealed partial class GitHubActionsUpgrader(
                 {
                     if (!Version.TryParse(versionString, out currentVersion))
                     {
-                        return;
+                        return false;
                     }
 
                     // If an exact version is specified, compare to the
@@ -350,7 +408,7 @@ internal sealed partial class GitHubActionsUpgrader(
             if (currentVersion >= targetVersion)
             {
                 // Nothing to upgrade
-                return;
+                return false;
             }
 
             string upgradedVersion;
@@ -380,10 +438,15 @@ internal sealed partial class GitHubActionsUpgrader(
                 upgradedVersion = targetVersion.ToString(versionParts.Length);
             }
 
-            if (upgradedVersion != versionString)
+            upgradedVersion = prefix + upgradedVersion;
+
+            if (upgradedVersion == versionString)
             {
-                LineIndexes[dotnetVersion.Start.Line - 1] = upgradedVersion;
+                return false;
             }
+
+            updated = upgradedVersion;
+            return true;
 
             static int FeatureBandFloor(int value)
             {
