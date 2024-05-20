@@ -109,7 +109,7 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
                    - name: Setup .NET
                      uses: actions/setup-dotnet@v4
                      with:
-                       dotnet-version: {version}
+                       dotnet-version: {version} # Pin the version
 
                    - name: Publish app
                      shell: pwsh
@@ -130,7 +130,7 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
                    - name: Setup .NET
                      uses: actions/setup-dotnet@v4
                      with:
-                       dotnet-version: {expected}
+                       dotnet-version: {expected} # Pin the version
 
                    - name: Publish app
                      shell: pwsh
@@ -208,6 +208,56 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Fact]
+    public async Task UpgradeAsync_Ignores_Actions_Workflows_With_No_Steps()
+    {
+        // Arrange
+        string fileContents =
+            """
+            name: update-dotnet-sdk
+
+            on:
+              schedule:
+                - cron:  '00 20 * * TUE'
+              workflow_dispatch:
+
+            permissions:
+              contents: read
+
+            jobs:
+              update-sdk:
+                uses: martincostello/update-dotnet-sdk/.github/workflows/update-dotnet-sdk.yml@v3
+                with:
+                  labels: "dependencies,.NET"
+                  user-email: ${{ vars.GIT_COMMIT_USER_EMAIL }}
+                  user-name: ${{ vars.GIT_COMMIT_USER_NAME }}
+                secrets:
+                  application-id: ${{ secrets.UPDATER_APPLICATION_ID }}
+                  application-private-key: ${{ secrets.UPDATER_APPLICATION_PRIVATE_KEY }}
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Fact]
     public async Task UpgradeAsync_Handles_Invalid_Workflow_Yaml()
     {
         // Arrange
@@ -244,6 +294,9 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("${{ matrix.dotnet-version }}")]
     [InlineData("foo")]
     [InlineData("1")]
+    [InlineData("1.2.3.4")]
+    [InlineData("a")]
+    [InlineData("a.b")]
     [InlineData("a.b.c")]
     [InlineData("6.0.y")]
     public async Task UpgradeAsync_Handles_Invalid_Versions(string version)
