@@ -258,9 +258,12 @@ internal sealed partial class GitHubActionsUpgrader(
         private void TryUpdateVersion(YamlScalarNode dotnetVersion)
         {
             const int FeatureBandMultiplier = 100;
+            const char FloatingVersionChar = 'x';
+            const string FloatingVersionString = "x";
+            const char VersionSeparator = '.';
 
             string versionString = dotnetVersion.Value!;
-            string[] versionParts = versionString.Split('.');
+            string[] versionParts = versionString.Split(VersionSeparator);
 
             // See https://github.com/actions/setup-dotnet?tab=readme-ov-file#supported-version-syntax
             if (versionParts.Length is not (1 or 2 or 3))
@@ -270,7 +273,7 @@ internal sealed partial class GitHubActionsUpgrader(
 
             bool hasFloatingVersion =
                 versionParts.Length > 1 &&
-                versionParts[^1].EndsWith('x');
+                versionParts[^1].EndsWith(FloatingVersionChar);
 
             int upgradeFeature = 0;
 
@@ -317,14 +320,14 @@ internal sealed partial class GitHubActionsUpgrader(
 
                 if (hasFloatingVersion)
                 {
-                    if (!Version.TryParse(string.Join('.', versionParts[0..2]), out var majorMinor))
+                    if (!Version.TryParse(string.Join(VersionSeparator, versionParts[0..2]), out var majorMinor))
                     {
                         return;
                     }
 
                     // Treat "6.0.x" as "6.0.100", "6.0.2x" as "6.0.200", etc.
                     int currentFeature =
-                        versionParts[^1] == "x" ?
+                        versionParts[^1] == FloatingVersionString ?
                         FeatureBandMultiplier :
                         (versionParts[^1][0] - '0') * FeatureBandMultiplier;
 
@@ -356,14 +359,19 @@ internal sealed partial class GitHubActionsUpgrader(
             {
                 upgradedVersion = $"{targetVersion.ToString(versionParts.Length - 1)}.";
 
-                if (versionParts[^1] is "x")
+                if (versionParts[^1] is FloatingVersionString)
                 {
-                    upgradedVersion += "x";
+                    upgradedVersion += FloatingVersionString;
                 }
                 else
                 {
                     char featureBand = (char)('0' + (upgradeFeature / FeatureBandMultiplier));
-                    upgradedVersion += $"{featureBand}xx";
+                    upgradedVersion += string.Create(3, featureBand, static (span, first) =>
+                    {
+                        span[0] = first;
+                        span[1] = FloatingVersionChar;
+                        span[2] = FloatingVersionChar;
+                    });
                 }
             }
             else
