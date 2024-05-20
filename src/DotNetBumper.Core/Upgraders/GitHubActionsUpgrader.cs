@@ -207,19 +207,7 @@ internal sealed partial class GitHubActionsUpgrader(
             {
                 foreach (var item in items)
                 {
-                    if (item is not YamlMappingNode { Children.Count: > 0 } step)
-                    {
-                        continue;
-                    }
-
-                    var uses = step.Children.FirstOrDefault((p) => p.Key is YamlScalarNode { Value: "uses" }).Value;
-
-                    if (uses is not YamlScalarNode { Value.Length: > 0 } action)
-                    {
-                        continue;
-                    }
-
-                    if (action.Value?.StartsWith("actions/setup-dotnet@", StringComparison.Ordinal) is false)
+                    if (GetSetupDotNetStep(item) is not { } step)
                     {
                         continue;
                     }
@@ -238,53 +226,151 @@ internal sealed partial class GitHubActionsUpgrader(
                         continue;
                     }
 
-                    string[] versionParts = version.Value.Split('.');
-
-                    if (versionParts.Length is not (2 or 3))
-                    {
-                        continue;
-                    }
-
-                    Version? current;
-                    Version target;
-                    bool hasFloatingVersion = false;
-
-                    if (versionParts.Length is 2)
-                    {
-                        if (!Version.TryParse(version.Value, out current))
-                        {
-                            continue;
-                        }
-
-                        target = upgrade.Channel;
-                    }
-                    else
-                    {
-                        Debug.Assert(versionParts.Length is 3, $"Expected 3 version parts but got {versionParts.Length}.");
-
-                        hasFloatingVersion = versionParts[2] is "x";
-                        int length = hasFloatingVersion ? 2 : 3;
-
-                        if (!Version.TryParse(string.Join('.', versionParts[0..length]), out current))
-                        {
-                            continue;
-                        }
-
-                        target = hasFloatingVersion ? upgrade.Channel : upgrade.SdkVersion.Version;
-                    }
-
-                    if (current >= target)
-                    {
-                        continue;
-                    }
-
-                    LineIndexes[dotnetVersion.Start.Line - 1] = hasFloatingVersion
-                        ? $"{target.ToString(2)}.x"
-                        : target.ToString();
+                    TryUpdateVersion(version);
                 }
             }
 
             base.VisitPair(key, value);
+
+            static YamlMappingNode? GetSetupDotNetStep(YamlNode item)
+            {
+                if (item is not YamlMappingNode { Children.Count: > 0 } step)
+                {
+                    return null;
+                }
+
+                var uses = step.Children.FirstOrDefault((p) => p.Key is YamlScalarNode { Value: "uses" }).Value;
+
+                if (uses is not YamlScalarNode { Value.Length: > 0 } action)
+                {
+                    return null;
+                }
+
+                if (action.Value?.StartsWith("actions/setup-dotnet@", StringComparison.Ordinal) is false)
+                {
+                    return null;
+                }
+
+                return step;
+            }
+        }
+
+        private void TryUpdateVersion(YamlScalarNode dotnetVersion)
+        {
+            string value = dotnetVersion.Value!;
+            string[] versionParts = value.Split('.');
+
+            // See https://github.com/actions/setup-dotnet?tab=readme-ov-file#supported-version-syntax
+            if (versionParts.Length is not (1 or 2 or 3))
+            {
+                return;
+            }
+
+            bool hasFloatingVersion =
+                versionParts.Length > 1 &&
+                versionParts[^1].EndsWith('x');
+
+            int featureVersion = 0;
+
+            if (hasFloatingVersion)
+            {
+                featureVersion = FeatureBandFloor(upgrade.SdkVersion.Patch);
+            }
+
+            Version? current;
+            Version target;
+
+            if (versionParts.Length is 1)
+            {
+                if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int major))
+                {
+                    return;
+                }
+
+                current = new Version(major, 0);
+                target = upgrade.Channel;
+            }
+            else if (versionParts.Length is 2)
+            {
+                if (hasFloatingVersion)
+                {
+                    if (!int.TryParse(versionParts[0], NumberStyles.None, CultureInfo.InvariantCulture, out int major))
+                    {
+                        return;
+                    }
+
+                    current = new Version(major, 0);
+                }
+                else if (!Version.TryParse(value, out current))
+                {
+                    return;
+                }
+
+                target = upgrade.Channel;
+            }
+            else
+            {
+                Debug.Assert(versionParts.Length is 3, $"Expected 3 version parts but got {versionParts.Length}.");
+
+                if (hasFloatingVersion)
+                {
+                    if (!Version.TryParse(string.Join('.', versionParts[0..2]), out var majorMinor))
+                    {
+                        return;
+                    }
+
+                    int band = versionParts[^1] == "x" ? 100 : (versionParts[^1][0] - '0') * 100;
+                    current = new Version(majorMinor.Major, majorMinor.Minor, band);
+                    target = new Version(upgrade.Channel.Major, upgrade.Channel.Minor, featureVersion);
+                }
+                else
+                {
+                    if (!Version.TryParse(value, out current))
+                    {
+                        return;
+                    }
+
+                    target = upgrade.SdkVersion.Version;
+                }
+            }
+
+            if (current >= target)
+            {
+                return;
+            }
+
+            string updated;
+
+            if (hasFloatingVersion)
+            {
+                updated = $"{target.ToString(versionParts.Length - 1)}.";
+
+                if (versionParts[^1] is "x")
+                {
+                    updated += "x";
+                }
+                else
+                {
+                    updated += $"{featureVersion / 100}xx";
+                }
+            }
+            else
+            {
+                updated = target.ToString(versionParts.Length);
+            }
+
+            if (updated != value)
+            {
+                LineIndexes[dotnetVersion.Start.Line - 1] = updated;
+            }
+
+            static int FeatureBandFloor(int value)
+            {
+                // Convert 1xx to 100, 2xx to 200, etc.
+                value /= 100;
+                value *= 100;
+                return value;
+            }
         }
     }
 }

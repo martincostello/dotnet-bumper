@@ -1,0 +1,378 @@
+﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
+// Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
+
+namespace MartinCostello.DotNetBumper.Upgraders;
+
+public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
+{
+    [Theory]
+    [ClassData(typeof(DotNetChannelTestData))]
+    public async Task UpgradeAsync_Upgrades_Setup_DotNet_Action(string channel)
+    {
+        // Arrange
+        string fileContents =
+            """
+            name: build
+            on: [push]
+
+            jobs:
+              build:
+                runs-on: ubuntu-latest
+
+                steps:
+                  - uses: actions/checkout@v4
+                  - name: Setup .NET
+                    uses: actions/setup-dotnet@v4
+                    with:
+                      dotnet-version: 6.0
+
+                  - name: Publish app
+                    shell: pwsh
+                    run: dotnet publish
+            """;
+
+        string expectedContents =
+            $"""
+             name: build
+             on: [push]
+             
+             jobs:
+               build:
+                 runs-on: ubuntu-latest
+             
+                 steps:
+                   - uses: actions/checkout@v4
+                   - name: Setup .NET
+                     uses: actions/setup-dotnet@v4
+                     with:
+                       dotnet-version: {channel}
+             
+                   - name: Publish app
+                     shell: pwsh
+                     run: dotnet publish
+             """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yaml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse(channel),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new($"{channel}.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [InlineData("6", "10")]
+    [InlineData("6.x", "10.x")]
+    [InlineData("6.0", "10.0")]
+    [InlineData("6.0.x", "10.0.x")]
+    [InlineData("6.0.4xx", "10.0.2xx")]
+    [InlineData("6.0.422", "10.0.200")]
+    [InlineData("10.0.1xx", "10.0.2xx")]
+    [InlineData("10.0.100", "10.0.200")]
+    public async Task UpgradeAsync_Upgrades_Setup_DotNet_Action_Sdk_Version(string version, string expected)
+    {
+        // Arrange
+        string fileContents =
+            $"""
+             name: build
+             on: [push]
+
+             jobs:
+               build:
+                 runs-on: ubuntu-latest
+
+                 steps:
+                   - uses: actions/checkout@v4
+                   - name: Setup .NET
+                     uses: actions/setup-dotnet@v4
+                     with:
+                       dotnet-version: {version}
+
+                   - name: Publish app
+                     shell: pwsh
+                     run: dotnet publish
+             """;
+
+        string expectedContents =
+            $"""
+             name: build
+             on: [push]
+
+             jobs:
+               build:
+                 runs-on: ubuntu-latest
+
+                 steps:
+                   - uses: actions/checkout@v4
+                   - name: Setup .NET
+                     uses: actions/setup-dotnet@v4
+                     with:
+                       dotnet-version: {expected}
+
+                   - name: Publish app
+                     shell: pwsh
+                     run: dotnet publish
+             """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse("10.0"),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("10.0.200"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Ignores_Actions_Workflows_With_No_Setup_DotNet_Action()
+    {
+        // Arrange
+        string fileContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-node@v4
+                  - run: npm ci && npm test
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Handles_Invalid_Workflow_Yaml()
+    {
+        // Arrange
+        string fileContents =
+            """
+            foo: bar
+            baz
+            """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("${{ matrix.dotnet-version }}")]
+    [InlineData("foo")]
+    [InlineData("1")]
+    [InlineData("a.b.c")]
+    [InlineData("6.0.y")]
+    public async Task UpgradeAsync_Handles_Invalid_Versions(string version)
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        var content =
+            $"""
+             name: build
+             on: [push]
+             jobs:
+               build:
+                 runs-on: ubuntu-latest
+                 steps:",
+                   - uses: actions/checkout@v4
+                   - uses: actions/setup-dotnet@v4
+                     with:
+                       dotnet-version: {version}
+                   - run: dotnet build
+            """;
+
+        await fixture.Project.AddFileAsync(".github/workflows/build.yml", content);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = new(8, 0),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("8.0.201"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [ClassData(typeof(FileEncodingTestData))]
+    public async Task UpgradeAsync_Preserves_Line_Endings(string newLine, bool hasUtf8Bom)
+    {
+        // Arrange
+        string[] originalLines =
+        [
+            "name: build",
+            "on: [push]",
+            "jobs:",
+            "  build:",
+            "    runs-on: ubuntu-latest",
+            "    steps:",
+            "      - uses: actions/checkout@v4",
+            "      - uses: actions/setup-dotnet@v4",
+            "        with:",
+            "          dotnet-version: 6.0.x",
+            "      - run: dotnet build",
+        ];
+
+        string[] expectedLines =
+        [
+            "name: build",
+            "on: [push]",
+            "jobs:",
+            "  build:",
+            "    runs-on: ubuntu-latest",
+            "    steps:",
+            "      - uses: actions/checkout@v4",
+            "      - uses: actions/setup-dotnet@v4",
+            "        with:",
+            "          dotnet-version: 10.0.x",
+            "      - run: dotnet build",
+        ];
+
+        string fileContents = string.Join(newLine, originalLines) + newLine;
+        string expectedContent = string.Join(newLine, expectedLines) + newLine;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        var encoding = new UTF8Encoding(hasUtf8Bom);
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yaml", fileContents, encoding);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse("10.0"),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("10.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+        actualContent.ShouldBe(expectedContent);
+
+        byte[] actualBytes = await File.ReadAllBytesAsync(workflow);
+
+        if (hasUtf8Bom)
+        {
+            actualBytes.ShouldStartWithUTF8Bom();
+        }
+        else
+        {
+            actualBytes.ShouldNotStartWithUTF8Bom();
+        }
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    private static GitHubActionsUpgrader CreateTarget(UpgraderFixture fixture)
+    {
+        return new(
+            fixture.Console,
+            fixture.Environment,
+            fixture.CreateOptions(),
+            fixture.CreateLogger<GitHubActionsUpgrader>());
+    }
+}
