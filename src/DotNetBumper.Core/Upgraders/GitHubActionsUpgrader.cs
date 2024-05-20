@@ -188,6 +188,7 @@ internal sealed partial class GitHubActionsUpgrader(
         private const int FeatureBandMultiplier = 100;
         private const char FloatingVersionChar = 'x';
         private const string FloatingVersionString = "x";
+        private const char PrereleaseSeparator = '-';
         private const char VersionSeparator = '.';
 
         public List<(Range Location, string Replacement)> Edits { get; } = [];
@@ -307,7 +308,7 @@ internal sealed partial class GitHubActionsUpgrader(
                         {
                             majorVersions.Add(major);
                             lastIndex = i;
-                            hasPrerelease |= version.Contains('-', StringComparison.Ordinal);
+                            hasPrerelease |= version.Contains(PrereleaseSeparator, StringComparison.Ordinal);
                         }
                     }
                 }
@@ -348,7 +349,7 @@ internal sealed partial class GitHubActionsUpgrader(
                         if (hasPrerelease)
                         {
                             // Replace the prerelease version
-                            lastIndex = values.IndexOf(values.Last((p) => p.Contains('-', StringComparison.Ordinal)));
+                            lastIndex = values.IndexOf(values.Last((p) => p.Contains(PrereleaseSeparator, StringComparison.Ordinal)));
                             values[lastIndex] = upgraded;
                         }
                         else if (sdkVersions.Length is 1)
@@ -405,7 +406,7 @@ internal sealed partial class GitHubActionsUpgrader(
                     // Strip-out any pre-release versions from the SDK versions for this major version so
                     // we can consider the version format we need to use based only on the stable versions.
                     sdkVersionsParts = sdkVersionsParts
-                        .Where((p) => p.Length is not 3 || !p[2].Contains('-', StringComparison.Ordinal))
+                        .Where((p) => p.Length is not 3 || !p[2].Contains(PrereleaseSeparator, StringComparison.Ordinal))
                         .ToArray();
                 }
 
@@ -453,7 +454,8 @@ internal sealed partial class GitHubActionsUpgrader(
 
                             if (sdkVersion.IsPrerelease)
                             {
-                                version.Append('-').Append(string.Join(VersionSeparator, sdkVersion.ReleaseLabels));
+                                version.Append(PrereleaseSeparator)
+                                       .Append(string.Join(VersionSeparator, sdkVersion.ReleaseLabels));
                             }
                         }
                     }
@@ -487,7 +489,7 @@ internal sealed partial class GitHubActionsUpgrader(
 
             string[] versionParts = versionString.Split(VersionSeparator);
 
-            if (versionParts.Length > 3 && versionString.Contains('-', StringComparison.Ordinal))
+            if (versionParts.Length > 3 && versionString.Contains(PrereleaseSeparator, StringComparison.Ordinal))
             {
                 // Handle preview versions by adding the preview part to the patch version
                 versionParts =
