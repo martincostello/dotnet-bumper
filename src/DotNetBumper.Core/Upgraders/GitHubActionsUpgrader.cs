@@ -324,22 +324,7 @@ internal sealed partial class GitHubActionsUpgrader(
                         .Where((p) => !string.IsNullOrWhiteSpace(p))
                         .Where((p) => p is not "|")
                         .Select((p) => p.Split(VersionSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-                        .Select((p) =>
-                        {
-                            if (p.Length > 3)
-                            {
-                                return
-                                [
-                                    p[0],
-                                    p[1],
-                                    string.Join(VersionSeparator, p[2..]),
-                                ];
-                            }
-                            else
-                            {
-                                return p;
-                            }
-                        })
+                        .Select((p) => p.Length > 3 ? [p[0], p[1], string.Join(VersionSeparator, p[2..])] : p)
                         .ToArray();
 
                     var upgraded = GetUpgradeVersion(sdkVersions, prefix, lastIndex, upgrade.SdkVersion);
@@ -620,8 +605,8 @@ internal sealed partial class GitHubActionsUpgrader(
             {
                 upgradedVersion =
                     targetVersion.IsPrerelease && versionParts.Length is 3 ?
-                    upgradedVersion = targetVersion.ToString() : // Use the exact pre-release version
-                    upgradedVersion = targetVersion.Version.ToString(versionParts.Length); // Truncate the target version to how many version parts the original version specified
+                    targetVersion.ToString() : // Use the exact pre-release version
+                    targetVersion.Version.ToString(versionParts.Length); // Truncate the target version to how many version parts the original version specified
             }
 
             upgradedVersion = prefix + upgradedVersion;
