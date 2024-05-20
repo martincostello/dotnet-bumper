@@ -273,12 +273,10 @@ internal sealed partial class GitHubActionsUpgrader(
                     {
                         if (TryUpdateVersion(version, out var edited))
                         {
-                            builder.Append(edited);
+                            version = edited;
                         }
-                        else
-                        {
-                            builder.Append(version);
-                        }
+
+                        builder.Append(version);
                     }
 
                     if (i != versions.Length - 1)
