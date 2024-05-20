@@ -84,15 +84,27 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData("6", "10")]
-    [InlineData("6.x", "10.x")]
-    [InlineData("6.0", "10.0")]
-    [InlineData("6.0.x", "10.0.x")]
-    [InlineData("6.0.4xx", "10.0.2xx")]
-    [InlineData("6.0.422", "10.0.200")]
-    [InlineData("10.0.1xx", "10.0.2xx")]
-    [InlineData("10.0.100", "10.0.200")]
-    public async Task UpgradeAsync_Upgrades_Setup_DotNet_Action_Sdk_Version(string version, string expected)
+    [InlineData("10.0", "10.0.100", "6", "10")]
+    [InlineData("10.0", "10.0.100", "6.x", "10.x")]
+    [InlineData("10.0", "10.0.100", "6.0", "10.0")]
+    [InlineData("10.0", "10.0.100", "6.0.x", "10.0.x")]
+    [InlineData("10.0", "10.0.200", "6.0.4xx", "10.0.2xx")]
+    [InlineData("10.0", "10.0.200", "6.0.422", "10.0.200")]
+    [InlineData("10.0", "10.0.200", "10.0.1xx", "10.0.2xx")]
+    [InlineData("10.0", "10.0.200", "10.0.100", "10.0.200")]
+    [InlineData("10.0", "10.0.100-preview.1.2", "6", "10")]
+    [InlineData("10.0", "10.0.100-preview.1.2", "6.x", "10.x")]
+    [InlineData("10.0", "10.0.100-preview.1.2", "6.0", "10.0")]
+    [InlineData("10.0", "10.0.100-preview.1.2", "6.0.x", "10.0.x")]
+    [InlineData("10.0", "10.0.100-preview.1.2", "6.0.4xx", "10.0.1xx")]
+    [InlineData("10.0", "10.0.100-preview.1.2", "6.0.422", "10.0.100-preview.1.2")]
+    [InlineData("10.0", "10.0.100-preview.2.3", "10.0.100-preview.1.2", "10.0.100-preview.2.3")]
+    [InlineData("10.0", "10.0.100", "10.0.100-preview.1.2", "10.0.100")]
+    public async Task UpgradeAsync_Upgrades_Setup_DotNet_Action_Sdk_Version(
+        string channel,
+        string sdkVersion,
+        string version,
+        string expected)
     {
         // Arrange
         string fileContents =
@@ -143,10 +155,10 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
 
         var upgrade = new UpgradeInfo()
         {
-            Channel = Version.Parse("10.0"),
+            Channel = Version.Parse(channel),
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new("10.0.200"),
+            SdkVersion = new(sdkVersion),
             SupportPhase = DotNetSupportPhase.Active,
         };
 
@@ -285,6 +297,7 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("9.0", "9.0.200", ".0.423", "9.0.200")]
     [InlineData("9.0", "9.0.234", ".0.423", "9.0.234")]
     [InlineData("9.0", "9.0.200", ".0.4xx", "9.0.2xx")]
+    [InlineData("9.0", "9.0.100-preview.1.2", ".0.4xx", "9.0.1xx")]
     [InlineData("10.0", "10.0.100", "", "10")]
     [InlineData("10.0", "10.0.100", ".0", "10.0")]
     [InlineData("10.0", "10.0.100", ".x", "10.x")]
@@ -294,6 +307,7 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("10.0", "10.0.200", ".0.423", "10.0.200")]
     [InlineData("10.0", "10.0.234", ".0.423", "10.0.234")]
     [InlineData("10.0", "10.0.200", ".0.4xx", "10.0.2xx")]
+    [InlineData("10.0", "10.0.100-preview.1.2", ".0.4xx", "10.0.1xx")]
     public async Task UpgradeAsync_Upgrades_Setup_DotNet_Action_With_Multiple_Sdk_Versions(
         string channel,
         string sdkVersion,

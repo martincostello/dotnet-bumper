@@ -449,6 +449,17 @@ internal sealed partial class GitHubActionsUpgrader(
 
             string[] versionParts = versionString.Split(VersionSeparator);
 
+            if (versionParts.Length > 3 && versionString.Contains('-', StringComparison.Ordinal))
+            {
+                // Handle preview versions by adding the preview part to the patch version
+                versionParts =
+                [
+                    versionParts[0],
+                    versionParts[1],
+                    string.Join(VersionSeparator, versionParts[2..]),
+                ];
+            }
+
             // See https://github.com/actions/setup-dotnet?tab=readme-ov-file#supported-version-syntax
             if (versionParts.Length is not (1 or 2 or 3))
             {
@@ -461,8 +472,8 @@ internal sealed partial class GitHubActionsUpgrader(
 
             int targetFeature = upgrade.SdkVersion.Patch;
 
-            Version? currentVersion;
-            Version targetVersion;
+            NuGetVersion? currentVersion;
+            NuGetVersion targetVersion;
 
             if (versionParts.Length is 1)
             {
@@ -473,8 +484,8 @@ internal sealed partial class GitHubActionsUpgrader(
                 }
 
                 // Version requires at least two parts, so convert "6" to "6.0" etc.
-                currentVersion = new(major, 0);
-                targetVersion = upgrade.Channel;
+                currentVersion = new(new Version(major, 0));
+                targetVersion = new(upgrade.Channel);
             }
             else if (versionParts.Length is 2)
             {
@@ -487,15 +498,15 @@ internal sealed partial class GitHubActionsUpgrader(
                     }
 
                     // Treat "6.x" as "6.0" to get the lowest possible version
-                    currentVersion = new(major, 0);
+                    currentVersion = new(new Version(major, 0));
                 }
-                else if (!Version.TryParse(versionString, out currentVersion))
+                else if (!NuGetVersion.TryParse(versionString, out currentVersion))
                 {
                     // The version was not of the format "6.0"
                     return false;
                 }
 
-                targetVersion = upgrade.Channel;
+                targetVersion = new(upgrade.Channel);
             }
             else
             {
@@ -525,14 +536,14 @@ internal sealed partial class GitHubActionsUpgrader(
                 else
                 {
                     // The version should be of the format "6.0.100"
-                    if (!Version.TryParse(versionString, out currentVersion))
+                    if (!NuGetVersion.TryParse(versionString, out currentVersion))
                     {
                         return false;
                     }
 
                     // If an exact version is specified, compare to the
                     // upgrade's SDK version rather than just the channel.
-                    targetVersion = upgrade.SdkVersion.Version;
+                    targetVersion = upgrade.SdkVersion;
                 }
             }
 
@@ -546,7 +557,7 @@ internal sealed partial class GitHubActionsUpgrader(
 
             if (hasFloatingVersion)
             {
-                upgradedVersion = $"{targetVersion.ToString(versionParts.Length - 1)}.";
+                upgradedVersion = $"{targetVersion.Version.ToString(versionParts.Length - 1)}.";
 
                 if (versionParts[^1] is FloatingVersionString)
                 {
@@ -567,8 +578,16 @@ internal sealed partial class GitHubActionsUpgrader(
             }
             else
             {
-                // Truncate the target version to how many version parts the original version specified
-                upgradedVersion = targetVersion.ToString(versionParts.Length);
+                if (targetVersion.IsPrerelease && versionParts.Length is 3)
+                {
+                    // Use the exact pre-release version
+                    upgradedVersion = targetVersion.ToString();
+                }
+                else
+                {
+                    // Truncate the target version to how many version parts the original version specified
+                    upgradedVersion = targetVersion.Version.ToString(versionParts.Length);
+                }
             }
 
             upgradedVersion = prefix + upgradedVersion;
