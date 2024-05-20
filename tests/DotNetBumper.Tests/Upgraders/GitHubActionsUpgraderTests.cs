@@ -168,6 +168,119 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
+    [Theory]
+    [InlineData("9.0")]
+    [InlineData("10.0")]
+    public async Task UpgradeAsync_Upgrades_Setup_DotNet_Action_With_Multiple_Sdk_Versions(string channel)
+    {
+        // Arrange
+        string fileContents =
+            $"""
+             name: build
+             on: [push]
+
+             jobs:
+               build:
+                 runs-on: ubuntu-latest
+
+                 steps:
+                   - uses: actions/checkout@v4
+                   - name: Setup .NET
+                     uses: actions/setup-dotnet@v4
+                     with:
+                       dotnet-version: |
+                         6.0.x
+                         8.0.x
+
+                   - name: Publish app
+                     shell: pwsh
+                     run: dotnet publish
+             
+               test:
+                 runs-on: ubuntu-latest
+             
+                 steps:
+                   - uses: actions/checkout@v4
+                   - uses: actions/setup-dotnet@v4
+                     with:
+                       dotnet-version: |
+                         6.0.x
+                         8.0.x
+
+                   - name: Test app
+                     run: dotnet test
+             """;
+
+        string expectedContents =
+            $"""
+             name: build
+             on: [push]
+             
+             jobs:
+               build:
+                 runs-on: ubuntu-latest
+             
+                 steps:
+                   - uses: actions/checkout@v4
+                   - name: Setup .NET
+                     uses: actions/setup-dotnet@v4
+                     with:
+                       dotnet-version: |
+                         6.0.x
+                         8.0.x
+                         {channel}.x
+
+                   - name: Publish app
+                     shell: pwsh
+                     run: dotnet publish
+
+               test:
+                 runs-on: ubuntu-latest
+             
+                 steps:
+                   - uses: actions/checkout@v4
+                   - uses: actions/setup-dotnet@v4
+                     with:
+                       dotnet-version: |
+                         6.0.x
+                         8.0.x
+                         {channel}.x
+
+                   - name: Test app
+                     run: dotnet test
+             """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse(channel),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new($"{channel}.200"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(workflow);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
     [Fact]
     public async Task UpgradeAsync_Ignores_Actions_Workflows_With_No_Setup_DotNet_Action()
     {
@@ -298,7 +411,8 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("a")]
     [InlineData("a.b")]
     [InlineData("a.b.c")]
-    [InlineData("6.0.y")]
+    [InlineData("6.a")]
+    [InlineData("6.0.a")]
     public async Task UpgradeAsync_Handles_Invalid_Versions(string version)
     {
         // Arrange
