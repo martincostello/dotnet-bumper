@@ -257,8 +257,10 @@ internal sealed partial class GitHubActionsUpgrader(
 
         private void TryUpdateVersion(YamlScalarNode dotnetVersion)
         {
-            string value = dotnetVersion.Value!;
-            string[] versionParts = value.Split('.');
+            const int FeatureBandMultiplier = 100;
+
+            string versionString = dotnetVersion.Value!;
+            string[] versionParts = versionString.Split('.');
 
             // See https://github.com/actions/setup-dotnet?tab=readme-ov-file#supported-version-syntax
             if (versionParts.Length is not (1 or 2 or 3))
@@ -270,25 +272,26 @@ internal sealed partial class GitHubActionsUpgrader(
                 versionParts.Length > 1 &&
                 versionParts[^1].EndsWith('x');
 
-            int featureVersion = 0;
+            int upgradeFeature = 0;
 
             if (hasFloatingVersion)
             {
-                featureVersion = FeatureBandFloor(upgrade.SdkVersion.Patch);
+                upgradeFeature = FeatureBandFloor(upgrade.SdkVersion.Patch);
             }
 
-            Version? current;
-            Version target;
+            Version? currentVersion;
+            Version targetVersion;
 
             if (versionParts.Length is 1)
             {
-                if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int major))
+                if (!int.TryParse(versionString, NumberStyles.None, CultureInfo.InvariantCulture, out int major))
                 {
                     return;
                 }
 
-                current = new Version(major, 0);
-                target = upgrade.Channel;
+                // Version requires at least two parts, so convert "6" to "6.0" etc.
+                currentVersion = new(major, 0);
+                targetVersion = upgrade.Channel;
             }
             else if (versionParts.Length is 2)
             {
@@ -299,14 +302,14 @@ internal sealed partial class GitHubActionsUpgrader(
                         return;
                     }
 
-                    current = new Version(major, 0);
+                    currentVersion = new(major, 0);
                 }
-                else if (!Version.TryParse(value, out current))
+                else if (!Version.TryParse(versionString, out currentVersion))
                 {
                     return;
                 }
 
-                target = upgrade.Channel;
+                targetVersion = upgrade.Channel;
             }
             else
             {
@@ -319,56 +322,66 @@ internal sealed partial class GitHubActionsUpgrader(
                         return;
                     }
 
-                    int band = versionParts[^1] == "x" ? 100 : (versionParts[^1][0] - '0') * 100;
-                    current = new Version(majorMinor.Major, majorMinor.Minor, band);
-                    target = new Version(upgrade.Channel.Major, upgrade.Channel.Minor, featureVersion);
+                    // Treat "6.0.x" as "6.0.100", "6.0.2x" as "6.0.200", etc.
+                    int currentFeature =
+                        versionParts[^1] == "x" ?
+                        FeatureBandMultiplier :
+                        (versionParts[^1][0] - '0') * FeatureBandMultiplier;
+
+                    currentVersion = new(majorMinor.Major, majorMinor.Minor, currentFeature);
+                    targetVersion = new(upgrade.Channel.Major, upgrade.Channel.Minor, upgradeFeature);
                 }
                 else
                 {
-                    if (!Version.TryParse(value, out current))
+                    if (!Version.TryParse(versionString, out currentVersion))
                     {
                         return;
                     }
 
-                    target = upgrade.SdkVersion.Version;
+                    // If an exact version is specified, compare to the
+                    // upgrade's SDK version rather than just the channel.
+                    targetVersion = upgrade.SdkVersion.Version;
                 }
             }
 
-            if (current >= target)
+            if (currentVersion >= targetVersion)
             {
+                // Nothing to upgrade
                 return;
             }
 
-            string updated;
+            string upgradedVersion;
 
             if (hasFloatingVersion)
             {
-                updated = $"{target.ToString(versionParts.Length - 1)}.";
+                upgradedVersion = $"{targetVersion.ToString(versionParts.Length - 1)}.";
 
                 if (versionParts[^1] is "x")
                 {
-                    updated += "x";
+                    upgradedVersion += "x";
                 }
                 else
                 {
-                    updated += $"{featureVersion / 100}xx";
+                    char featureBand = (char)('0' + (upgradeFeature / FeatureBandMultiplier));
+                    upgradedVersion += $"{featureBand}xx";
                 }
             }
             else
             {
-                updated = target.ToString(versionParts.Length);
+                // Truncate the target version to how many version parts the original version specified
+                upgradedVersion = targetVersion.ToString(versionParts.Length);
             }
 
-            if (updated != value)
+            if (upgradedVersion != versionString)
             {
-                LineIndexes[dotnetVersion.Start.Line - 1] = updated;
+                LineIndexes[dotnetVersion.Start.Line - 1] = upgradedVersion;
             }
 
             static int FeatureBandFloor(int value)
             {
                 // Convert 1xx to 100, 2xx to 200, etc.
-                value /= 100;
-                value *= 100;
+                value /= FeatureBandMultiplier;
+                value *= FeatureBandMultiplier;
                 return value;
             }
         }
