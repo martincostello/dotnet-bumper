@@ -286,6 +286,7 @@ internal sealed partial class GitHubActionsUpgrader(
                 // new version after or replace if there is only one version in the value.
                 HashSet<int> majorVersions = [];
                 int lastIndex = -1;
+                bool hasPrerelease = false;
 
                 for (int i = 0; i < values.Count; i++)
                 {
@@ -306,12 +307,13 @@ internal sealed partial class GitHubActionsUpgrader(
                         {
                             majorVersions.Add(major);
                             lastIndex = i;
+                            hasPrerelease |= version.Contains('-', StringComparison.Ordinal);
                         }
                     }
                 }
 
                 // Do we not already have a version for the upgrade version?
-                if (!majorVersions.Contains(upgrade.SdkVersion.Major))
+                if (!majorVersions.Contains(upgrade.SdkVersion.Major) || upgrade.SdkVersion.IsPrerelease || hasPrerelease)
                 {
                     var index = values[lastIndex].AsSpan().IndexOfAny(Digits);
                     var prefix = values[lastIndex][..index];
@@ -321,13 +323,35 @@ internal sealed partial class GitHubActionsUpgrader(
                         .Where((p) => !string.IsNullOrWhiteSpace(p))
                         .Where((p) => p is not "|")
                         .Select((p) => p.Split(VersionSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                        .Select((p) =>
+                        {
+                            if (p.Length > 3)
+                            {
+                                return
+                                [
+                                    p[0],
+                                    p[1],
+                                    string.Join(VersionSeparator, p[2..]),
+                                ];
+                            }
+                            else
+                            {
+                                return p;
+                            }
+                        })
                         .ToArray();
 
                     var upgraded = GetUpgradeVersion(sdkVersions, prefix, lastIndex, upgrade.SdkVersion);
 
                     if (!values.Contains(upgraded))
                     {
-                        if (sdkVersions.Length is 1)
+                        if (hasPrerelease)
+                        {
+                            // Replace the prerelease version
+                            lastIndex = values.IndexOf(values.Last((p) => p.Contains('-', StringComparison.Ordinal)));
+                            values[lastIndex] = upgraded;
+                        }
+                        else if (sdkVersions.Length is 1)
                         {
                             // Even though the value was a multi-line string
                             // there was only one version, so just replace it.
@@ -376,6 +400,15 @@ internal sealed partial class GitHubActionsUpgrader(
                     .Append(prefix)
                     .Append(sdkVersion.Major);
 
+                if (!sdkVersion.IsPrerelease)
+                {
+                    // Strip-out any pre-release versions from the SDK versions for this major version so
+                    // we can consider the version format we need to use based only on the stable versions.
+                    sdkVersionsParts = sdkVersionsParts
+                        .Where((p) => p.Length is not 3 || !p[2].Contains('-', StringComparison.Ordinal))
+                        .ToArray();
+                }
+
                 // Only add more parts if any one of the versions has more than one
                 if (!sdkVersionsParts.All((p) => p.Length is 1))
                 {
@@ -399,12 +432,12 @@ internal sealed partial class GitHubActionsUpgrader(
                         version.Append(sdkVersion.Minor)
                                .Append('.');
 
-                        if (sdkVersionsParts.All((p) => p[2] is FloatingVersionString))
+                        if (sdkVersionsParts.All((p) => p.Length is 3 && p[2] is FloatingVersionString))
                         {
                             // All versions are of the format "6.0.x"
                             version.Append(FloatingVersionChar);
                         }
-                        else if (sdkVersionsParts.All((p) => p[2].EndsWith(FloatingVersionChar)))
+                        else if (sdkVersionsParts.All((p) => p.Length is 3 && p[2].EndsWith(FloatingVersionChar)))
                         {
                             // All versions are of the format "6.0.1xx"
                             int featureBand = (FeatureBandFloor(sdkVersion.Patch) / FeatureBandMultiplier) + '0';
@@ -417,6 +450,11 @@ internal sealed partial class GitHubActionsUpgrader(
                         {
                             // At least one version is fully-qualified (e.g.6.0.100)
                             version.Append(sdkVersion.Patch);
+
+                            if (sdkVersion.IsPrerelease)
+                            {
+                                version.Append('-').Append(string.Join(VersionSeparator, sdkVersion.ReleaseLabels));
+                            }
                         }
                     }
                 }
@@ -578,16 +616,10 @@ internal sealed partial class GitHubActionsUpgrader(
             }
             else
             {
-                if (targetVersion.IsPrerelease && versionParts.Length is 3)
-                {
-                    // Use the exact pre-release version
-                    upgradedVersion = targetVersion.ToString();
-                }
-                else
-                {
-                    // Truncate the target version to how many version parts the original version specified
-                    upgradedVersion = targetVersion.Version.ToString(versionParts.Length);
-                }
+                upgradedVersion =
+                    targetVersion.IsPrerelease && versionParts.Length is 3 ?
+                    upgradedVersion = targetVersion.ToString() : // Use the exact pre-release version
+                    upgradedVersion = targetVersion.Version.ToString(versionParts.Length); // Truncate the target version to how many version parts the original version specified
             }
 
             upgradedVersion = prefix + upgradedVersion;
