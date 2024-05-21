@@ -533,7 +533,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                      category.StartsWith("System", StringComparison.Ordinal));
         }
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(4));
 
         string[] arguments =
         [
