@@ -96,6 +96,7 @@ jobs:
         artifact-name: dotnetbumper-${{ matrix.os-name }}.spdx.json
         output-file: ./artifacts/dotnetbumper.spdx.json
         path: ./artifacts/publish/DotNetBumper/release
+        upload-release-assets: ${{ runner.os == 'Windows' }}
 
     - name: Attest artifacts
       uses: actions/attest-build-provenance@173725a1209d09b31f9d30a3890cf2757ebbff0d # v1.1.2
