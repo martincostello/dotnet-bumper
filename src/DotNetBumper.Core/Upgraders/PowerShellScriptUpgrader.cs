@@ -52,7 +52,7 @@ internal sealed partial class PowerShellScriptUpgrader(
         {
             var directory = PathHelpers.Normalize(Path.GetDirectoryName(path) ?? string.Empty);
 
-            if (!directory.EndsWith(".github/workflows", StringComparison.OrdinalIgnoreCase) ||
+            if (!directory.EndsWith(WellKnownFileNames.GitHubActionsWorkflowsDirectory, StringComparison.OrdinalIgnoreCase) ||
                 !TryParseActionsWorkflow(path, out workflow))
             {
                 return ProcessingResult.None;
