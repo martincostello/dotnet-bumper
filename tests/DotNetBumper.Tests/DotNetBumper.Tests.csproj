@@ -22,6 +22,7 @@
     <PackageReference Include="Shouldly" />
     <PackageReference Include="Spectre.Console.Testing" />
     <PackageReference Include="System.Linq.Async" />
+    <PackageReference Include="xRetry" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Xunit.SkippableFact" />

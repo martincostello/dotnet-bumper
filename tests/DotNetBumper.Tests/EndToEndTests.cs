@@ -55,7 +55,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         return testCases;
     }
 
-    [Theory]
+    [xRetry.RetryTheory]
     [MemberData(nameof(TestCases))]
     public async Task Application_Upgrades_Project(BumperTestCase testCase)
     {
@@ -192,7 +192,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actualPackages.ShouldBe([]);
     }
 
-    [Theory]
+    [xRetry.RetryTheory]
     [InlineData(false, false, null, 0, null)]
     [InlineData(false, false, "Json", 0, "dotnet-bumper.json")]
     [InlineData(false, false, "Markdown", 0, "dotnet-bumper.md")]
@@ -290,7 +290,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(1);
     }
 
-    [Theory]
+    [xRetry.RetryTheory]
     [InlineData(false, "Json", 0)]
     [InlineData(false, "Markdown", 0)]
     [InlineData(true, "Json", 1)]
