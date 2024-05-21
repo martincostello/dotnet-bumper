@@ -24,6 +24,7 @@ internal sealed partial class BumperConfigurationProvider(
         {
             IncludeNuGetPackages =
             {
+                "Aspire.",
                 "Microsoft.AspNetCore.",
                 "Microsoft.EntityFrameworkCore",
                 "Microsoft.Extensions.",
