@@ -11,34 +11,35 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Upgrades_Serverless_Runtimes(string fileName)
     {
         // Arrange
-        string serverless = string.Join(
-            Environment.NewLine,
-            [
-                "# My Serverless Application",
-                "service: my-application",
-                string.Empty,
-                "provider:",
-                "  name: aws",
-                "  architecture: arm64",
-                "  memorySize: 256 # This is a comment",
-                "  runtime: dotnet6",
-                "  timeout: 5",
-                string.Empty,
-                "functions:",
-                string.Empty,
-                "  average-function:",
-                "    handler: MyAssembly::MyNamespace.MyClass::AverageFunction",
-                string.Empty,
-                "  fast-function:",
-                "    handler: MyAssembly::MyNamespace.MyClass::FastFunction",
-                "    runtime: dotnet6",
-                "    timeout: 1",
-                string.Empty,
-                "  slow-function:",
-                "    handler: MyAssembly::MyNamespace.MyClass::SlowFunction",
-                "    runtime: dotnet6 # This is another comment",
-                "    timeout: 10",
-            ]) + Environment.NewLine;
+        string[] lines =
+        [
+            "# My Serverless Application",
+            "service: my-application",
+            string.Empty,
+            "provider:",
+            "  name: aws",
+            "  architecture: arm64",
+            "  memorySize: 256 # This is a comment",
+            "  runtime: dotnet6",
+            "  timeout: 5",
+            string.Empty,
+            "functions:",
+            string.Empty,
+            "  average-function:",
+            "    handler: MyAssembly::MyNamespace.MyClass::AverageFunction",
+            string.Empty,
+            "  fast-function:",
+            "    handler: MyAssembly::MyNamespace.MyClass::FastFunction",
+            "    runtime: dotnet6",
+            "    timeout: 1",
+            string.Empty,
+            "  slow-function:",
+            "    handler: MyAssembly::MyNamespace.MyClass::SlowFunction",
+            "    runtime: dotnet6 # This is another comment",
+            "    timeout: 10",
+        ];
+
+        string serverless = string.Join(Environment.NewLine, lines) + Environment.NewLine;
 
         using var fixture = new UpgraderFixture(outputHelper);
 
@@ -61,34 +62,35 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string expectedContent = string.Join(
-            Environment.NewLine,
-            [
-                "# My Serverless Application",
-                "service: my-application",
-                string.Empty,
-                "provider:",
-                "  name: aws",
-                "  architecture: arm64",
-                "  memorySize: 256 # This is a comment",
-                "  runtime: dotnet8",
-                "  timeout: 5",
-                string.Empty,
-                "functions:",
-                string.Empty,
-                "  average-function:",
-                "    handler: MyAssembly::MyNamespace.MyClass::AverageFunction",
-                string.Empty,
-                "  fast-function:",
-                "    handler: MyAssembly::MyNamespace.MyClass::FastFunction",
-                "    runtime: dotnet8",
-                "    timeout: 1",
-                string.Empty,
-                "  slow-function:",
-                "    handler: MyAssembly::MyNamespace.MyClass::SlowFunction",
-                "    runtime: dotnet8 # This is another comment",
-                "    timeout: 10",
-            ]) + Environment.NewLine;
+        lines =
+        [
+            "# My Serverless Application",
+            "service: my-application",
+            string.Empty,
+            "provider:",
+            "  name: aws",
+            "  architecture: arm64",
+            "  memorySize: 256 # This is a comment",
+            "  runtime: dotnet8",
+            "  timeout: 5",
+            string.Empty,
+            "functions:",
+            string.Empty,
+            "  average-function:",
+            "    handler: MyAssembly::MyNamespace.MyClass::AverageFunction",
+            string.Empty,
+            "  fast-function:",
+            "    handler: MyAssembly::MyNamespace.MyClass::FastFunction",
+            "    runtime: dotnet8",
+            "    timeout: 1",
+            string.Empty,
+            "  slow-function:",
+            "    handler: MyAssembly::MyNamespace.MyClass::SlowFunction",
+            "    runtime: dotnet8 # This is another comment",
+            "    timeout: 10",
+        ];
+
+        string expectedContent = string.Join(Environment.NewLine, lines) + Environment.NewLine;
 
         string actualContent = await File.ReadAllTextAsync(serverlessFile);
         actualContent.ShouldBe(expectedContent);
