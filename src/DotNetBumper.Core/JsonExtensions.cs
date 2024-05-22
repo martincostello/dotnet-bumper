@@ -43,12 +43,17 @@ internal static class JsonExtensions
         JsonWriterOptions options,
         CancellationToken cancellationToken)
     {
-        FileMetadata metadata;
-        using (var stream = FileHelpers.OpenWrite(path, out metadata))
+        Encoding encoding;
+        string newLine;
+
+        using (var stream = FileHelpers.OpenWrite(path, out var metadata))
         {
-            if (metadata.Encoding.Preamble.Length > 0)
+            encoding = metadata.Encoding;
+            newLine = metadata.NewLine;
+
+            if (encoding.Preamble.Length > 0)
             {
-                stream.Write(metadata.Encoding.Preamble);
+                stream.Write(encoding.Preamble);
             }
 
             await using var writer = new Utf8JsonWriter(stream, options);
@@ -61,21 +66,25 @@ internal static class JsonExtensions
             stream.SetLength(stream.Position);
         }
 
-        // JsonWriterOptions does not currently support a custom NewLine character,
+        // JsonWriterOptions in .NET 8 does not currently support a custom NewLine character,
         // so fix up the line endings manually for by re-writing with the original.
         // See https://github.com/dotnet/runtime/issues/84117.
-        await FixupLineEndingsAsync(path, metadata, cancellationToken);
+        await FixupLineEndingsAsync(path, newLine, encoding, cancellationToken);
     }
 
-    private static async Task FixupLineEndingsAsync(string path, FileMetadata metadata, CancellationToken cancellationToken)
+    private static async Task FixupLineEndingsAsync(
+        string path,
+        string newLine,
+        Encoding encoding,
+        CancellationToken cancellationToken)
     {
         using var buffered = new MemoryStream();
 
         using (var input = File.OpenRead(path))
-        using (var reader = new StreamReader(input, metadata.Encoding))
-        using (var writer = new StreamWriter(buffered, metadata.Encoding, leaveOpen: true))
+        using (var reader = new StreamReader(input, encoding))
+        using (var writer = new StreamWriter(buffered, encoding, leaveOpen: true))
         {
-            writer.NewLine = metadata.NewLine;
+            writer.NewLine = newLine;
 
             while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
