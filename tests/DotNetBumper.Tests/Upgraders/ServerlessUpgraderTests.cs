@@ -11,8 +11,8 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Upgrades_Serverless_Runtimes(string fileName)
     {
         // Arrange
-        string[] lines =
-        [
+        string serverless = string.Join(
+            Environment.NewLine,
             "# My Serverless Application",
             "service: my-application",
             string.Empty,
@@ -36,10 +36,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
             "  slow-function:",
             "    handler: MyAssembly::MyNamespace.MyClass::SlowFunction",
             "    runtime: dotnet6 # This is another comment",
-            "    timeout: 10",
-        ];
-
-        string serverless = string.Join(Environment.NewLine, lines) + Environment.NewLine;
+            "    timeout: 10") + Environment.NewLine;
 
         using var fixture = new UpgraderFixture(outputHelper);
 
@@ -62,8 +59,8 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        lines =
-        [
+        string expectedContent = string.Join(
+            Environment.NewLine,
             "# My Serverless Application",
             "service: my-application",
             string.Empty,
@@ -87,10 +84,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
             "  slow-function:",
             "    handler: MyAssembly::MyNamespace.MyClass::SlowFunction",
             "    runtime: dotnet8 # This is another comment",
-            "    timeout: 10",
-        ];
-
-        string expectedContent = string.Join(Environment.NewLine, lines) + Environment.NewLine;
+            "    timeout: 10") + Environment.NewLine;
 
         string actualContent = await File.ReadAllTextAsync(serverlessFile);
         actualContent.ShouldBe(expectedContent);
