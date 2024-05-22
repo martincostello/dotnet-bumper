@@ -192,7 +192,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             var processErrors = ConsumeStreamAsync(process.StandardError, process.StartInfo.RedirectStandardError, cancellationToken);
             var processOutput = ConsumeStreamAsync(process.StandardOutput, process.StartInfo.RedirectStandardOutput, cancellationToken);
 
-            await Task.WhenAll([processErrors, processOutput]);
+            await Task.WhenAll(processErrors, processOutput);
 
             string error = string.Empty;
             string output = string.Empty;
