@@ -51,10 +51,29 @@ internal static class JsonExtensions
             encoding = metadata.Encoding;
             newLine = metadata.NewLine;
 
+#if NET9_0_OR_GREATER
+            if (newLine is "\r")
+            {
+                // Only "\r\n" and "\n" are supported by JsonWriterOptions.NewLine
+                newLine = "\n";
+            }
+#endif
+
             if (encoding.Preamble.Length > 0)
             {
                 stream.Write(encoding.Preamble);
             }
+
+#if NET9_0_OR_GREATER
+            options = new JsonWriterOptions()
+            {
+                Encoder = options.Encoder,
+                Indented = options.Indented,
+                MaxDepth = options.MaxDepth,
+                SkipValidation = options.SkipValidation,
+                NewLine = newLine,
+            };
+#endif
 
             await using var writer = new Utf8JsonWriter(stream, options);
 
@@ -66,12 +85,17 @@ internal static class JsonExtensions
             stream.SetLength(stream.Position);
         }
 
+#if NET9_0_OR_GREATER
+        // Append a final new line
+        await File.AppendAllTextAsync(path, newLine, encoding, cancellationToken);
+#else
         // JsonWriterOptions in .NET 8 does not currently support a custom NewLine character,
         // so fix up the line endings manually for by re-writing with the original.
-        // See https://github.com/dotnet/runtime/issues/84117.
         await FixupLineEndingsAsync(path, newLine, encoding, cancellationToken);
+#endif
     }
 
+#if NET8_0
     private static async Task FixupLineEndingsAsync(
         string path,
         string newLine,
@@ -104,4 +128,5 @@ internal static class JsonExtensions
 
         output.SetLength(output.Position);
     }
+#endif
 }
