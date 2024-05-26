@@ -13,13 +13,6 @@
       "commands": [
         "dotnet-validate"
       ]
-    },
-    "MartinCostello.WaitForNuGetPackage": {
-      "version": "1.0.0",
-      "commands": [
-        "dotnet-wait-for-package"
-      ],
-      "rollForward": false
     }
   }
 }
