@@ -112,7 +112,7 @@ ForEach ($project in $packageProjects) {
     DotNetPack $project $Configuration
 }
 
-if ($SkipTests -eq $false) {
+if (-Not $SkipTests) {
     Write-Host "Testing $($testProjects.Count) project(s)..." -ForegroundColor Green
     ForEach ($project in $testProjects) {
         DotNetTest $project
