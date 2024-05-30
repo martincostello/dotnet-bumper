@@ -5,7 +5,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="coverlet.msbuild" Version="6.0.2" />
-    <PackageVersion Include="GitHubActionsTestLogger" Version="2.3.3" />
+    <PackageVersion Include="GitHubActionsTestLogger" Version="2.4.1" />
     <PackageVersion Include="Ignore" Version="0.1.50" />
     <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
