@@ -133,6 +133,44 @@ jobs:
         $dotnetValidateVersion = (Get-Content "./.config/dotnet-tools.json" | Out-String | ConvertFrom-Json).tools.'dotnet-validate'.version
         "dotnet-validate-version=${dotnetValidateVersion}" >> $env:GITHUB_OUTPUT
 
+    - name: Upload any crash dumps
+      shell: pwsh
+      if: |
+        !cancelled() &&
+        steps.build.outcome == 'failure' &&
+        github.event.repository.fork == false &&
+        github.event.sender.login != 'dependabot[bot]'
+      env:
+        AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.CRASH_DUMPS_STORAGE_CONNECTION_STRING }}
+      run: |
+        $dumps = Get-ChildItem -Path ${env:GITHUB_WORKSPACE} -Filter "*.dmp" -Recurse
+        if ($null -ne $dumps) {
+
+          $container = ${env:GITHUB_REPOSITORY}.Replace("/", "-")
+          az storage container create --name $container --public-access off | Out-Null
+
+          Install-Module PSCompression -Scope CurrentUser -RequiredVersion 2.0.5 -AcceptLicense -Force
+
+          $dumps | ForEach-Object {
+            $zipPath = $_.FullName + ".zip"
+            $zipName = $_.Name + ".zip"
+
+            Write-Output "Compressing crash dump $($_.Name)..."
+            Compress-ZipArchive -Path $_.FullName -Destination $zipPath
+
+            az storage blob upload `
+              --container-name $container `
+              --file $zipPath `
+              --name $zipName `
+              --metadata "GITHUB_RUN_ATTEMPT=${env:GITHUB_RUN_ATTEMPT}" "GITHUB_WORKFLOW=${env:GITHUB_SERVER_URL}/${env:GITHUB_REPOSITORY}/actions/runs/${env:GITHUB_RUN_ID}" "RUNNER_OS=${env:RUNNER_OS}" `
+              --overwrite true
+
+            if ($LASTEXITCODE -eq 0) {
+              Write-Output "::notice::Uploaded crash dump $($_.Name) to Azure Storage."
+            }
+          }
+        }
+
   validate-packages:
     needs: build
     runs-on: ubuntu-latest
