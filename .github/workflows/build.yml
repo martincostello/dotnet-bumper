@@ -26,6 +26,8 @@ env:
   FORCE_COLOR: 3
   NUGET_XMLDOC_MODE: skip
   TERM: xterm
+  # HACK Try and avoid crashes on macOS arm64 in .NET 9 preview.4
+  DOTNET_LegacyExceptionHandling: 1
 
 jobs:
   build:
