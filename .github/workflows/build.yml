@@ -142,6 +142,7 @@ jobs:
         github.event.sender.login != 'dependabot[bot]'
       env:
         AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.CRASH_DUMPS_STORAGE_CONNECTION_STRING }}
+        PSCOMPRESSION_VERSION: '2.0.6'
       run: |
         $dumps = Get-ChildItem -Path ${env:GITHUB_WORKSPACE} -Filter "*.dmp" -Recurse
         if ($null -ne $dumps) {
@@ -149,7 +150,7 @@ jobs:
           $container = ${env:GITHUB_REPOSITORY}.Replace("/", "-")
           az storage container create --name $container --public-access off | Out-Null
 
-          Install-Module PSCompression -Scope CurrentUser -RequiredVersion 2.0.5 -AcceptLicense -Force
+          Install-Module PSCompression -RequiredVersion ${env:PSCOMPRESSION_VERSION} -AcceptLicense -Force -Scope CurrentUser
 
           $dumps | ForEach-Object {
             $zipPath = $_.FullName + ".zip"
