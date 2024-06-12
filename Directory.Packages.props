@@ -16,7 +16,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0-preview.5.24306.7" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0-preview.5.24306.7" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.0-preview.5.24306.7" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0-preview.4.24271.2" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0-preview.5.24311.7" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0-preview.5.24306.7" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.5.24306.7" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.0-preview.5.24306.7" />
