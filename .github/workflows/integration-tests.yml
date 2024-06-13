@@ -39,7 +39,7 @@ jobs:
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
     - name: Install .NET SDKs
       uses: actions/setup-dotnet@4d6c8fcf3c8f7a60068d26b594648e99df24cee3 # v4.0.0
@@ -129,7 +129,7 @@ jobs:
         node-version: '20'
 
     - name: Checkout ${{ format('{0}/{1}', github.repository_owner, matrix.repo) }}
-      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       with:
         repository: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) }}
         ref: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) == github.repository && github.ref || '' }}
