@@ -172,6 +172,13 @@ internal sealed partial class PackageVersionUpgrader(
                 arguments.Add(label);
             }
         }
+        else
+        {
+            // Do not upgrade pre-release packages to newer pre-releases. For example,
+            // if a project is using a .NET 6 preview package, it should be upgraded
+            // to a .NET 8 version for an LTS upgrade, not to a .NET 9 preview version.
+            arguments.Add("--pre-release:Never");
+        }
 
         var configuration = await configurationProvider.GetAsync(cancellationToken);
 

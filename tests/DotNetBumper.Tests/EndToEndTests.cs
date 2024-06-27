@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.Json;
-using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using Spectre.Console.Testing;
@@ -92,20 +91,20 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Assert
         actualStatus.ShouldBe(0);
 
-        var actualSdk = await GetSdkVersionAsync(fixture, globalJson);
+        var actualSdk = await ProjectAssertionHelpers.GetSdkVersionAsync(fixture, globalJson);
 
         actualSdk.ShouldNotBeNull();
         actualSdk.ShouldNotBe(testCase.SdkVersion);
 
         NuGetVersion.TryParse(actualSdk, out var actualSdkVersion).ShouldBeTrue();
 
-        var appTfms = await GetTargetFrameworksAsync(fixture, appProject);
-        var testTfms = await GetTargetFrameworksAsync(fixture, testProject);
+        var appTfms = await ProjectAssertionHelpers.GetTargetFrameworksAsync(fixture, appProject);
+        var testTfms = await ProjectAssertionHelpers.GetTargetFrameworksAsync(fixture, testProject);
 
         appTfms.ShouldNotBe(string.Join(';', testCase.TargetFrameworks));
         testTfms.ShouldNotBe(string.Join(';', testCase.TargetFrameworks));
 
-        var actualPackages = await GetPackageReferencesAsync(fixture, appProject);
+        var actualPackages = await ProjectAssertionHelpers.GetPackageReferencesAsync(fixture, appProject);
 
         if (testCase.PackageReferences.Count is 0)
         {
@@ -183,9 +182,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         // Assert
         actualStatus.ShouldBe(0);
 
-        var actualSdk = await GetSdkVersionAsync(fixture, globalJson);
-        var actualTfm = await GetTargetFrameworksAsync(fixture, projectFile);
-        var actualPackages = await GetPackageReferencesAsync(fixture, projectFile);
+        var actualSdk = await ProjectAssertionHelpers.GetSdkVersionAsync(fixture, globalJson);
+        var actualTfm = await ProjectAssertionHelpers.GetTargetFrameworksAsync(fixture, projectFile);
+        var actualPackages = await ProjectAssertionHelpers.GetPackageReferencesAsync(fixture, projectFile);
 
         actualSdk.ShouldBe(sdkVersion);
         actualTfm.ShouldBe(targetFramework);
@@ -555,70 +554,6 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             arguments,
             (builder) => builder.AddXUnit(fixture).AddFilter(LogFilter),
             cts.Token);
-    }
-
-    private static async Task<string?> GetSdkVersionAsync(
-        UpgraderFixture fixture,
-        string fileName)
-    {
-        var json = await fixture.Project.GetFileAsync(fileName);
-        using var document = JsonDocument.Parse(json);
-
-        return document.RootElement
-            .GetProperty("sdk")
-            .GetProperty("version")
-            .GetString();
-    }
-
-    private static async Task<Dictionary<string, string>> GetPackageReferencesAsync(
-        UpgraderFixture fixture,
-        string fileName)
-    {
-        var xml = await fixture.Project.GetFileAsync(fileName);
-        var project = XDocument.Parse(xml);
-
-        project.Root.ShouldNotBeNull();
-        var ns = project.Root.GetDefaultNamespace();
-
-        return project
-            .Root?
-            .Elements(ns + "ItemGroup")
-            .Elements(ns + "PackageReference")
-            .Select((p) =>
-                new
-                {
-                    Key = p.Attribute("Include")?.Value ?? string.Empty,
-                    Value = p.Attribute("Version")?.Value ?? p.Element(ns + "Version")?.Value ?? string.Empty,
-                })
-            .ToDictionary((p) => p.Key, (p) => p.Value) ?? [];
-    }
-
-    private static async Task<string?> GetTargetFrameworksAsync(
-        UpgraderFixture fixture,
-        string fileName)
-    {
-        var xml = await fixture.Project.GetFileAsync(fileName);
-        var project = XDocument.Parse(xml);
-
-        project.Root.ShouldNotBeNull();
-        var ns = project.Root.GetDefaultNamespace();
-
-        var tfm = project
-            .Root
-            .Element(ns + "PropertyGroup")?
-            .Element(ns + "TargetFramework")?
-            .Value;
-
-        if (tfm is not null)
-        {
-            return tfm;
-        }
-
-        return project
-            .Root
-            .Element(ns + "PropertyGroup")?
-            .Element(ns + "TargetFrameworks")?
-            .Value;
     }
 
     private static async Task AssertPowerShellScriptIsValidAsync(string path, Version channel)

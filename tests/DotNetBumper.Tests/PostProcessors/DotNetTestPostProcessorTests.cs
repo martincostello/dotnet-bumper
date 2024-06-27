@@ -138,7 +138,6 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 
     private async Task<UpgradeInfo> GetUpgradeAsync(string channel)
     {
-        // Use the same SDK version as the upgrade to prevent a different dotnet format version being used
         var finder = new DotNetUpgradeFinder(
             new HttpClient(),
             Microsoft.Extensions.Options.Options.Create(new UpgradeOptions() { DotNetChannel = channel }),

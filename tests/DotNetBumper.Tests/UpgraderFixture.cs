@@ -32,13 +32,15 @@ internal sealed class UpgraderFixture(
         set => throw new NotSupportedException();
     }
 
+    public UpgradeType UpgradeType { get; set; } = UpgradeType.Lts;
+
     public BumperConfiguration UserConfiguration { get; } = new();
 
     public ILogger<T> CreateLogger<T>()
         => outputHelper.ToLogger<T>();
 
     public IOptions<UpgradeOptions> CreateOptions()
-        => Options.Create(new UpgradeOptions() { ProjectPath = Project.DirectoryName });
+        => Options.Create(new UpgradeOptions() { ProjectPath = Project.DirectoryName, UpgradeType = UpgradeType });
 
     public void Dispose()
     {
