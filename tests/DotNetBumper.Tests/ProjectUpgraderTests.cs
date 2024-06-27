@@ -45,8 +45,9 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
         environment.SupportsLinks
                    .Returns(!AnsiConsole.Profile.Capabilities.Links);
 
+        using var client = new HttpClient();
         var finder = new DotNetUpgradeFinder(
-            new HttpClient(),
+            client,
             options,
             outputHelper.ToLogger<DotNetUpgradeFinder>());
 
