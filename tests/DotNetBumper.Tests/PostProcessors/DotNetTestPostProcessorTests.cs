@@ -138,9 +138,8 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 
     private async Task<UpgradeInfo> GetUpgradeAsync(string channel)
     {
-        using var client = new HttpClient();
         var finder = new DotNetUpgradeFinder(
-            client,
+            new HttpClient(),
             Microsoft.Extensions.Options.Options.Create(new UpgradeOptions() { DotNetChannel = channel }),
             outputHelper.ToLogger<DotNetUpgradeFinder>());
 
