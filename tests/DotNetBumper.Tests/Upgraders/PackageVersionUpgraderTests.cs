@@ -38,18 +38,16 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
         await fixture.Project.AddDirectoryBuildPropsAsync();
         await fixture.Project.AddToolManifestAsync();
 
-        string globalJson = await fixture.Project.AddGlobalJsonAsync(upgrade.SdkVersion.ToString());
+        await fixture.Project.AddGlobalJsonAsync(upgrade.SdkVersion.ToString());
 
-        string appProject = await fixture.Project.AddApplicationProjectAsync(targetFrameworks);
+        await fixture.Project.AddApplicationProjectAsync(targetFrameworks);
 
         string dependencyName = "Microsoft.Extensions.Configuration";
         string dependencyVersion = "6.0.2-mauipre.1.22102.15";
-        string testsPath = "tests/Project.Tests/Project.Tests.csproj";
 
         string testProject = await fixture.Project.AddTestProjectAsync(
             targetFrameworks,
-            [KeyValuePair.Create(dependencyName, dependencyVersion)],
-            path: testsPath);
+            [KeyValuePair.Create(dependencyName, dependencyVersion)]);
 
         await fixture.Project.AddUnitTestsAsync();
 
@@ -61,7 +59,7 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
         // Assert
         actual.ShouldBe(ProcessingResult.Success);
 
-        var upgradedReferences = await ProjectAssertionHelpers.GetPackageReferencesAsync(fixture, testsPath);
+        var upgradedReferences = await ProjectAssertionHelpers.GetPackageReferencesAsync(fixture, testProject);
 
         upgradedReferences.ShouldContainKey(dependencyName);
         upgradedReferences.ShouldNotContainValueForKey(dependencyName, dependencyVersion);
