@@ -8,21 +8,15 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
 {
+    private static TimeSpan Timeout { get; } = TimeSpan.FromMinutes(4);
+
     [Fact]
     public async Task UpgradeAsync_Does_Not_Include_Prerelease_Packages()
     {
         // Arrange
-        string channel = "8.0";
         string[] targetFrameworks = ["net6.0"];
 
-        var upgrade = new UpgradeInfo()
-        {
-            Channel = Version.Parse(channel),
-            EndOfLife = DateOnly.MaxValue,
-            ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new($"{channel}.100"),
-            SupportPhase = DotNetSupportPhase.Active,
-        };
+        var upgrade = await GetUpgradeAsync("8.0");
 
         using var fixture = new UpgraderFixture(outputHelper)
         {
@@ -53,8 +47,10 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
 
         var target = CreateTarget(fixture);
 
+        using var cts = new CancellationTokenSource(Timeout);
+
         // Act
-        var actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        var actual = await target.UpgradeAsync(upgrade, cts.Token);
 
         // Assert
         actual.ShouldBe(ProcessingResult.Success);
@@ -97,5 +93,20 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
             fixture.LogContext,
             fixture.CreateOptions(),
             fixture.CreateLogger<PackageVersionUpgrader>());
+    }
+
+    private async Task<UpgradeInfo> GetUpgradeAsync(string channel)
+    {
+        var finder = new DotNetUpgradeFinder(
+            new HttpClient(),
+            Microsoft.Extensions.Options.Options.Create(new UpgradeOptions() { DotNetChannel = channel }),
+            outputHelper.ToLogger<DotNetUpgradeFinder>());
+
+        using var cts = new CancellationTokenSource(Timeout);
+
+        var upgrade = await finder.GetUpgradeAsync(cts.Token);
+        upgrade.ShouldNotBeNull();
+
+        return upgrade;
     }
 }
