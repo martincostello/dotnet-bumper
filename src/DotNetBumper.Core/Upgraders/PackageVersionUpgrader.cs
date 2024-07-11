@@ -45,22 +45,23 @@ internal sealed partial class PackageVersionUpgrader(
             context.Status = StatusMessage($"Updating {name}...");
 
             using var globalJson = await PatchedGlobalJsonFile.TryPatchAsync(project, upgrade.SdkVersion, cancellationToken);
+            var sdkVersion = globalJson?.SdkVersion ?? upgrade.SdkVersion.ToString();
 
             if (await HasWorkloadsAsync(projectFile, upgrade.SdkVersion, cancellationToken))
             {
                 context.Status = StatusMessage($"Restore .NET workloads for {name}...");
-                await TryRestoreWorkloadsAsync(project, globalJson?.SdkVersion ?? upgrade.SdkVersion.ToString(), cancellationToken);
+                await TryRestoreWorkloadsAsync(project, sdkVersion, cancellationToken);
             }
 
             if (HasDotNetToolManifest(project))
             {
                 context.Status = StatusMessage($"Restore .NET tools for {name}...");
-                await TryRestoreToolsAsync(project, cancellationToken);
+                await TryRestoreToolsAsync(project, sdkVersion, cancellationToken);
             }
 
             context.Status = StatusMessage($"Restore NuGet packages for {name}...");
 
-            await TryRestoreNuGetPackagesAsync(project, cancellationToken);
+            await TryRestoreNuGetPackagesAsync(project, sdkVersion, cancellationToken);
 
             context.Status = StatusMessage($"Update NuGet packages for {name}...");
 
@@ -78,11 +79,17 @@ internal sealed partial class PackageVersionUpgrader(
     private static bool HasDotNetToolManifest(string path)
         => FileHelpers.FindFileInProject(path, Path.Join(".config", WellKnownFileNames.ToolsManifest)) is not null;
 
-    private async Task TryRestoreNuGetPackagesAsync(string directory, CancellationToken cancellationToken)
+    private async Task TryRestoreNuGetPackagesAsync(
+        string directory,
+        string sdkVersion,
+        CancellationToken cancellationToken)
     {
+        var environmentVariables = MSBuildHelper.GetSdkProperties(sdkVersion);
+
         var result = await dotnet.RunWithLoggerAsync(
             directory,
             ["restore", "--verbosity", Logger.GetMSBuildVerbosity()],
+            environmentVariables,
             cancellationToken);
 
         logContext.Add(result);
@@ -97,11 +104,17 @@ internal sealed partial class PackageVersionUpgrader(
         }
     }
 
-    private async Task TryRestoreToolsAsync(string directory, CancellationToken cancellationToken)
+    private async Task TryRestoreToolsAsync(
+        string directory,
+        string sdkVersion,
+        CancellationToken cancellationToken)
     {
+        var environmentVariables = MSBuildHelper.GetSdkProperties(sdkVersion);
+
         var result = await dotnet.RunAsync(
             directory,
             ["tool", "restore", "--verbosity", Logger.GetMSBuildVerbosity()],
+            environmentVariables,
             cancellationToken);
 
         logContext.Add(result);
@@ -198,6 +211,8 @@ internal sealed partial class PackageVersionUpgrader(
         {
             ["DOTNET_ROLL_FORWARD"] = "Major",
         };
+
+        MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
 
         if (configuration.NoWarn.Count > 0)
         {
