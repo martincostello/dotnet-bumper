@@ -3,7 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace MartinCostello.DotNetBumper.Upgraders;
+namespace MartinCostello.DotNetBumper;
 
 internal static class TargetFrameworkHelpers
 {
