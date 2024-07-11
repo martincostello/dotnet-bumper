@@ -90,12 +90,17 @@ jobs:
         repo: [ alexa-london-travel, alexa-london-travel-site, api, apple-fitness-workout-mapper, costellobot, dependabot-helper, dotnet-bumper, project-euler, website ]
         upgrade-type: [ LTS, Latest, Preview ]
         include:
-          # costellobot tests disabled due to unfixable code breaks caused by new span overloads for string.Join().
+          # Tests disabled due to CI-only issue with dotnet-outdated restoring packages
+          - repo: alexa-london-travel-site
+            test: false
+            upgrade-type: Preview
+            warnings-as-errors: false
+          # Tests disabled due to unfixable code breaks caused by new span overloads for string.Join().
           - repo: costellobot
             test: false
             upgrade-type: Preview
             warnings-as-errors: false
-          # dotnet-bumper disabled due to dotnet-outdated issues with multi-targeting
+          # Disabled due to dotnet-outdated issues with multi-targeting
           - repo: dotnet-bumper
             test: false
             upgrade-type: LTS
