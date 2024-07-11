@@ -12,7 +12,7 @@
     <Title>$(PackageId)</Title>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="17.0.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="17.10.4" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>
