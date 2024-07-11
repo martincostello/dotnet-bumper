@@ -179,6 +179,8 @@ internal sealed partial class DotNetTestPostProcessor(
             [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
         };
 
+        MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
+
         TemporaryFile? propertiesOverrides = null;
 
         if (configuration.NoWarn is { Count: > 0 } noWarn)
