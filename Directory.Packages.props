@@ -40,6 +40,15 @@
     <PackageVersion Include="YamlDotNet" Version="16.1.0" />
   </ItemGroup>
   <ItemGroup Condition=" $([MSBuild]::IsTargetFrameworkCompatible($(TargetFramework), 'net9.0')) ">
-    <PackageVersion Update="System.Formats.Asn1" Version="9.0.0-preview.5.24306.7" />
+    <PackageVersion Update="Microsoft.Extensions.Configuration" Version="9.0.0-preview.6.24327.7" />
+    <PackageVersion Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0-preview.6.24327.7" />
+    <PackageVersion Update="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0-preview.6.24327.7" />
+    <PackageVersion Update="Microsoft.Extensions.DependencyInjection" Version="9.0.0-preview.6.24327.7" />
+    <PackageVersion Update="Microsoft.Extensions.Http" Version="9.0.0-preview.6.24327.7" />
+    <PackageVersion Update="Microsoft.Extensions.Http.Resilience" Version="9.0.0-preview.6.24353.1" />
+    <PackageVersion Update="Microsoft.Extensions.Logging" Version="9.0.0-preview.6.24327.7" />
+    <PackageVersion Update="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.6.24327.7" />
+    <PackageVersion Update="Microsoft.Extensions.Options" Version="9.0.0-preview.6.24327.7" />
+    <PackageVersion Update="System.Formats.Asn1" Version="9.0.0-preview.6.24327.7" />
   </ItemGroup>
 </Project>
