@@ -27,4 +27,3 @@ updates:
   ignore:
     - dependency-name: "Microsoft.Build.Utilities.Core"
     - dependency-name: "Microsoft.TestPlatform.ObjectModel"
-    - dependency-name: "System.Text.Json"

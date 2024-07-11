@@ -11,6 +11,7 @@
     <AnalysisMode>All</AnalysisMode>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)DotNetBumper.snk</AssemblyOriginatorKeyFile>
     <Authors>martin_costello</Authors>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)DotNetBumper.ruleset</CodeAnalysisRuleSet>
     <Company>https://github.com/martincostello/dotnet-bumper</Company>
