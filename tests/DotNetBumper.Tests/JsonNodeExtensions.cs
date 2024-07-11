@@ -3,6 +3,7 @@
 
 using System.Text.Json.Serialization.Metadata;
 
+#pragma warning disable IDE0130
 namespace System.Text.Json.Nodes;
 
 internal static class JsonNodeExtensions
