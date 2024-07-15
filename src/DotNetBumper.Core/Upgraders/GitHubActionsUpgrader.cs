@@ -262,7 +262,7 @@ internal sealed partial class GitHubActionsUpgrader(
 
         private void TryUpdateVersions(YamlScalarNode node)
         {
-            string original = Contents[node.Start.Index..node.End.Index];
+            string original = Contents[(int)node.Start.Index..(int)node.End.Index];
             List<string> values = [.. original.Split(Metadata.NewLine)];
 
             var content = new StringBuilder(original.Length);
@@ -372,7 +372,7 @@ internal sealed partial class GitHubActionsUpgrader(
 
             if (updated != original)
             {
-                Edits.Add((new(node.Start.Index, node.End.Index), updated));
+                Edits.Add((new((int)node.Start.Index, (int)node.End.Index), updated));
             }
 
             static string GetUpgradeVersion(
