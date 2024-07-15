@@ -176,8 +176,8 @@ internal sealed class PowerShellScript
 
                     if (run != default)
                     {
-                        int columnOffset = run.Start.Line == run.End.Line ? run.Start.Column - 1 : 0;
-                        ScriptLocations.Add((run.Start.Line - 1, columnOffset, new(run.Start.Index, run.End.Index)));
+                        int columnOffset = (int)(run.Start.Line == run.End.Line ? run.Start.Column - 1 : 0);
+                        ScriptLocations.Add(((int)run.Start.Line - 1, columnOffset, new((int)run.Start.Index, (int)run.End.Index)));
                     }
                 }
             }

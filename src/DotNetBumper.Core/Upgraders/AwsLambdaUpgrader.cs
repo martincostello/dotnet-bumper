@@ -159,7 +159,7 @@ internal abstract partial class AwsLambdaUpgrader(
                 node.Value.ToVersionFromLambdaRuntime() is { } version &&
                 version >= MinimumVersion && version < channel)
             {
-                LineIndexes.Add(node.Start.Line - 1);
+                LineIndexes.Add((int)node.Start.Line - 1);
             }
 
             base.VisitPair(key, value);
