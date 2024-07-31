@@ -9,6 +9,7 @@ namespace MartinCostello.DotNetBumper;
 internal static class WellKnownEnvironmentVariables
 {
     internal const string DirectoryBuildPropertiesPath = "DirectoryBuildPropsPath";
+    internal const string DotNetNoLogo = "DOTNET_NOLOGO";
     internal const string DotNetRollForward = "DOTNET_ROLL_FORWARD";
     internal const string DotNetRoot = "DOTNET_ROOT";
     internal const string MSBuildExePath = "MSBUILD_EXE_PATH";
