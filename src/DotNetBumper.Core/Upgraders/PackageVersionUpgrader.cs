@@ -209,14 +209,14 @@ internal sealed partial class PackageVersionUpgrader(
 
         var environmentVariables = new Dictionary<string, string?>(2)
         {
-            ["DOTNET_ROLL_FORWARD"] = "Major",
+            [WellKnownEnvironmentVariables.DotNetRollForward] = "Major",
         };
 
         MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
 
         if (configuration.NoWarn.Count > 0)
         {
-            environmentVariables["NoWarn"] = string.Join(";", configuration.NoWarn);
+            environmentVariables[WellKnownEnvironmentVariables.NoWarn] = string.Join(";", configuration.NoWarn);
         }
 
         var result = await dotnet.RunAsync(directory, ["outdated", .. arguments], environmentVariables, cancellationToken);
@@ -287,7 +287,7 @@ internal sealed partial class PackageVersionUpgrader(
 
         var environment = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
         {
-            ["SkipResolvePackageAssets"] = bool.TrueString,
+            [WellKnownEnvironmentVariables.SkipResolvePackageAssets] = bool.TrueString,
         };
 
         MSBuildHelper.TryAddSdkProperties(environment, sdkVersion.ToString());

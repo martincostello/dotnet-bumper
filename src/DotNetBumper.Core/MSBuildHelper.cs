@@ -18,7 +18,7 @@ internal static class MSBuildHelper
 
     public static void TryAddSdkProperties(IDictionary<string, string?> environment, string sdkVersion)
     {
-        var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+        var dotnetRoot = Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot);
 
         if (string.IsNullOrEmpty(dotnetRoot))
         {
@@ -37,8 +37,8 @@ internal static class MSBuildHelper
             return;
         }
 
-        environment["MSBUILD_EXE_PATH"] = Path.Combine(dotNetSdkPath, "MSBuild.dll");
-        environment["MSBuildExtensionsPath"] = dotNetSdkPath;
-        environment["MSBuildSDKsPath"] = Path.Combine(dotNetSdkPath, "Sdks");
+        environment[WellKnownEnvironmentVariables.MSBuildExePath] = Path.Combine(dotNetSdkPath, "MSBuild.dll");
+        environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath] = dotNetSdkPath;
+        environment[WellKnownEnvironmentVariables.MSBuildSdksPath] = Path.Combine(dotNetSdkPath, "Sdks");
     }
 }
