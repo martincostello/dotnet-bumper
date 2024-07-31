@@ -179,6 +179,15 @@ internal sealed partial class DotNetTestPostProcessor(
             [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
         };
 
+        if (sdkVersion.IsPrerelease)
+        {
+            // Enable roll-forward for pre-release versions of the .NET SDK.
+            // Otherwise this can create issues with using .NET local tools,
+            // for example using Microsoft.Extensions.ApiDescription.Server
+            // to generate an OpenAPI document as part of building an app.
+            environmentVariables["DOTNET_ROLL_FORWARD"] = "Major";
+        }
+
         MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
 
         TemporaryFile? propertiesOverrides = null;
