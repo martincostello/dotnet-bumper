@@ -185,7 +185,7 @@ internal sealed partial class DotNetTestPostProcessor(
             // Otherwise this can create issues with using .NET local tools,
             // for example using Microsoft.Extensions.ApiDescription.Server
             // to generate an OpenAPI document as part of building an app.
-            environmentVariables["DOTNET_ROLL_FORWARD"] = "Major";
+            environmentVariables[WellKnownEnvironmentVariables.DotNetRollForward] = "Major";
         }
 
         MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
@@ -195,7 +195,7 @@ internal sealed partial class DotNetTestPostProcessor(
         if (configuration.NoWarn is { Count: > 0 } noWarn)
         {
             propertiesOverrides = await GenerateDirectoryBuildPropsAsync(sdkVersion, noWarn, cancellationToken);
-            environmentVariables["DirectoryBuildPropsPath"] = propertiesOverrides.Path;
+            environmentVariables[WellKnownEnvironmentVariables.DirectoryBuildPropertiesPath] = propertiesOverrides.Path;
         }
 
         string[] arguments =
