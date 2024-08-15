@@ -145,7 +145,7 @@ internal sealed partial class DockerfileUpgrader(
 
             if (index is not -1)
             {
-                suffix = maybeVersion[index..];
+                suffix = maybeVersion[(index + 1)..];
                 maybeVersion = maybeVersion[..index];
             }
 
@@ -153,7 +153,7 @@ internal sealed partial class DockerfileUpgrader(
             {
                 builder.Append(channel);
 
-                const string PreviewSuffix = "-preview";
+                const string PreviewSuffix = "preview";
 
                 if (!suffix.IsEmpty)
                 {
@@ -161,6 +161,7 @@ internal sealed partial class DockerfileUpgrader(
                     {
                         if (!suffix.StartsWith(PreviewSuffix, StringComparison.Ordinal))
                         {
+                            builder.Append('-');
                             builder.Append(PreviewSuffix);
                         }
                     }
@@ -169,10 +170,17 @@ internal sealed partial class DockerfileUpgrader(
                         suffix = suffix[PreviewSuffix.Length..];
                     }
 
+                    if (suffix.Length > 0)
+                    {
+                        builder.Append('-');
+                        suffix = LinuxDistros.TryUpdateDistro(channel, suffix);
+                    }
+
                     builder.Append(suffix);
                 }
                 else if (supportPhase == DotNetSupportPhase.Preview)
                 {
+                    builder.Append('-');
                     builder.Append(PreviewSuffix);
                 }
 
