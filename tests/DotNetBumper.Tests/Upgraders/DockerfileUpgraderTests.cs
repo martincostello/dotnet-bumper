@@ -207,87 +207,52 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
         // With specific Alpine 3 labels
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.13 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.14 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.15 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.16 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.17 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.18 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.19 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.20 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.20 AS dotnet-sdk");
-
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.13 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.14 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.15 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.16 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.17 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.18 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.19 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.20 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.13 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.14 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.15 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.16 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.17 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.18 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.19 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.20 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.13 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.14 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.15 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.16 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.17 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.18 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.19 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.20 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.15 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.16 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.17 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.18 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.19 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
-
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.15 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.16 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.17 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.18 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.19 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.15 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.16 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.17 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.18 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.19 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.15 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.16 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.17 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.18 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.19 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.18 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.20 AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
-
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.18 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.20 AS dotnet-sdk", "9.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.18 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.20 AS dotnet-sdk", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
+
+        // Upgrades for .NET versions with an Alpine version that is no longer supported
+        foreach (int minor in Enumerable.Range(13, 7))
+        {
+            testCases.Add($"FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.{minor} AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
+            testCases.Add($"FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.{minor} AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
+
+            foreach (var supportPhase in new[] { DotNetSupportPhase.GoLive, DotNetSupportPhase.Active })
+            {
+                testCases.Add($"FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.{minor} AS dotnet-sdk", "9.0", supportPhase, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
+            }
+        }
+
+        foreach (int minor in Enumerable.Range(15, 5))
+        {
+            testCases.Add($"FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.{minor} AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.19 AS dotnet-sdk");
+            testCases.Add($"FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.{minor} AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
+
+            foreach (var supportPhase in new[] { DotNetSupportPhase.GoLive, DotNetSupportPhase.Active })
+            {
+                testCases.Add($"FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine3.{minor} AS dotnet-sdk", "9.0", supportPhase, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
+            }
+        }
+
+        foreach (int minor in Enumerable.Range(18, 3))
+        {
+            testCases.Add($"FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.{minor} AS dotnet-sdk", "9.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-preview-alpine3.20 AS dotnet-sdk");
+
+            foreach (var supportPhase in new[] { DotNetSupportPhase.GoLive, DotNetSupportPhase.Active })
+            {
+                testCases.Add($"FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.{minor} AS dotnet-sdk", "9.0", supportPhase, true, "FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine3.20 AS dotnet-sdk");
+            }
+        }
+
+        // Upgrades for .NET versions with an Alpine version that is still supported
+        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.20 AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine3.20 AS dotnet-sdk");
 
         // With specific Debian labels
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS dotnet-sdk");
