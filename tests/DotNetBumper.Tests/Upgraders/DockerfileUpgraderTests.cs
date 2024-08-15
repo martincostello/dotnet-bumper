@@ -182,26 +182,28 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             testCases.Add("FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-6.0-sdk AS build", channel, type, true, $"FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-{channel}-sdk AS build");
             testCases.Add("From --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-6.0-sdk As build", channel, type, true, $"FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-{channel}-sdk As build");
             testCases.Add("from --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-6.0-sdk as build", channel, type, true, $"FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-{channel}-sdk as build");
+
+            // With specific labels
+            testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-nanoserver-ltsc2022", channel, type, true, $"FROM mcr.microsoft.com/dotnet/sdk:{channel}{suffix}-nanoserver-ltsc2022");
+            testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-nanoserver-1809", channel, type, true, $"FROM mcr.microsoft.com/dotnet/sdk:{channel}{suffix}-nanoserver-1809");
+            testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-windowsservercore-ltsc2019", channel, type, true, $"FROM mcr.microsoft.com/dotnet/sdk:{channel}{suffix}-windowsservercore-ltsc2019");
+            testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-windowsservercore-ltsc2022", channel, type, true, $"FROM mcr.microsoft.com/dotnet/sdk:{channel}{suffix}-windowsservercore-ltsc2022");
         }
 
-        // TODO:
-        // docker pull mcr.microsoft.com/dotnet/sdk:6.0-nanoserver-ltsc2022
-        // docker pull mcr.microsoft.com/dotnet/sdk:6.0-nanoserver-1809
-        // docker pull mcr.microsoft.com/dotnet/sdk:6.0-windowsservercore-ltsc2019
-        // docker pull mcr.microsoft.com/dotnet/sdk:6.0-windowsservercore-ltsc2022
-        // docker pull mcr.microsoft.com/dotnet/sdk:6.0-cbl-mariner
-        // docker pull mcr.microsoft.com/dotnet/sdk:6.0-cbl-mariner2.0
-        // docker pull mcr.microsoft.com/dotnet/sdk:8.0-azurelinux3.0
-        // docker pull mcr.microsoft.com/dotnet/sdk:8.0-cbl-mariner
-        // docker pull mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-ltsc2022
-        // docker pull mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-1809
-        // docker pull mcr.microsoft.com/dotnet/sdk:8.0-windowsservercore-ltsc2019
-        // docker pull mcr.microsoft.com/dotnet/sdk:8.0-windowsservercore-ltsc2022
-        // docker pull mcr.microsoft.com/dotnet/sdk:9.0-azurelinux3.0
-        // docker pull mcr.microsoft.com/dotnet/sdk:9.0-nanoserver-ltsc2022
-        // docker pull mcr.microsoft.com/dotnet/sdk:9.0-nanoserver-1809
-        // docker pull mcr.microsoft.com/dotnet/sdk:9.0-windowsservercore-ltsc2019
-        // docker pull mcr.microsoft.com/dotnet/sdk:9.0-windowsservercore-ltsc2022
+        // Mariner/Azure Linux 3.0
+        testCases.Add("FROM mcr.microsoft.com/dotnet/runtime-deps:6.0-cbl-mariner", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-cbl-mariner");
+        testCases.Add("FROM mcr.microsoft.com/dotnet/runtime-deps:6.0-cbl-mariner2.0", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-cbl-mariner2.0");
+        testCases.Add("FROM mcr.microsoft.com/dotnet/runtime-deps:6.0-cbl-mariner2.0-distroless", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-cbl-mariner2.0-distroless");
+        testCases.Add("FROM mcr.microsoft.com/dotnet/runtime-deps:7.0-cbl-mariner", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-cbl-mariner");
+        testCases.Add("FROM mcr.microsoft.com/dotnet/runtime-deps:7.0-cbl-mariner2.0", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-cbl-mariner2.0");
+        testCases.Add("FROM mcr.microsoft.com/dotnet/runtime-deps:7.0-cbl-mariner2.0-distroless", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-cbl-mariner2.0-distroless");
+
+        testCases.Add("FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-cbl-mariner", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-azurelinux3.0");
+        testCases.Add("FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-cbl-mariner2.0", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-azurelinux3.0");
+        testCases.Add("FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-cbl-mariner2.0-distroless", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-azurelinux3.0-distroless");
+
+        testCases.Add("FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-azurelinux3.0", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-azurelinux3.0");
+        testCases.Add("FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-azurelinux3.0-distroless", "9.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-azurelinux3.0-distroless");
 
         // With specific Alpine 3 labels
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS dotnet-sdk", "8.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS dotnet-sdk");

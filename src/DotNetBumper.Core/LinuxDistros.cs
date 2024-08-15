@@ -13,15 +13,16 @@ internal static class LinuxDistros
     {
         return channel.Major switch
         {
-            8 => TryUpdateDistro(distro, ["bookworm"], ["jammy", "noble"], ["19", "20"]),
-            _ => TryUpdateDistro(distro, ["bookworm"], ["noble"], ["20"]), // Latest known versions as of .NET 9
+            8 => TryUpdateDistro(distro, ["bookworm"], ["jammy", "noble"], ["19", "20"], updateMariner2: false),
+            _ => TryUpdateDistro(distro, ["bookworm"], ["noble"], ["20"], updateMariner2: true), // Latest known versions as of .NET 9
         };
 
         static ReadOnlySpan<char> TryUpdateDistro(
             ReadOnlySpan<char> distro,
             string[] debian,
             string[] ubuntu,
-            string[] alpine)
+            string[] alpine,
+            bool updateMariner2)
         {
             // Is it a Debian image?
             int index = distro.IndexOf("-slim");
@@ -55,6 +56,20 @@ internal static class LinuxDistros
                 {
                     return TryUpgradeDistro(distro, codeName.Length, ubuntu);
                 }
+            }
+
+            // Does Mariner need updating to Azure Linux 3?
+            const string Mariner = "cbl-mariner";
+            if (updateMariner2 && distro.StartsWith(Mariner, StringComparison.Ordinal))
+            {
+                var suffix = distro[Mariner.Length..];
+
+                if (suffix.Length >= 3 && suffix[0..3].SequenceEqual("2.0"))
+                {
+                    suffix = suffix[3..];
+                }
+
+                return $"azurelinux3.0{suffix}";
             }
 
             return distro;
