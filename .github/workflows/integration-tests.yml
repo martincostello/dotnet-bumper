@@ -172,7 +172,8 @@ jobs:
           $tempFile = [System.IO.Path]::GetTempFileName()
           $config = @{
             noWarn = @(
-              'CA1515'
+              'CA1515',
+              'SYSLIB0057'
             )
           }
           $config | ConvertTo-Json | Out-File -FilePath $tempFile | Out-Null
