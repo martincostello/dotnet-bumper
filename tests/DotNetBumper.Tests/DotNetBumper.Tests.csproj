@@ -3,6 +3,7 @@
     <Description>Tests for DotNetBumper.</Description>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <NoWarn>$(NoWarn);CA1062;CA1707;CA1711;CA1861;CA2007;CA2234;SA1600;SA1602</NoWarn>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
     <Summary>$(Description)</Summary>
