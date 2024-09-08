@@ -11,7 +11,11 @@ updates:
 - package-ecosystem: nuget
   directory: "/"
   groups:
-    spectre:
+    dotnet-test-sdk:
+      patterns:
+        - Microsoft.NET.Test.Sdk
+        - Microsoft.TestPlatform.ObjectModel
+    Spectre:
       patterns:
         - Spectre.Console*
     xunit:
