@@ -50,35 +50,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
              dotnet publish --configuration $Configuration --framework $Framework --runtime $Runtime
              """;
 
-        using var fixture = new UpgraderFixture(outputHelper);
-
-        string script = await fixture.Project.AddFileAsync("build.ps1", fileContents);
-
-        var upgrade = new UpgradeInfo()
-        {
-            Channel = Version.Parse(channel),
-            EndOfLife = DateOnly.MaxValue,
-            ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new($"{channel}.100"),
-            SupportPhase = DotNetSupportPhase.Active,
-        };
-
-        var target = CreateTarget(fixture);
-
-        // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.Success);
-
-        string actualContent = await File.ReadAllTextAsync(script);
-        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
-
-        // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.None);
+        // Act and Assert
+        await AssertUpgradedAsync(fileContents, expectedContents, "build.ps1", channel);
     }
 
     [Theory]
@@ -90,36 +63,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("dotnet publish --runtime win10-x64 # A comment", "dotnet publish --runtime win-x64 # A comment")]
     public async Task UpgradeAsync_Upgrades_PowerShell_Script_Correctly(string fileContents, string expectedContents)
     {
-        // Arrange
-        using var fixture = new UpgraderFixture(outputHelper);
-
-        string script = await fixture.Project.AddFileAsync("script.ps1", fileContents);
-
-        var upgrade = new UpgradeInfo()
-        {
-            Channel = new(10, 0),
-            EndOfLife = DateOnly.MaxValue,
-            ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new("10.0.100"),
-            SupportPhase = DotNetSupportPhase.Active,
-        };
-
-        var target = CreateTarget(fixture);
-
-        // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.Success);
-
-        string actualContent = await File.ReadAllTextAsync(script);
-        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
-
-        // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.None);
+        // Act and Assert
+        await AssertUpgradedAsync(fileContents, expectedContents, "script.ps1", "10.0");
     }
 
     [Fact]
@@ -154,35 +99,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
                     run: dotnet publish --framework net8.0
             """;
 
-        using var fixture = new UpgraderFixture(outputHelper);
-
-        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
-
-        var upgrade = new UpgradeInfo()
-        {
-            Channel = new(8, 0),
-            EndOfLife = DateOnly.MaxValue,
-            ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new("8.0.100"),
-            SupportPhase = DotNetSupportPhase.Active,
-        };
-
-        var target = CreateTarget(fixture);
-
-        // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.Success);
-
-        string actualContent = await File.ReadAllTextAsync(workflow);
-        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
-
-        // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.None);
+        // Act and Assert
+        await AssertUpgradedAsync(fileContents, expectedContents, ".github/workflows/build.yml", "8.0");
     }
 
     [Theory]
@@ -221,35 +139,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
                        dotnet publish --framework net8.0
              """;
 
-        using var fixture = new UpgraderFixture(outputHelper);
-
-        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
-
-        var upgrade = new UpgradeInfo()
-        {
-            Channel = new(8, 0),
-            EndOfLife = DateOnly.MaxValue,
-            ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new("8.0.100"),
-            SupportPhase = DotNetSupportPhase.Active,
-        };
-
-        var target = CreateTarget(fixture);
-
-        // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.Success);
-
-        string actualContent = await File.ReadAllTextAsync(workflow);
-        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
-
-        // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.None);
+        // Act and Assert
+        await AssertUpgradedAsync(fileContents, expectedContents, ".github/workflows/build.yml", "8.0");
     }
 
     [Fact]
@@ -338,35 +229,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
                       path: ./artifacts/publish
             """;
 
-        using var fixture = new UpgraderFixture(outputHelper);
-
-        string workflow = await fixture.Project.AddFileAsync(".github/workflows/build.yml", fileContents);
-
-        var upgrade = new UpgradeInfo()
-        {
-            Channel = new(8, 0),
-            EndOfLife = DateOnly.MaxValue,
-            ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new("8.0.100"),
-            SupportPhase = DotNetSupportPhase.Active,
-        };
-
-        var target = CreateTarget(fixture);
-
-        // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.Success);
-
-        string actualContent = await File.ReadAllTextAsync(workflow);
-        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
-
-        // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
-
-        // Assert
-        actualUpdated.ShouldBe(ProcessingResult.None);
+        // Act and Assert
+        await AssertUpgradedAsync(fileContents, expectedContents, ".github/workflows/build.yml", "8.0");
     }
 
     [Fact]
@@ -407,6 +271,110 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Updates_Actions_Workflows_With_No_Explicit_Shell()
+    {
+        // Arrange
+        string fileContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - run: dotnet publish --framework net6.0
+            """;
+
+        string expectedContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - run: dotnet publish --framework net8.0
+            """;
+
+        // Act and Assert
+        await AssertUpgradedAsync(fileContents, expectedContents, ".github/workflows/build.yml", "8.0");
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Updates_Actions_Workflows_With_GitHub_Actions_Workflow_Syntax()
+    {
+        // Arrange
+        string fileContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - run: dotnet publish --framework net6.0 --configuration "${{ env.MY_VARIABLE }}"
+            """;
+
+        string expectedContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - run: dotnet publish --framework net8.0 --configuration "${{ env.MY_VARIABLE }}"
+            """;
+
+        // Act and Assert
+        await AssertUpgradedAsync(fileContents, expectedContents, ".github/workflows/build.yml", "8.0");
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Updates_Actions_Workflows_With_GitHub_Actions_Workflow_Syntax_And_Explicit_Shell()
+    {
+        // Arrange
+        string fileContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - run: dotnet publish --framework net6.0 --configuration "${{ env.MY_VARIABLE }}"
+                    shell: pwsh
+            """;
+
+        string expectedContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - run: dotnet publish --framework net8.0 --configuration "${{ env.MY_VARIABLE }}"
+                    shell: pwsh
+            """;
+
+        // Act and Assert
+        await AssertUpgradedAsync(fileContents, expectedContents, ".github/workflows/build.yml", "8.0");
     }
 
     [Fact]
@@ -542,5 +510,43 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
             fixture.Environment,
             fixture.CreateOptions(),
             fixture.CreateLogger<PowerShellScriptUpgrader>());
+    }
+
+    private async Task AssertUpgradedAsync(
+        string fileContents,
+        string expectedContents,
+        string fileName,
+        string channel)
+    {
+        // Arrange
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string script = await fixture.Project.AddFileAsync(fileName, fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse(channel),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new($"{channel}.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(script);
+        actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
     }
 }
