@@ -85,39 +85,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo: [ alexa-london-travel, alexa-london-travel-site, api, apple-fitness-workout-mapper, costellobot, dependabot-helper, dotnet-bumper, project-euler, website ]
+        repo: [ apple-fitness-workout-mapper, dotnet-bumper, project-euler ]
         upgrade-type: [ LTS, Latest, Preview ]
         include:
-          # alexa-london-travel tests disabled due to https://github.com/microsoft/testfx/issues/2733
-          - repo: alexa-london-travel
-            test: false
-            upgrade-type: LTS
-            warnings-as-errors: false
-          - repo: alexa-london-travel
-            test: false
-            upgrade-type: Latest
-            warnings-as-errors: false
-          - repo: alexa-london-travel
-            test: false
-            upgrade-type: Preview
-            warnings-as-errors: false
-          # alexa-london-travel-site tests disabled due to breaking changes in .NET Aspire not yet in .NET 9 previews
-          - repo: alexa-london-travel-site
-            test: false
-            upgrade-type: Preview
-            warnings-as-errors: false
-          # costellobot and dependabot-helper removed due to https://github.com/dotnet/aspire/issues/3941
-          - repo: costellobot
-            test: false
-            upgrade-type: Preview
-            warnings-as-errors: false
-          - repo: dependabot-helper
-            test: false
-            upgrade-type: Preview
-            warnings-as-errors: false
           - repo: dotnet-bumper
             upgrade-type: Preview
             warnings-as-errors: false
+          # Manually added for now as otherwise attempts to downgrade from .NET 9 to 8 would be made
+          - repo: alexa-london-travel
+            upgrade-type: Preview
+          - repo: alexa-london-travel-site
+            upgrade-type: Preview
+          - repo: api
+            upgrade-type: Preview
+          - repo: costellobot
+            upgrade-type: Preview
+          - repo: dependabot-helper
+            upgrade-type: Preview
+          - repo: website
+            upgrade-type: Preview
 
     steps:
 
