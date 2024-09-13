@@ -33,7 +33,7 @@ internal sealed partial class PowerShellScriptUpgrader(
 
         foreach (var path in fileNames)
         {
-            result = await TryEditScriptAsync(path, upgrade, context, cancellationToken);
+            result = result.Max(await TryEditScriptAsync(path, upgrade, context, cancellationToken));
         }
 
         return result;
