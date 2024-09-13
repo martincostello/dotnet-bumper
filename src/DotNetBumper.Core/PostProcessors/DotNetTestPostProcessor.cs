@@ -177,6 +177,7 @@ internal sealed partial class DotNetTestPostProcessor(
         var environmentVariables = new Dictionary<string, string?>()
         {
             [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
+            [WellKnownEnvironmentVariables.NuGetAudit] = "false",
         };
 
         if (sdkVersion.IsPrerelease)

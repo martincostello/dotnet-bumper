@@ -16,5 +16,6 @@ internal static class WellKnownEnvironmentVariables
     internal const string MSBuildExtensionsPath = "MSBuildExtensionsPath";
     internal const string MSBuildSdksPath = "MSBuildSDKsPath";
     internal const string NoWarn = "NoWarn";
+    internal const string NuGetAudit = "NuGetAudit";
     internal const string SkipResolvePackageAssets = "SkipResolvePackageAssets";
 }
