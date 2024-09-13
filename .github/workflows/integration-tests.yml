@@ -89,6 +89,7 @@ jobs:
         upgrade-type: [ LTS, Latest, Preview ]
         include:
           - repo: dotnet-bumper
+            test: true
             upgrade-type: Preview
             warnings-as-errors: false
           # Manually added for now as otherwise attempts to downgrade from .NET 9 to 8 would be made
