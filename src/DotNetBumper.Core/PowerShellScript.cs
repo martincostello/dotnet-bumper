@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Management.Automation.Language;
-using MartinCostello.DotNetBumper.Upgraders;
 using YamlDotNet.RepresentationModel;
 
 namespace MartinCostello.DotNetBumper;
@@ -55,7 +54,14 @@ internal sealed class PowerShellScript
                 script = script[1..];
             }
 
-            if (ParseScript(script, path) is { } syntaxTree)
+            // We are more lenient to errors in PowerShell scripts embedded in GitHub Actions workflows for two reasons:
+            // 1. The run script might not explicitly specify a shell, in which case it might be parseable as PowerShell
+            //    event if it is not explicitly written as it. For example: `run: dotnet build -c Release -f net6.0`.
+            // 2. A script might be explictly marked as PowerShell, but use GitHub Actions workflow syntax that causes
+            //    syntax errors when parsing before the templates have been substituted from the snippet. For example:
+            //    shell: pwsh
+            //    run: dotnet build -c "${{ env.BUILD_CONFIGURATION }}" -f net6.0
+            if (ParseScript(script, path, allowErrors: true) is { } syntaxTree)
             {
                 syntaxTrees.Add((lineOffset, columnOffset, location, syntaxTree));
             }
@@ -143,10 +149,19 @@ internal sealed class PowerShellScript
         return (lines, metadata);
     }
 
-    private static ScriptBlockAst? ParseScript(string input, string fileName)
+    private static ScriptBlockAst? ParseScript(string input, string fileName, bool allowErrors = false)
     {
-        var syntaxTree = Parser.ParseInput(input, fileName, out _, out var errors);
-        return errors.Length is 0 ? syntaxTree : null;
+        try
+        {
+            var syntaxTree = Parser.ParseInput(input, fileName, out _, out var errors);
+            return allowErrors || errors.Length is 0 ? syntaxTree : null;
+        }
+        catch (Exception) when (allowErrors)
+        {
+            // We tried to parse something as PowerShell, and we failed miserably,
+            // the lesson is: ~~never try~~ at least we tried.
+            return null;
+        }
     }
 
     private sealed class PowerShellRunStepFinder() : YamlVisitorBase
@@ -165,17 +180,20 @@ internal sealed class PowerShellScript
                         continue;
                     }
 
-                    var shell = step.Children.FirstOrDefault((p) => p.Key is YamlScalarNode { Value: "shell" }).Value;
-
-                    if (shell is not YamlScalarNode { Value: "pwsh" })
-                    {
-                        continue;
-                    }
-
                     var run = step.Children.FirstOrDefault((p) => p.Key is YamlScalarNode { Value: "run" }).Value;
 
                     if (run != default)
                     {
+                        var shell = step.Children.FirstOrDefault((p) => p.Key is YamlScalarNode { Value: "shell" }).Value;
+
+                        if (shell != default)
+                        {
+                            if (shell is not YamlScalarNode { Value: "pwsh" })
+                            {
+                                continue;
+                            }
+                        }
+
                         int columnOffset = (int)(run.Start.Line == run.End.Line ? run.Start.Column - 1 : 0);
                         ScriptLocations.Add(((int)run.Start.Line - 1, columnOffset, new((int)run.Start.Index, (int)run.End.Index)));
                     }
