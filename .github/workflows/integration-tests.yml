@@ -100,7 +100,15 @@ jobs:
             warnings-as-errors: false
           # Disabled due to dotnet-outdated issues with multi-targeting
           - repo: dotnet-bumper
-            test: true
+            test: false
+            upgrade-type: LTS
+            warnings-as-errors: false
+          - repo: dotnet-bumper
+            test: false
+            upgrade-type: Latest
+            warnings-as-errors: false
+          - repo: dotnet-bumper
+            test: false
             upgrade-type: Preview
             warnings-as-errors: false
           # Manually added for now as otherwise attempts to downgrade from .NET 9 to 8 would be made
