@@ -3,7 +3,8 @@
 > [!NOTE]
 > This project is currently experimental.
 
-[![NuGet][package-badge]][package-download]
+[![NuGet][package-badge-version]][package-download]
+[![NuGet Downloads][package-badge-downloads]][package-download]
 
 [![Build status][build-badge]][build-status]
 [![codecov][coverage-badge]][coverage-report]
@@ -204,7 +205,8 @@ This project is licensed under the [Apache 2.0][license] license.
 [issues]: https://github.com/martincostello/dotnet-bumper/issues "Issues for this project on GitHub.com"
 [license]: https://www.apache.org/licenses/LICENSE-2.0.txt "The Apache 2.0 license"
 [lts]: https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core ".NET and .NET Core Support Policy"
-[package-badge]: https://img.shields.io/nuget/v/MartinCostello.DotNetBumper?logo=nuget&label=NuGet&color=blue
+[package-badge-downloads]: https://img.shields.io/nuget/dt/MartinCostello.DotNetBumper?logo=nuget&label=Downloads&color=blue
+[package-badge-version]: https://img.shields.io/nuget/v/MartinCostello.DotNetBumper?logo=nuget&label=Latest&color=blue
 [package-download]: https://www.nuget.org/packages/MartinCostello.DotNetBumper "Download dotnet-bumper from NuGet"
 [repo]: https://github.com/martincostello/dotnet-bumper "This project on GitHub.com"
 [scorecard-badge]: https://api.securityscorecards.dev/projects/github.com/martincostello/dotnet-bumper/badge
