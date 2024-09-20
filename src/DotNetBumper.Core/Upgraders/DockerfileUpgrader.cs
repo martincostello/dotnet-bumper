@@ -375,7 +375,7 @@ internal sealed partial class DockerfileUpgrader(
             await buffered.CopyToAsync(output, cancellationToken);
             await buffered.FlushAsync(cancellationToken);
 
-            buffered.SetLength(buffered.Position);
+            output.SetLength(buffered.Position);
 
             if (portsUpdated)
             {
