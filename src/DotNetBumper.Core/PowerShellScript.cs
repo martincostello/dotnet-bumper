@@ -8,6 +8,8 @@ namespace MartinCostello.DotNetBumper;
 
 internal sealed class PowerShellScript
 {
+    private static readonly string[] _otherScriptExtensions = [".bash", ".cmd", ".sh"];
+
     private PowerShellScript(
         FileMetadata fileMetadata,
         List<string> lines,
@@ -76,7 +78,10 @@ internal sealed class PowerShellScript
 
         string contents = string.Join(metadata.NewLine, lines);
 
-        var syntaxTree = ParseScript(contents, path);
+        // Attempt to treat other scripts as PowerShell, as the syntax may be similar
+        // enough that we can still upgrade them anyway for simple command invocations.
+        var allowErrors = _otherScriptExtensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase);
+        var syntaxTree = ParseScript(contents, path, allowErrors);
 
         if (syntaxTree is null)
         {
@@ -188,7 +193,8 @@ internal sealed class PowerShellScript
 
                         if (shell != default)
                         {
-                            if (shell is not YamlScalarNode { Value: "pwsh" })
+                            // See https://docs.github.com/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell
+                            if (shell is not YamlScalarNode { Value: "pwsh" or "powershell" or "bash" or "sh" or "cmd" })
                             {
                                 continue;
                             }
