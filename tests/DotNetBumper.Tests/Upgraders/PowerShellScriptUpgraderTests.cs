@@ -234,7 +234,7 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Fact]
-    public async Task UpgradeAsync_Ignores_Actions_Workflows_With_No_PowerShell()
+    public async Task UpgradeAsync_Updates_Actions_Workflows_With_Bash()
     {
         // Arrange
         string fileContents =
@@ -248,6 +248,42 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
                   - uses: actions/checkout@v4
                   - uses: actions/setup-dotnet@v3
                   - shell: bash
+                    run: dotnet publish --framework net6.0
+            """;
+
+        string expectedContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - shell: bash
+                    run: dotnet publish --framework net8.0
+            """;
+
+        // Act and Assert
+        await AssertUpgradedAsync(fileContents, expectedContents, ".github/workflows/build.yml", "8.0");
+    }
+
+    [Fact]
+    public async Task UpgradeAsync_Ignores_Actions_Workflows_With_No_PowerShell()
+    {
+        // Arrange
+        string fileContents =
+            """
+            name: build
+            on: [push]
+            jobs:
+              build:
+                runs-on: ubuntu-latest
+                steps:
+                  - uses: actions/checkout@v4
+                  - uses: actions/setup-dotnet@v3
+                  - shell: python
                     run: dotnet publish --framework net6.0
             """;
 
@@ -341,37 +377,42 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
         await AssertUpgradedAsync(fileContents, expectedContents, ".github/workflows/build.yml", "8.0");
     }
 
-    [Fact]
-    public async Task UpgradeAsync_Updates_Actions_Workflows_With_GitHub_Actions_Workflow_Syntax_And_Explicit_Shell()
+    [Theory]
+    [InlineData("bash")]
+    [InlineData("cmd")]
+    [InlineData("powershell")]
+    [InlineData("pwsh")]
+    [InlineData("sh")]
+    public async Task UpgradeAsync_Updates_Actions_Workflows_With_GitHub_Actions_Workflow_Syntax_And_Explicit_Shell(string shell)
     {
         // Arrange
         string fileContents =
-            """
-            name: build
-            on: [push]
-            jobs:
-              build:
-                runs-on: ubuntu-latest
-                steps:
-                  - uses: actions/checkout@v4
-                  - uses: actions/setup-dotnet@v3
-                  - run: dotnet publish --framework net6.0 --configuration "${{ env.MY_VARIABLE }}"
-                    shell: pwsh
-            """;
+            $$$"""
+               name: build
+               on: [push]
+               jobs:
+                 build:
+                   runs-on: ubuntu-latest
+                   steps:
+                     - uses: actions/checkout@v4
+                     - uses: actions/setup-dotnet@v3
+                     - run: dotnet publish --framework net6.0 --configuration "${{ env.MY_VARIABLE }}"
+                       shell: {{{shell}}}
+               """;
 
         string expectedContents =
-            """
-            name: build
-            on: [push]
-            jobs:
-              build:
-                runs-on: ubuntu-latest
-                steps:
-                  - uses: actions/checkout@v4
-                  - uses: actions/setup-dotnet@v3
-                  - run: dotnet publish --framework net8.0 --configuration "${{ env.MY_VARIABLE }}"
-                    shell: pwsh
-            """;
+            $$$"""
+               name: build
+               on: [push]
+               jobs:
+                 build:
+                   runs-on: ubuntu-latest
+                   steps:
+                     - uses: actions/checkout@v4
+                     - uses: actions/setup-dotnet@v3
+                     - run: dotnet publish --framework net8.0 --configuration "${{ env.MY_VARIABLE }}"
+                       shell: {{{shell}}}
+               """;
 
         // Act and Assert
         await AssertUpgradedAsync(fileContents, expectedContents, ".github/workflows/build.yml", "8.0");
@@ -501,6 +542,166 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [ClassData(typeof(DotNetChannelTestData))]
+    public async Task UpgradeAsync_Upgrades_Batch_Script(string channel)
+    {
+        // Arrange
+        string fileContents =
+            """
+            @ECHO OFF
+            SETLOCAL
+
+            :: This tells .NET to use the same dotnet.exe that the build script uses.
+            SET DOTNET_ROOT=%~dp0.dotnetcli
+            SET DOTNET_ROOT(x86)=%~dp0.dotnetcli\x86
+
+            dotnet build -f "net6.0"
+
+            exit /b 1
+            """;
+
+        string expectedContents =
+            $$"""
+             @ECHO OFF
+             SETLOCAL
+             
+             :: This tells .NET to use the same dotnet.exe that the build script uses.
+             SET DOTNET_ROOT=%~dp0.dotnetcli
+             SET DOTNET_ROOT(x86)=%~dp0.dotnetcli\x86
+             
+             dotnet build -f "net{{channel}}"
+             
+             exit /b 1
+             """;
+
+        // Act and Assert
+        await AssertUpgradedAsync(fileContents, expectedContents, "build.cmd", channel);
+    }
+
+    [Theory]
+    [ClassData(typeof(DotNetChannelTestData))]
+    public async Task UpgradeAsync_Upgrades_Shell_Script(string channel)
+    {
+        // Arrange
+        string fileContents =
+            """
+            #!/usr/bin/env bash
+
+            root=$(cd "$(dirname "$0")"; pwd -P)
+            artifacts=$root/artifacts
+            configuration=Release
+            skipTests=0
+
+            RED='\033[0;31m'
+            GREEN='\033[0;32m'
+            NC='\033[0m'
+
+            while :; do
+                if [ $# -le 0 ]; then
+                    break
+                fi
+
+                lowerI="$(echo $1 | awk '{print tolower($0)}')"
+                case $lowerI in
+                    -\?|-h|--help)
+                        echo "./build.sh [--skip-tests]"
+                        exit 1
+                        ;;
+
+                    --skip-tests)
+                        skipTests=1
+                        ;;
+
+                    *)
+                        __UnprocessedBuildArgs="$__UnprocessedBuildArgs $1"
+                        ;;
+                esac
+                shift
+            done
+
+            export CLI_VERSION=`cat ./global.json | grep -E '[0-9]\.[0-9]\.[a-zA-Z0-9\-]*' -o`
+            dotnet_version=$(dotnet --version)
+
+            printf "${GREEN}Installed .NET SDK Version: $dotnet_version. Required version: $CLI_VERSION.${NC}\n"
+            echo "Output path: $artifacts."
+            printf "${GREEN}BUILD NUMBER=$BUILD_NUMBER ${NC}\n"
+
+            if [ "$skipTests" == "0" ]; then
+                tests_failed=0
+                printf "${GREEN}Executing tests...${NC}\n"
+                dotnet test tests/Project.Tests --configuration $configuration --framework net6.0 || tests_failed=1
+                if [ "$tests_failed" == "1" ]; then
+                    printf "${RED}Tests failed.${NC}\n"
+                    exit 1
+                fi
+            fi
+
+            printf "${GREEN}Publishing application ${NC}\n"
+            dotnet publish "./src/Project" --output "$artifacts"  --configuration $configuration --framework net6.0 || exit 1
+            """;
+
+        string expectedContents =
+            $$"""
+             #!/usr/bin/env bash
+             
+             root=$(cd "$(dirname "$0")"; pwd -P)
+             artifacts=$root/artifacts
+             configuration=Release
+             skipTests=0
+             
+             RED='\033[0;31m'
+             GREEN='\033[0;32m'
+             NC='\033[0m'
+             
+             while :; do
+                 if [ $# -le 0 ]; then
+                     break
+                 fi
+             
+                 lowerI="$(echo $1 | awk '{print tolower($0)}')"
+                 case $lowerI in
+                     -\?|-h|--help)
+                         echo "./build.sh [--skip-tests]"
+                         exit 1
+                         ;;
+             
+                     --skip-tests)
+                         skipTests=1
+                         ;;
+             
+                     *)
+                         __UnprocessedBuildArgs="$__UnprocessedBuildArgs $1"
+                         ;;
+                 esac
+                 shift
+             done
+             
+             export CLI_VERSION=`cat ./global.json | grep -E '[0-9]\.[0-9]\.[a-zA-Z0-9\-]*' -o`
+             dotnet_version=$(dotnet --version)
+             
+             printf "${GREEN}Installed .NET SDK Version: $dotnet_version. Required version: $CLI_VERSION.${NC}\n"
+             echo "Output path: $artifacts."
+             printf "${GREEN}BUILD NUMBER=$BUILD_NUMBER ${NC}\n"
+             
+             if [ "$skipTests" == "0" ]; then
+                 tests_failed=0
+                 printf "${GREEN}Executing tests...${NC}\n"
+                 dotnet test tests/Project.Tests --configuration $configuration --framework net{{channel}} || tests_failed=1
+                 if [ "$tests_failed" == "1" ]; then
+                     printf "${RED}Tests failed.${NC}\n"
+                     exit 1
+                 fi
+             fi
+             
+             printf "${GREEN}Publishing application ${NC}\n"
+             dotnet publish "./src/Project" --output "$artifacts"  --configuration $configuration --framework net{{channel}} || exit 1
+             """;
+
+        // Act and Assert
+        await AssertUpgradedAsync(fileContents, expectedContents, "build.sh", channel);
     }
 
     private static PowerShellScriptUpgrader CreateTarget(UpgraderFixture fixture)

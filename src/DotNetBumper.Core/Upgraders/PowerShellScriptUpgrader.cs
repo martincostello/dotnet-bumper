@@ -19,7 +19,7 @@ internal sealed partial class PowerShellScriptUpgrader(
 
     protected override string InitialStatus => "Update PowerShell scripts";
 
-    protected override IReadOnlyList<string> Patterns { get; } = ["*.ps1", "*.yaml", "*.yml"];
+    protected override IReadOnlyList<string> Patterns { get; } = ["*.bash", "*.cmd", "*.ps1", "*.sh", "*.yaml", "*.yml"];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
         UpgradeInfo upgrade,
