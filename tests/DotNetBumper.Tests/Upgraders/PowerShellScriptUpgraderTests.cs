@@ -377,37 +377,42 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
         await AssertUpgradedAsync(fileContents, expectedContents, ".github/workflows/build.yml", "8.0");
     }
 
-    [Fact]
-    public async Task UpgradeAsync_Updates_Actions_Workflows_With_GitHub_Actions_Workflow_Syntax_And_Explicit_Shell()
+    [Theory]
+    [InlineData("bash")]
+    [InlineData("cmd")]
+    [InlineData("powershell")]
+    [InlineData("pwsh")]
+    [InlineData("sh")]
+    public async Task UpgradeAsync_Updates_Actions_Workflows_With_GitHub_Actions_Workflow_Syntax_And_Explicit_Shell(string shell)
     {
         // Arrange
         string fileContents =
-            """
-            name: build
-            on: [push]
-            jobs:
-              build:
-                runs-on: ubuntu-latest
-                steps:
-                  - uses: actions/checkout@v4
-                  - uses: actions/setup-dotnet@v3
-                  - run: dotnet publish --framework net6.0 --configuration "${{ env.MY_VARIABLE }}"
-                    shell: pwsh
-            """;
+            $$$"""
+               name: build
+               on: [push]
+               jobs:
+                 build:
+                   runs-on: ubuntu-latest
+                   steps:
+                     - uses: actions/checkout@v4
+                     - uses: actions/setup-dotnet@v3
+                     - run: dotnet publish --framework net6.0 --configuration "${{ env.MY_VARIABLE }}"
+                       shell: {{{shell}}}
+               """;
 
         string expectedContents =
-            """
-            name: build
-            on: [push]
-            jobs:
-              build:
-                runs-on: ubuntu-latest
-                steps:
-                  - uses: actions/checkout@v4
-                  - uses: actions/setup-dotnet@v3
-                  - run: dotnet publish --framework net8.0 --configuration "${{ env.MY_VARIABLE }}"
-                    shell: pwsh
-            """;
+            $$$"""
+               name: build
+               on: [push]
+               jobs:
+                 build:
+                   runs-on: ubuntu-latest
+                   steps:
+                     - uses: actions/checkout@v4
+                     - uses: actions/setup-dotnet@v3
+                     - run: dotnet publish --framework net8.0 --configuration "${{ env.MY_VARIABLE }}"
+                       shell: {{{shell}}}
+               """;
 
         // Act and Assert
         await AssertUpgradedAsync(fileContents, expectedContents, ".github/workflows/build.yml", "8.0");
