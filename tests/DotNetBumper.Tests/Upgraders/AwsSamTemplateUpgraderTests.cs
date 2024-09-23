@@ -62,9 +62,8 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var testCases = new TheoryData<string, string>();
         var channels = new DotNetChannelTestData();
 
-        foreach (var data in channels)
+        foreach (string channel in channels)
         {
-            string channel = (string)data[0];
             testCases.Add(channel, "template.json");
             testCases.Add(channel, "serverless.template");
         }
@@ -77,9 +76,8 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var testCases = new TheoryData<string, string>();
         var channels = new DotNetChannelTestData();
 
-        foreach (var data in channels)
+        foreach (string channel in channels)
         {
-            string channel = (string)data[0];
             testCases.Add(channel, "template.yaml");
             testCases.Add(channel, "template.yml");
             testCases.Add(channel, "serverless.template");
