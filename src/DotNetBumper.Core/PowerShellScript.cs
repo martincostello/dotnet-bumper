@@ -59,7 +59,7 @@ internal sealed class PowerShellScript
             // We are more lenient to errors in PowerShell scripts embedded in GitHub Actions workflows for two reasons:
             // 1. The run script might not explicitly specify a shell, in which case it might be parseable as PowerShell
             //    event if it is not explicitly written as it. For example: `run: dotnet build -c Release -f net6.0`.
-            // 2. A script might be explictly marked as PowerShell, but use GitHub Actions workflow syntax that causes
+            // 2. A script might be explicitly marked as PowerShell, but use GitHub Actions workflow syntax that causes
             //    syntax errors when parsing before the templates have been substituted from the snippet. For example:
             //    shell: pwsh
             //    run: dotnet build -c "${{ env.BUILD_CONFIGURATION }}" -f net6.0
