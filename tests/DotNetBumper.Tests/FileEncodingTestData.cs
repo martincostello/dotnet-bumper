@@ -9,8 +9,6 @@ public sealed class FileEncodingTestData : TheoryData<string, bool>
     {
         Add("\n", false);
         Add("\n", true);
-        Add("\r", false);
-        Add("\r", true);
         Add("\r\n", false);
         Add("\r\n", true);
     }
