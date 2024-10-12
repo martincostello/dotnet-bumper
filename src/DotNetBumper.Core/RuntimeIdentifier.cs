@@ -11,8 +11,14 @@ namespace MartinCostello.DotNetBumper;
 
 internal sealed partial record RuntimeIdentifier(string Value)
 {
+    /// <summary>
+    /// See https://github.com/dotnet/runtime/blob/49006967613007f58daab31abab5316999aa7897/src/libraries/Microsoft.NETCore.Platforms/src/PortableRuntimeIdentifierGraph.json.
+    /// </summary>
     private static readonly ImmutableDictionary<string, ImmutableHashSet<string>> PortableRids = LoadRuntimeIds("runtime-identifiers.portable");
 
+    /// <summary>
+    /// See https://github.com/dotnet/runtime/blob/49006967613007f58daab31abab5316999aa7897/src/libraries/Microsoft.NETCore.Platforms/src/runtime.json.
+    /// </summary>
     private static readonly ImmutableDictionary<string, ImmutableHashSet<string>> NonPortableRids = LoadRuntimeIds("runtime-identifiers");
 
     public bool IsPortable => PortableRids.ContainsKey(Value);
