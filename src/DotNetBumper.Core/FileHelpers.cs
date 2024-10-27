@@ -51,7 +51,7 @@ internal static class FileHelpers
 
     public static FileMetadata GetMetadata(string path)
     {
-        using (FileHelpers.OpenRead(path, out var metadata))
+        using (OpenRead(path, out var metadata))
         {
             return metadata;
         }

@@ -113,7 +113,7 @@ internal sealed partial class PowerShellScriptUpgrader(
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     private static partial class Log
     {
         [LoggerMessage(

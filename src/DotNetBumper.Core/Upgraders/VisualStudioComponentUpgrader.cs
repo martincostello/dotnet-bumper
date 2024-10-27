@@ -124,7 +124,7 @@ internal sealed partial class VisualStudioComponentUpgrader(
         return updated;
     }
 
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     private static partial class Log
     {
         [LoggerMessage(

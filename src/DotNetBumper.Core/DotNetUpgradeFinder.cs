@@ -118,8 +118,8 @@ public partial class DotNetUpgradeFinder(
             return
                 Version.TryParse(channelString, out channel) &&
                 NuGetVersion.TryParse(latestSdkVersion, out sdkVersion) &&
-                Enum.TryParse<DotNetReleaseType>(releaseTypeString, ignoreCase: true, out releaseType) &&
-                Enum.TryParse<DotNetSupportPhase>(supportPhaseString.Replace("-", string.Empty, StringComparison.Ordinal), ignoreCase: true, out supportPhase);
+                Enum.TryParse(releaseTypeString, ignoreCase: true, out releaseType) &&
+                Enum.TryParse(supportPhaseString.Replace("-", string.Empty, StringComparison.Ordinal), ignoreCase: true, out supportPhase);
 
             static string GetString(JsonElement element, string name)
             {
@@ -173,7 +173,7 @@ public partial class DotNetUpgradeFinder(
         return latestChannel;
     }
 
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     private static partial class Log
     {
         [LoggerMessage(

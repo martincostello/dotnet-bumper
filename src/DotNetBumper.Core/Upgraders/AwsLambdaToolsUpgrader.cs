@@ -99,7 +99,7 @@ internal sealed partial class AwsLambdaToolsUpgrader(
         return result;
     }
 
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     private static partial class Log
     {
         [LoggerMessage(
