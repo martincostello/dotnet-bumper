@@ -93,9 +93,12 @@ internal sealed partial class DotNetCodeUpgrader(
             "format",
             "analyzers",
             "--no-restore",
-            "--report", tempDirectory.Path,
-            "--severity", "warn",
-            "--verbosity", Logger.GetMSBuildVerbosity(),
+            "--report",
+            tempDirectory.Path,
+            "--severity",
+            "warn",
+            "--verbosity",
+            Logger.GetMSBuildVerbosity(),
         ];
 
         var environmentVariables = new Dictionary<string, string?>()

@@ -209,7 +209,7 @@ internal sealed partial class AwsSamTemplateUpgrader(
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     private static partial class Log
     {
         [LoggerMessage(

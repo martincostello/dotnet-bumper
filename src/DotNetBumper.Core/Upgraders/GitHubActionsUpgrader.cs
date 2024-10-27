@@ -154,7 +154,7 @@ internal sealed partial class GitHubActionsUpgrader(
         }
     }
 
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     private static partial class Log
     {
         [LoggerMessage(

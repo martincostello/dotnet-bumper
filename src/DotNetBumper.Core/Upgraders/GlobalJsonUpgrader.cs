@@ -110,7 +110,7 @@ internal sealed partial class GlobalJsonUpgrader(
         return false;
     }
 
-    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
+    [ExcludeFromCodeCoverage]
     private static partial class Log
     {
         [LoggerMessage(

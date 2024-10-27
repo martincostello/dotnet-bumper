@@ -216,7 +216,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             CancellationToken cancellationToken)
         {
             return isRedirected ?
-                Task.Run<StringBuilder>(() => ProcessStream(reader, cancellationToken), cancellationToken) :
+                Task.Run(() => ProcessStream(reader, cancellationToken), cancellationToken) :
                 Task.FromResult(new StringBuilder(0));
 
             static async Task<StringBuilder> ProcessStream(
@@ -253,16 +253,16 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         {
             string command = process.StartInfo.ArgumentList[0];
 
-            Log.CommandFailed(logger, command, process.ExitCode);
+            CommandFailed(logger, command, process.ExitCode);
 
             if (!string.IsNullOrEmpty(output))
             {
-                Log.CommandFailedOutput(logger, command, output);
+                CommandFailedOutput(logger, command, output);
             }
 
             if (!string.IsNullOrEmpty(error))
             {
-                Log.CommandFailedError(logger, command, error);
+                CommandFailedError(logger, command, error);
             }
         }
 

@@ -1,4 +1,4 @@
-// Copyright (c) Martin Costello, 2024. All rights reserved.
+﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Collections.Immutable;
@@ -96,7 +96,7 @@ internal sealed partial record RuntimeIdentifier(string Value)
     {
         var type = typeof(RuntimeIdentifier);
         using var stream = type.Assembly.GetManifestResourceStream($"{type.Namespace}.Resources.{resource}.json");
-        var graph = JsonSerializer.Deserialize<RidGraph>(stream!, RidJsonSerializerContext.Default.RidGraph);
+        var graph = JsonSerializer.Deserialize(stream!, RidJsonSerializerContext.Default.RidGraph);
 
         var builder = ImmutableDictionary.CreateBuilder<string, ImmutableHashSet<string>>();
 

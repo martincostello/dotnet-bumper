@@ -46,7 +46,7 @@ public static class ServiceCollectionExtensions
                 .AddSingleton<BumperConfigurationLoader>()
                 .AddSingleton<BumperConfigurationProvider>()
                 .AddSingleton<BumperLogContext>()
-                .AddSingleton<IAnsiConsole>(console)
+                .AddSingleton(console)
                 .AddSingleton<IEnvironment, BumperEnvironment>()
                 .AddSingleton<IValidateOptions<UpgradeOptions>, UpgradeOptionsValidator>()
                 .AddSingleton<ProjectUpgrader>();
