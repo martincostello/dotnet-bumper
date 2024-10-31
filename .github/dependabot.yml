@@ -15,6 +15,10 @@ updates:
       patterns:
         - Microsoft.NET.Test.Sdk
         - Microsoft.TestPlatform.ObjectModel
+    Microsoft.Build:
+      patterns:
+        - Microsoft.Build
+        - Microsoft.Build.Utilities.Core
     Spectre:
       patterns:
         - Spectre.Console*
