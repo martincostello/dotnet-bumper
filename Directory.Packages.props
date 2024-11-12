@@ -11,15 +11,15 @@
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
     <PackageVersion Include="Microsoft.Build" Version="17.11.4" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.11.4" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.10.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.11.1" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="14.0.0" />
@@ -42,15 +42,15 @@
   <ItemGroup Condition=" $([MSBuild]::IsTargetFrameworkCompatible($(TargetFramework), 'net9.0')) ">
     <PackageVersion Update="Microsoft.Build" Version="17.12.6" />
     <PackageVersion Update="Microsoft.Build.Utilities.Core" Version="17.12.6" />
-    <PackageVersion Update="Microsoft.Extensions.Configuration" Version="9.0.0-rc.2.24473.5" />
-    <PackageVersion Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0-rc.2.24473.5" />
-    <PackageVersion Update="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0-rc.2.24473.5" />
-    <PackageVersion Update="Microsoft.Extensions.DependencyInjection" Version="9.0.0-rc.2.24473.5" />
-    <PackageVersion Update="Microsoft.Extensions.Http" Version="9.0.0-rc.2.24473.5" />
-    <PackageVersion Update="Microsoft.Extensions.Http.Resilience" Version="9.0.0-preview.9.24507.7" />
-    <PackageVersion Update="Microsoft.Extensions.Logging" Version="9.0.0-rc.2.24473.5" />
-    <PackageVersion Update="Microsoft.Extensions.Logging.Console" Version="9.0.0-rc.2.24473.5" />
-    <PackageVersion Update="Microsoft.Extensions.Options" Version="9.0.0-rc.2.24473.5" />
+    <PackageVersion Update="Microsoft.Extensions.Configuration" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Http" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Options" Version="9.0.0" />
     <PackageVersion Update="System.Formats.Asn1" Version="9.0.0-rc.2.24473.5" />
   </ItemGroup>
 </Project>
