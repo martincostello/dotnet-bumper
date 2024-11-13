@@ -11,10 +11,10 @@ updates:
 - package-ecosystem: nuget
   directory: "/"
   groups:
-    dotnet-test-sdk:
+    Microsoft.Build:
       patterns:
-        - Microsoft.NET.Test.Sdk
-        - Microsoft.TestPlatform.ObjectModel
+        - Microsoft.Build
+        - Microsoft.Build.Utilities.Core
     Spectre:
       patterns:
         - Spectre.Console*
@@ -28,3 +28,16 @@ updates:
   reviewers:
     - "martincostello"
   open-pull-requests-limit: 99
+  ignore:
+    - dependency-name: Microsoft.Extensions.Configuration
+    - dependency-name: Microsoft.Extensions.Configuration.EnvironmentVariables
+    - dependency-name: Microsoft.Extensions.Configuration.UserSecrets
+    - dependency-name: Microsoft.Extensions.DependencyInjection
+    - dependency-name: Microsoft.Extensions.Http
+    - dependency-name: Microsoft.Extensions.Http.Resilience
+    - dependency-name: Microsoft.Extensions.Logging
+    - dependency-name: Microsoft.Extensions.Logging.Console
+    - dependency-name: Microsoft.Extensions.Options
+    - dependency-name: Microsoft.TestPlatform.ObjectModel
+    - dependency-name: System.Formats.Asn1
+    - dependency-name: System.Text.Json

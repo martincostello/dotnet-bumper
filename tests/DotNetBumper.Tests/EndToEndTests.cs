@@ -33,11 +33,19 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             new("6.0.100", ["net6.0"], ["--channel=9.0"]),
             new("6.0.100", ["net6.0"], ["--upgrade-type=latest"]),
             new("6.0.100", ["net6.0"], ["--upgrade-type=lts"]),
-            new("6.0.100", ["net6.0"], ["--upgrade-type=preview"]),
             new("6.0.100", ["net6.0"], [], Packages(("System.Text.Json", "6.0.0"))),
             new("7.0.100", ["net7.0"], [], Packages(("System.Text.Json", "7.0.0"))),
-            new("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("System.Text.Json", "8.0.0"))),
         };
+
+        // These test cases only work when there's actually a preview in development
+        if (Environment.GetEnvironmentVariable("DOTNET_HAS_PREVIEW") is "true")
+        {
+            testCases.AddRange(
+                [
+                    new("6.0.100", ["net6.0"], ["--upgrade-type=preview"]),
+                    new("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("System.Text.Json", "8.0.0"))),
+                ]);
+        }
 
         List<string> formats = ["Json", "Markdown"];
 

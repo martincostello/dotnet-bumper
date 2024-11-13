@@ -65,6 +65,7 @@ jobs:
       with:
         dotnet-version: |
           6.0.x
+          7.0.x
           8.0.x
           9.0.x
 
@@ -96,7 +97,7 @@ jobs:
       with:
         artifact-name: dotnetbumper-${{ matrix.os-name }}.spdx.json
         output-file: ./artifacts/dotnetbumper.spdx.json
-        path: ./artifacts/publish/DotNetBumper/release
+        path: ./artifacts/publish/DotNetBumper
         upload-release-assets: ${{ runner.os == 'Windows' }}
 
     - name: Attest artifacts

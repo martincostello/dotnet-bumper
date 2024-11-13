@@ -39,4 +39,18 @@
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
     <PackageVersion Include="YamlDotNet" Version="16.2.0" />
   </ItemGroup>
+  <ItemGroup Condition=" $([MSBuild]::IsTargetFrameworkCompatible($(TargetFramework), 'net9.0')) ">
+    <PackageVersion Update="Microsoft.Build" Version="17.12.6" />
+    <PackageVersion Update="Microsoft.Build.Utilities.Core" Version="17.12.6" />
+    <PackageVersion Update="Microsoft.Extensions.Configuration" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Http" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
+    <PackageVersion Update="Microsoft.Extensions.Options" Version="9.0.0" />
+    <PackageVersion Update="System.Formats.Asn1" Version="9.0.0" />
+  </ItemGroup>
 </Project>
