@@ -85,45 +85,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo: [ apple-fitness-workout-mapper, dotnet-bumper, project-euler ]
-        upgrade-type: [ LTS, Latest, Preview ]
-        include:
-          # Tests disabled due to CI-only issue with dotnet-outdated restoring packages
-          - repo: alexa-london-travel-site
-            test: false
-            upgrade-type: Preview
-            warnings-as-errors: false
-          # Tests disabled due to unfixable code breaks caused by new span overloads for string.Join().
-          - repo: costellobot
-            test: false
-            upgrade-type: Preview
-            warnings-as-errors: false
-          # Disabled due to dotnet-outdated issues with multi-targeting
-          - repo: dotnet-bumper
-            test: false
-            upgrade-type: LTS
-            warnings-as-errors: false
-          - repo: dotnet-bumper
-            test: false
-            upgrade-type: Latest
-            warnings-as-errors: false
-          - repo: dotnet-bumper
-            test: false
-            upgrade-type: Preview
-            warnings-as-errors: false
-          # Manually added for now as otherwise attempts to downgrade from .NET 9 to 8 would be made
-          - repo: alexa-london-travel
-            upgrade-type: Preview
-          - repo: alexa-london-travel-site
-            upgrade-type: Preview
-          - repo: api
-            upgrade-type: Preview
-          - repo: costellobot
-            upgrade-type: Preview
-          - repo: dependabot-helper
-            upgrade-type: Preview
-          - repo: website
-            upgrade-type: Preview
+        repo:
+          - alexa-london-travel
+          - alexa-london-travel-site
+          - api
+          - apple-fitness-workout-mapper
+          - costellobot
+          - dependabot-helper
+          - dotnet-bumper
+          - project-euler
+          - website
+        upgrade-type:
+          #- LTS
+          - Latest
+          #- Preview
 
     steps:
 
