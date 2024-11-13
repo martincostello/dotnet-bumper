@@ -194,6 +194,7 @@ internal sealed partial class PackageVersionUpgrader(
 
             // TODO Upgrading from .NET 6 to .NET 8 is not possible as it will skip
             // .NET 8 and go straight to .NET 9, which isn't what is actually wanted.
+            // See https://github.com/martincostello/dotnet-bumper/issues/499.
         }
 
         var configuration = await configurationProvider.GetAsync(cancellationToken);
