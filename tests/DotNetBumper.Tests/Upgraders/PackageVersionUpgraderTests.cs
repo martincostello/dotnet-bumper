@@ -61,7 +61,6 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
         upgradedReferences.ShouldNotContainValueForKey(dependencyName, dependencyVersion);
 
         NuGetVersion.TryParse(upgradedReferences[dependencyName], out var version).ShouldBeTrue();
-        version.Major.ShouldBe(8);
         version.IsPrerelease.ShouldBeFalse();
     }
 

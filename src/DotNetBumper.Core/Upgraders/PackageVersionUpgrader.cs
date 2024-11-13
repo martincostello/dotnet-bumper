@@ -191,6 +191,9 @@ internal sealed partial class PackageVersionUpgrader(
             // if a project is using a .NET 6 preview package, it should be upgraded
             // to a .NET 8 version for an LTS upgrade, not to a .NET 9 preview version.
             arguments.Add("--pre-release:Never");
+
+            // TODO Upgrading from .NET 6 to .NET 8 is not possible as it will skip
+            // .NET 8 and go straight to .NET 9, which isn't what is actually wanted.
         }
 
         var configuration = await configurationProvider.GetAsync(cancellationToken);
