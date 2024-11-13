@@ -166,9 +166,9 @@ jobs:
       shell: pwsh
       env:
         DOTNET_BUMPER_CONFIG: ${{ steps.generate-config.outputs.dotnet-bumper-config }}
-        DOTNET_BUMPER_TEST: ${{ format('{0}', matrix.test) }}
+        DOTNET_BUMPER_TEST: 'true' # ${{ format('{0}', matrix.test) }}
         DOTNET_BUMPER_UPGRADE_TYPE: ${{ matrix.upgrade-type }}
-        DOTNET_BUMPER_WARNINGS_AS_ERRORS: ${{ format('{0}', matrix.warnings-as-errors) }}
+        DOTNET_BUMPER_WARNINGS_AS_ERRORS: 'true' # ${{ format('{0}', matrix.warnings-as-errors) }}
       run: |
         $bumperArgs = @(
           ".",
