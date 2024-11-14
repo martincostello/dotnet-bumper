@@ -11,10 +11,6 @@ updates:
 - package-ecosystem: nuget
   directory: "/"
   groups:
-    Microsoft.Build:
-      patterns:
-        - Microsoft.Build
-        - Microsoft.Build.Utilities.Core
     Spectre:
       patterns:
         - Spectre.Console*
