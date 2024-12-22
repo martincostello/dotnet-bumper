@@ -28,12 +28,12 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(launchFile);
+        string actualContent = await File.ReadAllTextAsync(launchFile, fixture.CancellationToken);
         var launch = JsonDocument.Parse(actualContent);
 
         launch.RootElement.ValueKind.ShouldBe(JsonValueKind.Object);
@@ -57,7 +57,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         property.GetString().ShouldBe("\\bNow listening on:\\s+(https?://\\S+)");
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -93,7 +93,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -217,16 +217,16 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(filePath);
+        string actualContent = await File.ReadAllTextAsync(filePath, fixture.CancellationToken);
         actualContent.Trim().ShouldBe(expectedContent.Trim());
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -279,15 +279,15 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(filePath);
+        string actualContent = await File.ReadAllTextAsync(filePath, fixture.CancellationToken);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(filePath);
+        byte[] actualBytes = await File.ReadAllBytesAsync(filePath, fixture.CancellationToken);
 
         if (hasUtf8Bom)
         {
@@ -299,7 +299,7 @@ public class VisualStudioCodeUpgraderTests(ITestOutputHelper outputHelper)
         }
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);

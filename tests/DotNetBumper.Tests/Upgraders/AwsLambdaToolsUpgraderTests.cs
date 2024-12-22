@@ -45,12 +45,12 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(lambdaDefaultsFile);
+        string actualContent = await File.ReadAllTextAsync(lambdaDefaultsFile, fixture.CancellationToken);
 
         var defaults = JsonDocument.Parse(actualContent);
         defaults.RootElement.ValueKind.ShouldBe(JsonValueKind.Object);
@@ -64,7 +64,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         runtime.GetString().ShouldBe($"dotnet{upgrade.Channel.Major}");
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -117,12 +117,12 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Warning);
 
-        string actualContent = await File.ReadAllTextAsync(lambdaDefaultsFile);
+        string actualContent = await File.ReadAllTextAsync(lambdaDefaultsFile, fixture.CancellationToken);
         actualContent.NormalizeLineEndings().Trim().ShouldBe(fileContents.NormalizeLineEndings().Trim());
     }
 
@@ -161,7 +161,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(expected);
@@ -206,15 +206,15 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(jsonFile);
+        string actualContent = await File.ReadAllTextAsync(jsonFile, fixture.CancellationToken);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(jsonFile);
+        byte[] actualBytes = await File.ReadAllBytesAsync(jsonFile, fixture.CancellationToken);
 
         if (hasUtf8Bom)
         {
@@ -226,7 +226,7 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
         }
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);

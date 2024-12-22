@@ -20,16 +20,17 @@ public static class JsonLogWriterTests
             Result = nameof(ProcessingResult.Success),
         };
 
+        var cancellationToken = TestContext.Current.CancellationToken;
         var path = Path.GetTempFileName();
         var target = new JsonLogWriter(path);
 
         // Act
-        await target.WriteAsync(context, CancellationToken.None);
+        await target.WriteAsync(context, cancellationToken);
 
         // Assert
         File.Exists(path).ShouldBeTrue();
 
-        var contents = await File.ReadAllTextAsync(path);
+        var contents = await File.ReadAllTextAsync(path, cancellationToken);
         contents.Length.ShouldBeGreaterThan(0);
 
         using var document = JsonDocument.Parse(contents);

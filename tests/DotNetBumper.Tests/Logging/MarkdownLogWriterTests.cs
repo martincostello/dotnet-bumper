@@ -21,13 +21,15 @@ public static class MarkdownLogWriterTests
         var path = Path.GetTempFileName();
         var target = new MarkdownLogWriter(path);
 
+        var cancellationToken = TestContext.Current.CancellationToken;
+
         // Act
-        await target.WriteAsync(context, CancellationToken.None);
+        await target.WriteAsync(context, cancellationToken);
 
         // Assert
         File.Exists(path).ShouldBeTrue();
 
-        var contents = await File.ReadAllTextAsync(path);
+        var contents = await File.ReadAllTextAsync(path, cancellationToken);
         contents.Length.ShouldBeGreaterThan(0);
 
         contents.ShouldContain("Project upgraded to .NET SDK `8.0.201`.");
@@ -49,13 +51,15 @@ public static class MarkdownLogWriterTests
         var path = Path.GetTempFileName();
         var target = new MarkdownLogWriter(path);
 
+        var cancellationToken = TestContext.Current.CancellationToken;
+
         // Act
-        await target.WriteAsync(context, CancellationToken.None);
+        await target.WriteAsync(context, cancellationToken);
 
         // Assert
         File.Exists(path).ShouldBeTrue();
 
-        var contents = await File.ReadAllTextAsync(path);
+        var contents = await File.ReadAllTextAsync(path, cancellationToken);
         contents.Length.ShouldBeGreaterThan(0);
 
         contents.ShouldContain("Project upgraded to .NET 8.0.");
@@ -77,13 +81,15 @@ public static class MarkdownLogWriterTests
         var path = Path.GetTempFileName();
         var target = new MarkdownLogWriter(path);
 
+        var cancellationToken = TestContext.Current.CancellationToken;
+
         // Act
-        await target.WriteAsync(context, CancellationToken.None);
+        await target.WriteAsync(context, cancellationToken);
 
         // Assert
         File.Exists(path).ShouldBeTrue();
 
-        var contents = await File.ReadAllTextAsync(path);
+        var contents = await File.ReadAllTextAsync(path, cancellationToken);
         contents.Length.ShouldBeGreaterThan(0);
 
         contents.ShouldContain("The project upgrade did not result in any changes being made.");

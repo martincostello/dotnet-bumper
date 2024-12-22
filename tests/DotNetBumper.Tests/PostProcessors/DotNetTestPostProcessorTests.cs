@@ -22,7 +22,7 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 #pragma warning restore IDE0028
     }
 
-    [xRetry.RetryTheory]
+    [Theory]
     [MemberData(nameof(Channels))]
     public async Task PostProcessAsync_Succeeds_When_No_DirectoryBuildProps(string channel)
     {
@@ -42,7 +42,7 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.Success);
     }
 
-    [xRetry.RetryTheory]
+    [Theory]
     [MemberData(nameof(Channels))]
     public async Task PostProcessAsync_Succeeds_When_DirectoryBuildProps_Without_ArtifactsOutput(string channel)
     {
@@ -64,7 +64,7 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.Success);
     }
 
-    [xRetry.RetryTheory]
+    [Theory]
     [InlineData("8.0", "", "")]
     [InlineData("8.0", "false", "")]
     [InlineData("8.0", "true", "")]
