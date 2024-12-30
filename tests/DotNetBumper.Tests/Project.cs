@@ -82,8 +82,8 @@ internal sealed class Project : IDisposable
         packageReferences ??= new Dictionary<string, string>()
         {
             ["Microsoft.NET.Test.Sdk"] = "17.12.0",
-            ["xunit.v3"] = "1.0.0",
             ["xunit.runner.visualstudio"] = "3.0.0",
+            ["xunit.v3"] = "1.0.0",
         };
 
         return await AddProjectAsync(path, targetFrameworks, packageReferences, projectReferences, "Exe");
