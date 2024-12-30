@@ -447,7 +447,7 @@ internal sealed partial class DotNetTestPostProcessor(
         [LoggerMessage(
             EventId = 2,
             Level = LogLevel.Debug,
-            Message = "Test {Container}{Id} failed: {ErrorMessage}")]
+            Message = "Test {Container}.{Id} failed: {ErrorMessage}")]
         public static partial void TestFailed(ILogger logger, string container, string? id, string? errorMessage);
     }
 }
