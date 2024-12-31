@@ -76,7 +76,7 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
@@ -86,7 +86,7 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
             var bom = Encoding.UTF8.GetPreamble();
             var buffer = new byte[bom.Length];
 
-            await stream.ReadExactlyAsync(buffer, 0, buffer.Length);
+            await stream.ReadExactlyAsync(buffer, 0, buffer.Length, fixture.CancellationToken);
 
             bom.Length.ShouldBeGreaterThan(0);
             bom.SequenceEqual(buffer).ShouldBe(hasByteOrderMark);
@@ -107,7 +107,7 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         actualValue.ShouldBe(expectedValue);
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -173,16 +173,16 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(pubxml);
+        string actualContent = await File.ReadAllTextAsync(pubxml, fixture.CancellationToken);
         actualContent.ShouldBe(expectedContent);
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -246,16 +246,16 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(pubxml);
+        string actualContent = await File.ReadAllTextAsync(pubxml, fixture.CancellationToken);
         actualContent.ShouldBe(expectedContent);
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -290,7 +290,7 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(expected);
@@ -341,15 +341,15 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(properties);
+        string actualContent = await File.ReadAllTextAsync(properties, fixture.CancellationToken);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(properties);
+        byte[] actualBytes = await File.ReadAllBytesAsync(properties, fixture.CancellationToken);
 
         if (hasUtf8Bom)
         {
@@ -361,7 +361,7 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
         }
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);

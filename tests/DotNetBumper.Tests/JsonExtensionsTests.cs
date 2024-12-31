@@ -13,14 +13,15 @@ public static class JsonExtensionsTests
     public static async Task File_Encoding_Is_Retained(bool writeBom)
     {
         // Arrange
+        var cancellationToken = TestContext.Current.CancellationToken;
         var path = WriteJsonToFile(writeBom);
         JsonObject value = ReadJsonFromFile(path);
 
         // Act
-        await value.SaveAsync(path, CancellationToken.None);
+        await value.SaveAsync(path, cancellationToken);
 
         // Assert
-        byte[] contents = await File.ReadAllBytesAsync(path);
+        byte[] contents = await File.ReadAllBytesAsync(path, cancellationToken);
 
         if (writeBom)
         {
@@ -33,7 +34,7 @@ public static class JsonExtensionsTests
 
         using var stream = File.OpenRead(path);
 
-        var parsed = (await JsonNode.ParseAsync(stream))!.AsObject();
+        var parsed = (await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken))!.AsObject();
         parsed["foo"]!.GetValue<string>().ShouldBe("bar");
     }
 

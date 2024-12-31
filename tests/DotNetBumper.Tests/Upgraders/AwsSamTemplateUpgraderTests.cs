@@ -123,12 +123,12 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(templateFile);
+        string actualContent = await File.ReadAllTextAsync(templateFile, fixture.CancellationToken);
 
         var samTemplate = JsonDocument.Parse(actualContent);
         samTemplate.RootElement.ValueKind.ShouldBe(JsonValueKind.Object);
@@ -147,7 +147,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         node.GetString().ShouldBe($"dotnet{upgrade.Channel.Major}");
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -176,19 +176,19 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(templateFile);
+        string actualContent = await File.ReadAllTextAsync(templateFile, fixture.CancellationToken);
 
         actualContent.Split(Environment.NewLine)
                      .Count((p) => p.Contains($"dotnet{upgrade.Channel.Major}", StringComparison.Ordinal))
                      .ShouldBe(2);
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -228,12 +228,12 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Warning);
 
-        string actualContent = await File.ReadAllTextAsync(templateFile);
+        string actualContent = await File.ReadAllTextAsync(templateFile, fixture.CancellationToken);
         actualContent.NormalizeLineEndings().Trim().ShouldBe(template.NormalizeLineEndings().Trim());
     }
 
@@ -265,12 +265,12 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Warning);
 
-        string actualContent = await File.ReadAllTextAsync(templateFile);
+        string actualContent = await File.ReadAllTextAsync(templateFile, fixture.CancellationToken);
         actualContent.NormalizeLineEndings().Trim().ShouldBe(template.NormalizeLineEndings().Trim());
     }
 
@@ -302,7 +302,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -336,7 +336,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -376,7 +376,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -409,7 +409,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -458,7 +458,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -500,7 +500,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -528,7 +528,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -578,7 +578,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -618,7 +618,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -676,15 +676,15 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(jsonFile);
+        string actualContent = await File.ReadAllTextAsync(jsonFile, fixture.CancellationToken);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(jsonFile);
+        byte[] actualBytes = await File.ReadAllBytesAsync(jsonFile, fixture.CancellationToken);
 
         if (hasUtf8Bom)
         {
@@ -696,7 +696,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         }
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -765,15 +765,15 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(jsonFile);
+        string actualContent = await File.ReadAllTextAsync(jsonFile, fixture.CancellationToken);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(jsonFile);
+        byte[] actualBytes = await File.ReadAllBytesAsync(jsonFile, fixture.CancellationToken);
 
         if (hasUtf8Bom)
         {
@@ -785,7 +785,7 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
         }
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);

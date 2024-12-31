@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using Xunit.Sdk;
+
 namespace MartinCostello.DotNetBumper;
 
 public sealed class BumperTestCase(
@@ -40,9 +42,9 @@ public sealed class BumperTestCase(
 
     public void Deserialize(IXunitSerializationInfo info)
     {
-        Arguments = info.GetValue<string[]>(nameof(Arguments));
-        SdkVersion = info.GetValue<string>(nameof(SdkVersion));
-        TargetFrameworks = info.GetValue<string[]>(nameof(TargetFrameworks));
+        Arguments = (string[])info.GetValue(nameof(Arguments))!;
+        SdkVersion = (string)info.GetValue(nameof(SdkVersion))!;
+        TargetFrameworks = (string[])info.GetValue(nameof(TargetFrameworks))!;
 
         if (info.GetValue<string>(nameof(Channel)) is { Length: > 0 } channel)
         {

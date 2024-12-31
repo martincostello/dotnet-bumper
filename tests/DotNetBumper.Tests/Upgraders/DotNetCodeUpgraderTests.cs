@@ -18,12 +18,12 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
 #pragma warning restore IDE0028
     }
 
-    [SkippableTheory]
+    [Theory]
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Applies_Code_Fix(string channel)
     {
-        Skip.If(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
-        Skip.If(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
+        Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
+        Assert.SkipWhen(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
@@ -69,12 +69,12 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.None);
     }
 
-    [SkippableTheory]
+    [Theory]
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Applies_Code_Fixes(string channel)
     {
-        Skip.If(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
-        Skip.If(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
+        Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
+        Assert.SkipWhen(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
@@ -124,12 +124,12 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.None);
     }
 
-    [SkippableTheory]
+    [Theory]
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Honors_User_Project_Settings(string channel)
     {
-        Skip.If(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
-        Skip.If(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
+        Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
+        Assert.SkipWhen(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
@@ -168,12 +168,12 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.None);
     }
 
-    [SkippableTheory]
+    [Theory]
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Does_Not_Fix_Information_Diagnostics(string channel)
     {
-        Skip.If(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
-        Skip.If(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
+        Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
+        Assert.SkipWhen(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);

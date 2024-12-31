@@ -16,7 +16,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        var actual = await target.LoadAsync(CancellationToken.None);
+        var actual = await target.LoadAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldBeNull();
@@ -38,7 +38,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture, options);
 
         // Act and Assert
-        await Should.ThrowAsync<FileNotFoundException>(() => target.LoadAsync(CancellationToken.None));
+        await Should.ThrowAsync<FileNotFoundException>(() => target.LoadAsync(fixture.CancellationToken));
     }
 
     [Theory]
@@ -64,7 +64,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture, options);
 
         // Act and Assert
-        await Should.ThrowAsync<InvalidOperationException>(() => target.LoadAsync(CancellationToken.None));
+        await Should.ThrowAsync<InvalidOperationException>(() => target.LoadAsync(fixture.CancellationToken));
     }
 
     [Theory]
@@ -88,7 +88,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture, options);
 
         // Act
-        var actual = await target.LoadAsync(CancellationToken.None);
+        var actual = await target.LoadAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -105,7 +105,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        var actual = await target.LoadAsync(CancellationToken.None);
+        var actual = await target.LoadAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -127,7 +127,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        var actual = await target.LoadAsync(CancellationToken.None);
+        var actual = await target.LoadAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -149,7 +149,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        var actual = await target.LoadAsync(CancellationToken.None);
+        var actual = await target.LoadAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -167,12 +167,12 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        await File.WriteAllTextAsync(Path.Combine(fixture.Project.DirectoryName, fileName), content);
+        await File.WriteAllTextAsync(Path.Combine(fixture.Project.DirectoryName, fileName), content, fixture.CancellationToken);
 
         var target = CreateTarget(fixture);
 
         // Act
-        var actual = await target.LoadAsync(CancellationToken.None);
+        var actual = await target.LoadAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldBeNull();

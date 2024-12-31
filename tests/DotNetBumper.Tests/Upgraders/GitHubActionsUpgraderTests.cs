@@ -68,16 +68,16 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(workflow);
+        string actualContent = await File.ReadAllTextAsync(workflow, fixture.CancellationToken);
         actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -165,16 +165,16 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(workflow);
+        string actualContent = await File.ReadAllTextAsync(workflow, fixture.CancellationToken);
         actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -272,16 +272,16 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(workflow);
+        string actualContent = await File.ReadAllTextAsync(workflow, fixture.CancellationToken);
         actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -377,16 +377,16 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(workflow);
+        string actualContent = await File.ReadAllTextAsync(workflow, fixture.CancellationToken);
         actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -512,16 +512,16 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(workflow);
+        string actualContent = await File.ReadAllTextAsync(workflow, fixture.CancellationToken);
         actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -621,16 +621,16 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(workflow);
+        string actualContent = await File.ReadAllTextAsync(workflow, fixture.CancellationToken);
         actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -669,7 +669,7 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -719,7 +719,7 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -751,7 +751,7 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -802,7 +802,7 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -863,15 +863,15 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(workflow);
+        string actualContent = await File.ReadAllTextAsync(workflow, fixture.CancellationToken);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(workflow);
+        byte[] actualBytes = await File.ReadAllBytesAsync(workflow, fixture.CancellationToken);
 
         if (hasUtf8Bom)
         {
@@ -883,7 +883,7 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
         }
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
