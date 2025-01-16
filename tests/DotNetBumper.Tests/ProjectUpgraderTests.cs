@@ -19,7 +19,7 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        int actual = await target.UpgradeAsync(CancellationToken.None);
+        int actual = await target.UpgradeAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(0);

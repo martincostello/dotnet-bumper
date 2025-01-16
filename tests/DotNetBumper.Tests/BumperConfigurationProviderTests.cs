@@ -16,7 +16,7 @@ public class BumperConfigurationProviderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture, upgradeType);
 
         // Act
-        var actual = await target.GetAsync(CancellationToken.None);
+        var actual = await target.GetAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -35,7 +35,7 @@ public class BumperConfigurationProviderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture, UpgradeType.Preview);
 
         // Act
-        var actual = await target.GetAsync(CancellationToken.None);
+        var actual = await target.GetAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -55,7 +55,7 @@ public class BumperConfigurationProviderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture, UpgradeType.Preview);
 
         // Act
-        var actual = await target.GetAsync(CancellationToken.None);
+        var actual = await target.GetAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -75,7 +75,7 @@ public class BumperConfigurationProviderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture, UpgradeType.Preview);
 
         // Act
-        var actual = await target.GetAsync(CancellationToken.None);
+        var actual = await target.GetAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();

@@ -26,24 +26,26 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
     public static TheoryData<BumperTestCase> TestCases()
     {
+#pragma warning disable IDE0090
         var testCases = new TheoryData<BumperTestCase>
         {
-            new("7.0.100", ["net6.0", "net7.0"]),
-            new("6.0.100", ["net6.0"], ["--channel=8.0"]),
-            new("6.0.100", ["net6.0"], ["--channel=9.0"]),
-            new("6.0.100", ["net6.0"], ["--upgrade-type=latest"]),
-            new("6.0.100", ["net6.0"], ["--upgrade-type=lts"]),
-            new("6.0.100", ["net6.0"], [], Packages(("System.Text.Json", "6.0.0"))),
-            new("7.0.100", ["net7.0"], [], Packages(("System.Text.Json", "7.0.0"))),
+            new BumperTestCase("7.0.100", ["net6.0", "net7.0"]),
+            new BumperTestCase("6.0.100", ["net6.0"], ["--channel=8.0"]),
+            new BumperTestCase("6.0.100", ["net6.0"], ["--channel=9.0"]),
+            new BumperTestCase("6.0.100", ["net6.0"], ["--upgrade-type=latest"]),
+            new BumperTestCase("6.0.100", ["net6.0"], ["--upgrade-type=lts"]),
+            new BumperTestCase("6.0.100", ["net6.0"], [], Packages(("System.Text.Json", "6.0.0"))),
+            new BumperTestCase("7.0.100", ["net7.0"], [], Packages(("System.Text.Json", "7.0.0"))),
         };
+#pragma warning restore IDE0090
 
         // These test cases only work when there's actually a preview in development
         if (Environment.GetEnvironmentVariable("DOTNET_HAS_PREVIEW") is "true")
         {
             testCases.AddRange(
                 [
-                    new("6.0.100", ["net6.0"], ["--upgrade-type=preview"]),
-                    new("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("System.Text.Json", "8.0.0"))),
+                    new BumperTestCase("6.0.100", ["net6.0"], ["--upgrade-type=preview"]),
+                    new BumperTestCase("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("System.Text.Json", "8.0.0"))),
                 ]);
         }
 
@@ -56,13 +58,13 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         foreach (string format in formats)
         {
-            testCases.Add(new("6.0.100", ["net6.0"], ["--log-format", format]));
+            testCases.Add(new BumperTestCase("6.0.100", ["net6.0"], ["--log-format", format]));
         }
 
         return testCases;
     }
 
-    [xRetry.RetryTheory]
+    [Theory]
     [MemberData(nameof(TestCases))]
     public async Task Application_Upgrades_Project(BumperTestCase testCase)
     {
@@ -133,7 +135,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             }
         }
 
-        var actualConfig = await File.ReadAllTextAsync(vsconfig);
+        var actualConfig = await File.ReadAllTextAsync(vsconfig, fixture.CancellationToken);
 
         var config = JsonDocument.Parse(actualConfig).RootElement;
         config.TryGetProperty("components", out var property).ShouldBeTrue();
@@ -141,9 +143,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         var components = property.EnumerateArray().Select((p) => p.GetString()).ToArray();
         components.ShouldNotContain($"Microsoft.NetCore.Component.Runtime.{testCase.Channel}");
-        components.Where((p) => p?.StartsWith("Microsoft.NetCore.Component.Runtime.", StringComparison.Ordinal) is true).Any().ShouldBeTrue();
+        components.Any((p) => p?.StartsWith("Microsoft.NetCore.Component.Runtime.", StringComparison.Ordinal) is true).ShouldBeTrue();
 
-        var actualVscode = await File.ReadAllTextAsync(vscode);
+        var actualVscode = await File.ReadAllTextAsync(vscode, fixture.CancellationToken);
 
         config = JsonDocument.Parse(actualVscode).RootElement;
         config.TryGetProperty("configurations", out property).ShouldBeTrue();
@@ -158,7 +160,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         await AssertPowerShellScriptIsValidAsync(script, testCase.Channel);
 
-        var actualWorkflow = await File.ReadAllTextAsync(workflow);
+        var actualWorkflow = await File.ReadAllTextAsync(workflow, fixture.CancellationToken);
         actualWorkflow.ShouldNotContain($" net{testCase.Channel} ");
         actualWorkflow.ShouldContain(" win-x64 ");
     }
@@ -199,7 +201,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actualPackages.ShouldBe([]);
     }
 
-    [xRetry.RetryTheory]
+    [Theory]
     [InlineData(false, false, null, 0, null)]
     [InlineData(false, false, "Json", 0, "dotnet-bumper.json")]
     [InlineData(false, false, "Markdown", 0, "dotnet-bumper.md")]
@@ -260,7 +262,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             fixture.Console,
             [fixture.Project.DirectoryName, .. args],
             (builder) => builder.AddXUnit(fixture),
-            CancellationToken.None);
+            fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(expectedResult);
@@ -270,7 +272,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             var logFile = Path.Combine(fixture.Project.DirectoryName, expectedLogFile);
             File.Exists(logFile).ShouldBeTrue();
 
-            string logContent = await File.ReadAllTextAsync(logFile);
+            string logContent = await File.ReadAllTextAsync(logFile, fixture.CancellationToken);
 
             logContent.ShouldNotBeNullOrWhiteSpace();
 
@@ -297,7 +299,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(1);
     }
 
-    [xRetry.RetryTheory]
+    [Theory]
     [InlineData(false, "Json", 0)]
     [InlineData(false, "Markdown", 0)]
     [InlineData(true, "Json", 1)]
@@ -352,14 +354,14 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             fixture.Console,
             [fixture.Project.DirectoryName, .. args],
             (builder) => builder.AddXUnit(fixture),
-            CancellationToken.None);
+            fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(expected);
 
         File.Exists(logFile).ShouldBeTrue();
 
-        string logContent = await File.ReadAllTextAsync(logFile);
+        string logContent = await File.ReadAllTextAsync(logFile, fixture.CancellationToken);
 
         logContent.ShouldNotBeNullOrWhiteSpace();
         logContent.ShouldContain("Error");
@@ -454,7 +456,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             fixture.Console,
             [fixture.Project.DirectoryName, "--verbose", "--timeout", "00:00:00"],
             (builder) => builder.AddXUnit(fixture),
-            CancellationToken.None);
+            fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(3);
@@ -495,7 +497,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             fixture.Console,
             [fixture.Project.DirectoryName, "--configuration-file", "foo.txt"],
             (builder) => builder.AddXUnit(outputHelper),
-            CancellationToken.None);
+            fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(1);

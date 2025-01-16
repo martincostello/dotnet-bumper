@@ -32,7 +32,7 @@ public class ContainerBaseImageUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
@@ -52,7 +52,7 @@ public class ContainerBaseImageUpgraderTests(ITestOutputHelper outputHelper)
         actualValue.ShouldBe($"mcr.microsoft.com/dotnet/nightly/runtime-deps:{channel}-noble-chiseled-extra");
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
