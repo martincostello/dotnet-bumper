@@ -86,8 +86,8 @@ internal sealed class Project : IDisposable
         string[] testPackages =
         [
             "Microsoft.NET.Test.Sdk",
-            "xunit",
             "xunit.runner.visualstudio",
+            "xunit.v3",
         ];
 
         foreach (var id in testPackages)

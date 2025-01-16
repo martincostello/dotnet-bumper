@@ -26,7 +26,7 @@ public class BumperBuildLoggerTests
         File.Exists(logFilePath).ShouldBeTrue();
 
         using var stream = File.OpenRead(logFilePath);
-        var actual = await JsonSerializer.DeserializeAsync<BumperBuildLog>(stream);
+        var actual = await JsonSerializer.DeserializeAsync<BumperBuildLog>(stream, cancellationToken: TestContext.Current.CancellationToken);
 
         actual.ShouldNotBeNull();
         actual.Entries.ShouldNotBeNull();
@@ -91,7 +91,7 @@ public class BumperBuildLoggerTests
         File.Exists(logFilePath).ShouldBeTrue();
 
         using var stream = File.OpenRead(logFilePath);
-        var actual = await JsonSerializer.DeserializeAsync<BumperBuildLog>(stream);
+        var actual = await JsonSerializer.DeserializeAsync<BumperBuildLog>(stream, cancellationToken: TestContext.Current.CancellationToken);
 
         actual.ShouldNotBeNull();
 

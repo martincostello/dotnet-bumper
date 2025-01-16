@@ -475,7 +475,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                 console,
                 ["--no-logo"],
                 (builder) => builder.AddXUnit(outputHelper),
-                CancellationToken.None);
+                TestContext.Current.CancellationToken);
 
             // Assert
             actual.ShouldBe(1);
@@ -516,7 +516,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
                 console,
                 ["--foo"],
                 (builder) => builder.AddXUnit(outputHelper),
-                CancellationToken.None);
+                TestContext.Current.CancellationToken);
 
             // Assert
             actual.ShouldBe(1);
