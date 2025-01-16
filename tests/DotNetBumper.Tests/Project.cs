@@ -305,6 +305,7 @@ internal sealed class Project : IDisposable
             .Property("EnableNETAnalyzers", true)
             .Property("EnforceCodeStyleInBuild", true)
             .Property("GenerateDocumentationFile", true)
+            .Property("LangVersion", "latest")
             .Property("NoWarn", $"$(NoWarn);{noWarn ?? "CA1002;CA1819;CS419;CS1570;CS1573;CS1574;CS1584;CS1591"}")
             .Property("TreatWarningsAsErrors", treatWarningsAsErrors);
 
