@@ -16,7 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Ignore" />
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
