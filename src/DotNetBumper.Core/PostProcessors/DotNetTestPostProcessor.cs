@@ -85,6 +85,17 @@ internal sealed partial class DotNetTestPostProcessor(
                     Console.WriteProgressLine(TaskEnvironment, result.StandardOutput);
                 }
 
+                if (Logger.IsEnabled(LogLevel.Debug) && result.TestLogs?.Outcomes is { } outcomes)
+                {
+                    foreach ((string container, var tests) in outcomes)
+                    {
+                        foreach (var test in tests.Where((p) => p.Outcome is "Failed"))
+                        {
+                            Log.TestFailed(Logger, container, test.Id, test.ErrorMessage);
+                        }
+                    }
+                }
+
                 if (result.BuildLogs?.Summary?.Count > 0)
                 {
                     WriteBuildLogs(result.BuildLogs.Summary);
@@ -432,5 +443,11 @@ internal sealed partial class DotNetTestPostProcessor(
             Level = LogLevel.Debug,
             Message = "Failed to evaluate the value of the {PropertyName} MSBuild property from {ProjectFile}.")]
         public static partial void FailedToEvaluateProperty(ILogger logger, string propertyName, string projectFile, Exception exception);
+
+        [LoggerMessage(
+            EventId = 2,
+            Level = LogLevel.Debug,
+            Message = "Test {Container}.{Id} failed: {ErrorMessage}")]
+        public static partial void TestFailed(ILogger logger, string container, string? id, string? errorMessage);
     }
 }
