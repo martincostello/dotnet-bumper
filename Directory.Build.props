@@ -28,7 +28,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Nullable>enable</Nullable>
-    <PackageIcon></PackageIcon>
+    <PackageIcon>package-icon.png</PackageIcon>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/martincostello/dotnet-bumper</PackageProjectUrl>
     <PackageReadmeFile>package-readme.md</PackageReadmeFile>
