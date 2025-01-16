@@ -49,7 +49,7 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         var projectFile = new ProjectFile(fullPath, relativePath);
 
         // Act
-        var actual = await LeftoverReferencesPostProcessor.FindReferencesAsync(projectFile, channel, CancellationToken.None);
+        var actual = await LeftoverReferencesPostProcessor.FindReferencesAsync(projectFile, channel, fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -74,7 +74,7 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         projectFile = new ProjectFile(fullPath, relativePath);
 
         // Act
-        actual = await LeftoverReferencesPostProcessor.FindReferencesAsync(projectFile, channel, CancellationToken.None);
+        actual = await LeftoverReferencesPostProcessor.FindReferencesAsync(projectFile, channel, fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -94,7 +94,9 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         var target = CreateTarget(fixture);
 
         // Act
-        var actual = await target.EnumerateProjectFilesAsync(CancellationToken.None).ToListAsync();
+        var actual = await target
+            .EnumerateProjectFilesAsync(fixture.CancellationToken)
+            .ToListAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -115,7 +117,9 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         var target = CreateTarget(fixture);
 
         // Act
-        var actual = await target.EnumerateProjectFilesAsync(CancellationToken.None).ToListAsync();
+        var actual = await target
+            .EnumerateProjectFilesAsync(fixture.CancellationToken)
+            .ToListAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -160,7 +164,9 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         var target = CreateTarget(fixture);
 
         // Act
-        var actual = await target.EnumerateProjectFilesAsync(CancellationToken.None).ToListAsync();
+        var actual = await target
+            .EnumerateProjectFilesAsync(fixture.CancellationToken)
+            .ToListAsync(fixture.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNull();
@@ -201,7 +207,7 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         };
 
         // Act
-        var actual = await target.PostProcessAsync(upgrade, CancellationToken.None);
+        var actual = await target.PostProcessAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.Success);

@@ -4,6 +4,7 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Xml.Linq;
 using Microsoft.Build.Utilities.ProjectCreation;
 
 namespace MartinCostello.DotNetBumper;
@@ -77,25 +78,37 @@ internal sealed class Project : IDisposable
         IList<string> targetFrameworks,
         ICollection<KeyValuePair<string, string>>? packageReferences = default,
         ICollection<string>? projectReferences = default,
-        string path = "tests/Project.Tests/Project.Tests.csproj")
+        string path = "tests/Project.Tests/Project.Tests.csproj",
+        ICollection<KeyValuePair<string, string>>? properties = default)
     {
-        packageReferences ??= new Dictionary<string, string>()
-        {
-            ["Microsoft.NET.Test.Sdk"] = "17.9.0",
-            ["xunit"] = "2.7.1",
-            ["xunit.runner.visualstudio"] = "2.5.8",
-        };
+        packageReferences ??= [];
 
-        return await AddProjectAsync(path, targetFrameworks, packageReferences, projectReferences);
+        string[] testPackages =
+        [
+            "Microsoft.NET.Test.Sdk",
+            "xunit",
+            "xunit.runner.visualstudio",
+        ];
+
+        foreach (var id in testPackages)
+        {
+            packageReferences.Add(KeyValuePair.Create(id, GetNuGetPackageVersion(id)));
+        }
+
+        properties ??= [];
+        properties.Add(KeyValuePair.Create("OutputType", "Exe"));
+
+        return await AddProjectAsync(path, targetFrameworks, packageReferences, projectReferences, properties);
     }
 
     public async Task<string> AddProjectAsync(
         string path,
         IList<string> targetFrameworks,
         ICollection<KeyValuePair<string, string>>? packageReferences = default,
-        ICollection<string>? projectReferences = default)
+        ICollection<string>? projectReferences = default,
+        ICollection<KeyValuePair<string, string>>? properties = default)
     {
-        var project = CreateProject(targetFrameworks, packageReferences, projectReferences);
+        var project = CreateProject(targetFrameworks, packageReferences, projectReferences, properties);
         return await AddProjectAsync(path, project);
     }
 
@@ -316,7 +329,8 @@ internal sealed class Project : IDisposable
     private static ProjectCreator CreateProject(
         IList<string> targetFrameworks,
         ICollection<KeyValuePair<string, string>>? packageReferences,
-        ICollection<string>? projectReferences)
+        ICollection<string>? projectReferences,
+        ICollection<KeyValuePair<string, string>>? properties = null)
     {
         var project = Create(hasSdk: true);
 
@@ -329,11 +343,19 @@ internal sealed class Project : IDisposable
             project.Property("TargetFrameworks", string.Join(";", targetFrameworks));
         }
 
+        if (properties?.Count > 0)
+        {
+            foreach ((string name, string value) in properties)
+            {
+                project.Property(name, value);
+            }
+        }
+
         if (packageReferences?.Count > 0)
         {
-            foreach (var package in packageReferences)
+            foreach ((string id, string version) in packageReferences)
             {
-                project.ItemPackageReference(package.Key, package.Value);
+                project.ItemPackageReference(id, version);
             }
         }
 
@@ -394,6 +416,9 @@ internal sealed class Project : IDisposable
     }
 
     private static string GetDotNetOutdatedVersion()
+        => GetDotNetToolVersion("dotnet-outdated-tool");
+
+    private static string GetDotNetToolVersion(string name)
     {
         var solutionRoot = typeof(Project).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
@@ -406,9 +431,41 @@ internal sealed class Project : IDisposable
 
         return manifest.RootElement
             .GetProperty("tools")
-            .GetProperty("dotnet-outdated-tool")
+            .GetProperty(name)
             .GetProperty("version")
             .GetString()!;
+    }
+
+    private static string GetNuGetPackageVersion(string name)
+    {
+        var solutionRoot = typeof(Project).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .First((p) => p.Key is "SolutionRoot")
+            .Value!;
+
+        var path = Path.Combine(solutionRoot, "Directory.Packages.props");
+        var xml = File.ReadAllText(path);
+
+        var project = XDocument.Parse(xml);
+
+        project.Root.ShouldNotBeNull();
+        var ns = project.Root.GetDefaultNamespace();
+
+        var version = project
+            .Root?
+            .Elements(ns + "ItemGroup")
+            .Elements(ns + "PackageVersion")
+            .Select((p) =>
+                new
+                {
+                    Key = p.Attribute("Include")?.Value ?? string.Empty,
+                    Value = p.Attribute("Version")?.Value ?? p.Element(ns + "Version")?.Value ?? string.Empty,
+                })
+            .Where((p) => p.Key == name)
+            .Select((p) => p.Value)
+            .FirstOrDefault();
+
+        return version ?? throw new InvalidOperationException($"Failed to get version for package {name}.");
     }
 
     private void EnsureDirectoryTree(string path)

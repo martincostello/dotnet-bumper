@@ -54,17 +54,17 @@ public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
         fixture.LogContext.Changelog.ShouldContain($"Update .NET SDK to `{upgrade.SdkVersion}`");
 
-        string actualContent = await File.ReadAllTextAsync(globalJson);
+        string actualContent = await File.ReadAllTextAsync(globalJson, fixture.CancellationToken);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(globalJson);
+        byte[] actualBytes = await File.ReadAllBytesAsync(globalJson, fixture.CancellationToken);
 
         if (hasUtf8Bom)
         {
@@ -76,7 +76,7 @@ public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
         }
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -113,7 +113,7 @@ public class GlobalJsonUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.Warning);

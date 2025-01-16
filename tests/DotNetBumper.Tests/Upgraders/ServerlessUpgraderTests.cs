@@ -54,7 +54,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
@@ -86,12 +86,12 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
             "    runtime: dotnet8 # This is another comment",
             "    timeout: 10") + Environment.NewLine;
 
-        string actualContent = await File.ReadAllTextAsync(serverlessFile);
+        string actualContent = await File.ReadAllTextAsync(serverlessFile, fixture.CancellationToken);
         actualContent.ShouldBe(expectedContent);
         fixture.LogContext.Changelog.ShouldNotBeEmpty();
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
@@ -128,7 +128,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.None);
@@ -174,7 +174,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(expected);
@@ -205,7 +205,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actual = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actual = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actual.ShouldBe(ProcessingResult.Warning);
@@ -253,15 +253,15 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         var target = CreateTarget(fixture);
 
         // Act
-        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.Success);
 
-        string actualContent = await File.ReadAllTextAsync(serverlessFile);
+        string actualContent = await File.ReadAllTextAsync(serverlessFile, fixture.CancellationToken);
         actualContent.ShouldBe(expectedContent);
 
-        byte[] actualBytes = await File.ReadAllBytesAsync(serverlessFile);
+        byte[] actualBytes = await File.ReadAllBytesAsync(serverlessFile, fixture.CancellationToken);
 
         if (hasUtf8Bom)
         {
@@ -275,7 +275,7 @@ public class ServerlessUpgraderTests(ITestOutputHelper outputHelper)
         fixture.LogContext.Changelog.ShouldContain($"Update AWS Lambda runtime to `dotnet{upgrade.Channel.Major}`");
 
         // Act
-        actualUpdated = await target.UpgradeAsync(upgrade, CancellationToken.None);
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);

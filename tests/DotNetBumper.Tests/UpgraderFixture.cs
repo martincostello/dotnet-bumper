@@ -18,6 +18,8 @@ internal sealed class UpgraderFixture(
     private readonly TestConsole _console = new();
     private readonly Project _project = new();
 
+    public CancellationToken CancellationToken { get; } = CancellationToken.None;
+
     public IAnsiConsole Console => _console;
 
     public IEnvironment Environment => environment ??= CreateEnvironment();
