@@ -2,7 +2,6 @@
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
-using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 
 namespace MartinCostello.DotNetBumper;
@@ -86,13 +85,68 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         return await RunAsync(workingDirectory, temporaryFile.Path, arguments, environmentVariables, cancellationToken);
     }
 
+    private static string TryFindDotNetExePath()
+    {
+        // Adapted from https://github.com/natemcmaster/CommandLineUtils/blob/210871add72e8ad22661194c6f630fc1ecee140f/src/CommandLineUtils/Utilities/DotNetExe.cs#L1
+        string fileName = "dotnet";
+
+        bool isWindows = OperatingSystem.IsWindows();
+
+        if (isWindows)
+        {
+            fileName += ".exe";
+        }
+
+        using var current = Process.GetCurrentProcess();
+        var mainModule = current.MainModule;
+
+        if (!string.IsNullOrEmpty(mainModule?.FileName) &&
+            string.Equals(Path.GetFileName(mainModule.FileName), fileName, StringComparison.OrdinalIgnoreCase))
+        {
+            return mainModule.FileName;
+        }
+
+        var dotnetRoot = Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot);
+
+        if (string.IsNullOrEmpty(dotnetRoot))
+        {
+            // See https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables
+            string[] candidates = isWindows ?
+            [
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
+            ]
+            :
+            [
+                "/usr/local/share/dotnet",
+                "/usr/share/dotnet",
+                "/usr/lib/dotnet",
+            ];
+
+            string? root = null;
+
+            foreach (string candidate in candidates)
+            {
+                if (Directory.Exists(candidate))
+                {
+                    root = candidate;
+                    break;
+                }
+            }
+
+            dotnetRoot = root ?? candidates[0];
+        }
+
+        return Path.Combine(dotnetRoot, fileName);
+    }
+
     private static Process StartDotNet(
         string workingDirectory,
         IReadOnlyList<string> arguments,
         IDictionary<string, string?>? environmentVariables,
         string? customLoggerFileName)
     {
-        var startInfo = new ProcessStartInfo(DotNetExe.FullPathOrDefault(), arguments)
+        var startInfo = new ProcessStartInfo(TryFindDotNetExePath(), arguments)
         {
             EnvironmentVariables =
             {
