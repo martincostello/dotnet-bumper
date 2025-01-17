@@ -1,4 +1,9 @@
-# .NET Bumper ⛐📦⤴️✨
+
+<!-- markdownlint-disable MD033 -->
+<!-- markdownlint-disable MD045 -->
+<h1>.NET Bumper <img src="logo.png" width="20" aria-hidden="true" /></h1>
+<!-- markdownlint-enable MD033 -->
+<!-- markdownlint-enable MD045 -->
 
 > [!NOTE]
 > This project is currently experimental.
