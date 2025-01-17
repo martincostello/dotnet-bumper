@@ -4,6 +4,7 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <NoWarn>$(NoWarn);CA1062;CA1707;CA1711;CA1861;CA2007;CA2234;SA1600;SA1602</NoWarn>
+    <OutputType>Exe</OutputType>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
     <Summary>$(Description)</Summary>
     <TargetFramework>net9.0</TargetFramework>
@@ -14,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.msbuild" />
     <PackageReference Include="GitHubActionsTestLogger" NoWarn="RT0003" />
-    <PackageReference Include="MartinCostello.Logging.XUnit" />
+    <PackageReference Include="MartinCostello.Logging.XUnit.v3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="NSubstitute" />
@@ -22,9 +23,8 @@
     <PackageReference Include="Shouldly" />
     <PackageReference Include="Spectre.Console.Testing" />
     <PackageReference Include="System.Linq.Async" />
-    <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
-    <PackageReference Include="Xunit.SkippableFact" />
+    <PackageReference Include="xunit.v3" />
   </ItemGroup>
   <ItemGroup>
     <AssemblyMetadata Include="SolutionRoot" Value="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..'))" />
@@ -33,7 +33,6 @@
   <ItemGroup>
     <Using Include="Shouldly" />
     <Using Include="Xunit" />
-    <Using Include="Xunit.Abstractions" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(BuildingInsideVisualStudio)' != 'true' ">
     <CollectCoverage>true</CollectCoverage>

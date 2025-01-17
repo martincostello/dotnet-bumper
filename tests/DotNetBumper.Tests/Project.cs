@@ -86,17 +86,14 @@ internal sealed class Project : IDisposable
         string[] testPackages =
         [
             "Microsoft.NET.Test.Sdk",
-            "xunit",
             "xunit.runner.visualstudio",
+            "xunit.v3",
         ];
 
         foreach (var id in testPackages)
         {
             packageReferences.Add(KeyValuePair.Create(id, GetNuGetPackageVersion(id)));
         }
-
-        properties ??= [];
-        properties.Add(KeyValuePair.Create("OutputType", "Exe"));
 
         return await AddProjectAsync(path, targetFrameworks, packageReferences, projectReferences, properties);
     }
@@ -243,7 +240,7 @@ internal sealed class Project : IDisposable
     {
         var script =
             $$$"""
-               name: build               
+               name: build
                on: [push]
                
                jobs:

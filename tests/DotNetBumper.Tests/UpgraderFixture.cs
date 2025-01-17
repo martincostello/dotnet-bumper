@@ -18,7 +18,7 @@ internal sealed class UpgraderFixture(
     private readonly TestConsole _console = new();
     private readonly Project _project = new();
 
-    public CancellationToken CancellationToken { get; } = CancellationToken.None;
+    public CancellationToken CancellationToken { get; } = TestContext.Current.CancellationToken;
 
     public IAnsiConsole Console => _console;
 
