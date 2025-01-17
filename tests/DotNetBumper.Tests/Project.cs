@@ -240,7 +240,6 @@ internal sealed class Project : IDisposable
     {
         var script =
             $$$"""
-               name: build               
                name: build
                on: [push]
                
