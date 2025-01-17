@@ -29,26 +29,16 @@
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <PackageVersion Include="Spectre.Console" Version="0.49.1" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.49.1" />
-    <PackageVersion Include="System.Formats.Asn1" Version="8.0.1" />
+    <PackageVersion Include="System.Formats.Asn1" Version="9.0.1" />
     <PackageVersion Include="System.Linq.Async" Version="6.0.1" />
     <PackageVersion Include="System.Management.Automation" Version="7.4.6" />
-    <PackageVersion Include="System.Text.Json" Version="8.0.5" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.1" />
     <PackageVersion Include="xunit.v3" Version="1.0.1" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
   <ItemGroup Condition=" $([MSBuild]::IsTargetFrameworkCompatible($(TargetFramework), 'net9.0')) ">
     <PackageVersion Update="Microsoft.Build" Version="17.12.6" />
-    <PackageVersion Update="Microsoft.Build.Utilities.Core" Version="17.12.6" />
-    <PackageVersion Update="Microsoft.Extensions.Configuration" Version="9.0.1" />
-    <PackageVersion Update="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.1" />
-    <PackageVersion Update="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.1" />
-    <PackageVersion Update="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
-    <PackageVersion Update="Microsoft.Extensions.Http" Version="9.0.1" />
-    <PackageVersion Update="Microsoft.Extensions.Http.Resilience" Version="9.1.0" />
-    <PackageVersion Update="Microsoft.Extensions.Logging" Version="9.0.1" />
-    <PackageVersion Update="Microsoft.Extensions.Logging.Console" Version="9.0.1" />
-    <PackageVersion Update="Microsoft.Extensions.Options" Version="9.0.1" />
-    <PackageVersion Update="System.Formats.Asn1" Version="9.0.1" />
+    <PackageVersion Update="Microsoft.Build.Utilities.Core" Version="17.12.6" />    
   </ItemGroup>
 </Project>
