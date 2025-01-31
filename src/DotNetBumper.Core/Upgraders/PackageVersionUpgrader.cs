@@ -65,7 +65,7 @@ internal sealed partial class PackageVersionUpgrader(
 
             context.Status = StatusMessage($"Update NuGet packages for {name}...");
 
-            result = result.Max(await TryUpgradePackagesAsync(project, upgrade.SdkVersion, cancellationToken));
+            result = result.Max(await TryUpgradePackagesAsync(project, upgrade.Channel, upgrade.SdkVersion, cancellationToken));
         }
 
         if (result is ProcessingResult.Success)
@@ -158,13 +158,18 @@ internal sealed partial class PackageVersionUpgrader(
 
     private async Task<ProcessingResult> TryUpgradePackagesAsync(
         string directory,
+        Version channel,
         NuGetVersion sdkVersion,
         CancellationToken cancellationToken)
     {
         using var tempFile = new TemporaryFile();
 
+        // Requires .NET Outdated v4.6.5+.
+        // See https://github.com/dotnet-outdated/dotnet-outdated/pull/640.
         List<string> arguments =
         [
+            "--maximum-version",
+            channel.ToString(2),
             "--output",
             tempFile.Path,
             "--output-format:json",
@@ -191,10 +196,6 @@ internal sealed partial class PackageVersionUpgrader(
             // if a project is using a .NET 6 preview package, it should be upgraded
             // to a .NET 8 version for an LTS upgrade, not to a .NET 9 preview version.
             arguments.Add("--pre-release:Never");
-
-            // TODO Upgrading from .NET 6 to .NET 8 is not possible as it will skip
-            // .NET 8 and go straight to .NET 9, which isn't what is actually wanted.
-            // See https://github.com/martincostello/dotnet-bumper/issues/499.
         }
 
         var configuration = await configurationProvider.GetAsync(cancellationToken);
