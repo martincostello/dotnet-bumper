@@ -104,8 +104,9 @@ jobs:
             upgrade-type: Latest
           - repo: dotnet-bumper-test
             upgrade-type: Latest
-          - repo: dotnet-bumper-test
-            upgrade-type: LTS
+          # TODO Depends on https://github.com/martincostello/dotnet-bumper/pull/579
+          #- repo: dotnet-bumper-test
+          #  upgrade-type: LTS
           - repo: project-euler
             upgrade-type: Latest
           - repo: website
