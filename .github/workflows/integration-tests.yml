@@ -152,9 +152,9 @@ jobs:
     - name: Install .NET Bumper
       shell: pwsh
       env:
-        DOTNET_OUTDATED_VERSION: ${{ needs.package.outputs.dotnet-outdated-version }}
+        DOTNET_OUTDATED_VERSION: '4.6.5'
       run: |
-        dotnet tool install --global dotnet-outdated-tool --version ${env:DOTNET_OUTDATED_VERSION}
+        dotnet tool install --global dotnet-outdated-tool --version ${env:DOTNET_OUTDATED_VERSION} --add-source ./.packages
         dotnet tool install --global MartinCostello.DotNetBumper --add-source ./packages --prerelease
 
     - name: Generate .NET Bumper config
