@@ -207,6 +207,7 @@ jobs:
         if (${env:RUNNER_DEBUG} -eq "1") {
           $bumperArgs += "--verbose"
         }
+        dotnet restore
         dotnet bumper $bumperArgs
 
     - name: Show git diff
