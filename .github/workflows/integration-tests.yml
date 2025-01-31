@@ -64,7 +64,9 @@ jobs:
       uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
       with:
         name: packages
-        path: ./artifacts/package/release
+        path: |
+          ./artifacts/package/release
+          ./.packages
         if-no-files-found: error
 
     - name: Get .NET SDK version
@@ -154,7 +156,7 @@ jobs:
       env:
         DOTNET_OUTDATED_VERSION: '4.6.5'
       run: |
-        dotnet tool install --global dotnet-outdated-tool --version ${env:DOTNET_OUTDATED_VERSION} --add-source ./.packages
+        dotnet tool install --global dotnet-outdated-tool --version ${env:DOTNET_OUTDATED_VERSION} --add-source ./packages
         dotnet tool install --global MartinCostello.DotNetBumper --add-source ./packages --prerelease
 
     - name: Generate .NET Bumper config
