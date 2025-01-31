@@ -94,6 +94,7 @@ jobs:
           - costellobot
           - dependabot-helper
           - dotnet-bumper
+          - dotnet-bumper-test
           - project-euler
           - website
         upgrade-type:
