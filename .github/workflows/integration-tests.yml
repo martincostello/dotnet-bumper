@@ -84,7 +84,7 @@ jobs:
 
   test:
     needs: [ package ]
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     timeout-minutes: 30
 
     strategy:
@@ -207,7 +207,6 @@ jobs:
         if (${env:RUNNER_DEBUG} -eq "1") {
           $bumperArgs += "--verbose"
         }
-        dotnet restore
         dotnet bumper $bumperArgs
 
     - name: Show git diff
