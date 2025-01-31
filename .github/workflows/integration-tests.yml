@@ -66,6 +66,7 @@ jobs:
         name: packages
         path: '**/*.nupkg'
         if-no-files-found: error
+        include-hidden-files: true
 
     - name: Get .NET SDK version
       id: get-dotnet-sdk-version
