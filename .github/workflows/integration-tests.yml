@@ -89,21 +89,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        repo:
-          - alexa-london-travel
-          - alexa-london-travel-site
-          #- api Skipped as dotnet format produces code that does not compile
-          - apple-fitness-workout-mapper
-          - costellobot
-          - dependabot-helper
-          - dotnet-bumper
-          - dotnet-bumper-test
-          - project-euler
-          - website
-        upgrade-type:
-          #- LTS
-          - Latest
-          #- Preview
+        include:
+          - repo: alexa-london-travel
+            upgrade-type: Latest
+          - repo: alexa-london-travel-site
+            upgrade-type: Latest
+          - repo: apple-fitness-workout-mapper
+            upgrade-type: Latest
+          - repo: costellobot
+            upgrade-type: Latest
+          - repo: dependabot-helper
+            upgrade-type: Latest
+          - repo: dotnet-bumper
+            upgrade-type: Latest
+          - repo: dotnet-bumper-test
+            upgrade-type: Latest
+          - repo: dotnet-bumper-test
+            upgrade-type: LTS
+          - repo: project-euler
+            upgrade-type: Latest
+          - repo: website
+            upgrade-type: Latest
 
     steps:
 
