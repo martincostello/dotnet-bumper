@@ -208,6 +208,8 @@ jobs:
         if (${env:RUNNER_DEBUG} -eq "1") {
           $bumperArgs += "--verbose"
         }
+        dotnet restore
+        dotnet outdated --maximum-version 8.0 --upgrade
         dotnet bumper $bumperArgs
 
     - name: Show git diff
