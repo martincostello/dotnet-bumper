@@ -215,13 +215,13 @@ internal sealed partial class DotNetTestPostProcessor(
             "test",
             "--configuration",
             "Release",
-            "--logger",
-            BumperTestLogger.ExtensionUri,
-            "--logger",
-            "console;verbosity=detailed",
-            "--nologo",
-            "--test-adapter-path",
-            adapterDirectory.Path,
+            ////"--logger",
+            ////BumperTestLogger.ExtensionUri,
+            ////"--logger",
+            ////"console;verbosity=detailed",
+            ////"--nologo",
+            ////"--test-adapter-path",
+            ////adapterDirectory.Path,
             "--verbosity",
             Logger.GetMSBuildVerbosity(),
         ];
@@ -231,7 +231,7 @@ internal sealed partial class DotNetTestPostProcessor(
         try
         {
             // See https://learn.microsoft.com/dotnet/core/tools/dotnet-test
-            result = await dotnet.RunWithLoggerAsync(
+            result = await dotnet.RunAsync(
                 project,
                 arguments,
                 environmentVariables,
