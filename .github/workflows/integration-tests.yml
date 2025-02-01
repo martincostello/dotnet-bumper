@@ -200,8 +200,6 @@ jobs:
         DOTNET_BUMPER_TEST: 'true' # ${{ format('{0}', matrix.test) }}
         DOTNET_BUMPER_UPGRADE_TYPE: ${{ matrix.upgrade-type }}
         DOTNET_BUMPER_WARNINGS_AS_ERRORS: 'true' # ${{ format('{0}', matrix.warnings-as-errors) }}
-        MSBUILDDEBUGENGINE: '1'
-        MSBUILDDEBUGPATH: '${{ github.workspace }}/binlogs'
       run: |
         $bumperArgs = @(
           ".",
@@ -225,7 +223,6 @@ jobs:
         if (${env:RUNNER_DEBUG} -eq "1") {
           $bumperArgs += "--verbose"
         }
-        mkdir binlogs
         dotnet bumper $bumperArgs
 
     - name: Show git diff
@@ -234,15 +231,6 @@ jobs:
       run: |
         git config color.diff always
         git --no-pager diff
-
-    - name: Publish binlog files
-      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
-      if: ${{ failure() }}
-      with:
-        name: binlog
-        path: ${{ github.workspace }}/binlogs/**/*.binlog
-        if-no-files-found: 'ignore'
-        include-hidden-files: true
 
   integration-tests:
     needs: [ package, test ]
