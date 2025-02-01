@@ -283,7 +283,10 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
                 {
                     try
                     {
-                        builder.Append(await reader.ReadToEndAsync(cancellationToken));
+                        var line = await reader.ReadToEndAsync(cancellationToken);
+
+                        builder.Append(line);
+                        Console.WriteLine(line);
                     }
                     catch (OperationCanceledException)
                     {
