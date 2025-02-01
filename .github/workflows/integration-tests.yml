@@ -223,7 +223,7 @@ jobs:
       if: ${{ failure() }}
       with:
         name: binlog
-        path: '**/*.binlog'
+        path: '/home/runner/work/dotnet-bumper/dotnet-bumper/*.binlog'
         if-no-files-found: 'ignore'
         include-hidden-files: true
 
