@@ -225,7 +225,7 @@ jobs:
       if: ${{ failure() }}
       with:
         name: binlog
-        path: '${{ github.workspace }}/binlogs'
+        path: '${{ github.workspace }}/binlogs/*'
         if-no-files-found: 'ignore'
         include-hidden-files: true
 
