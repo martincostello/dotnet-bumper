@@ -85,7 +85,7 @@ internal sealed partial class PackageVersionUpgrader(
     {
         var environmentVariables = MSBuildHelper.GetSdkProperties(sdkVersion);
 
-        var result = await dotnet.RunAsync(
+        var result = await dotnet.RunWithLoggerAsync(
             directory,
             ["restore", "--verbosity", Logger.GetMSBuildVerbosity()],
             environmentVariables,
