@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper;
 
