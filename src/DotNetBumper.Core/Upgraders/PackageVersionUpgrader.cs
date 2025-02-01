@@ -99,9 +99,7 @@ internal sealed partial class PackageVersionUpgrader(
         }
         else
         {
-            Log.UnableToRestorePackages(logger, directory);
-            Console.WriteErrorLine(result.StandardOutput);
-            Console.WriteErrorLine(result.StandardError);
+            Log.UnableToRestorePackages(logger, directory, result.StandardOutput, result.StandardError);
         }
     }
 
@@ -359,8 +357,8 @@ internal sealed partial class PackageVersionUpgrader(
         [LoggerMessage(
             EventId = 4,
             Level = LogLevel.Warning,
-            Message = "Unable to restore NuGet packages for {Directory}.")]
-        public static partial void UnableToRestorePackages(ILogger logger, string directory);
+            Message = "Unable to restore NuGet packages for {Directory}\n\nstdout: {StdOut}\n\nstderr: {StdErr}.")]
+        public static partial void UnableToRestorePackages(ILogger logger, string directory, string stdOut, string stdErr);
 
         [LoggerMessage(
             EventId = 5,
