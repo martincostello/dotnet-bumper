@@ -87,7 +87,7 @@ internal sealed partial class PackageVersionUpgrader(
 
         var result = await dotnet.RunAsync(
             directory,
-            ["restore", "--verbosity", Logger.GetMSBuildVerbosity(), $"-binaryLogger:{Path.Combine(Environment.GetEnvironmentVariable("GITHUB_WORKSPACE") ?? ".", "Restore.binlog")}"],
+            ["restore", "--verbosity", Logger.GetMSBuildVerbosity(), $"-binaryLogger:{Path.Combine(Environment.GetEnvironmentVariable("GITHUB_WORKSPACE") ?? ".", "binlogs", "Restore.binlog")}"],
             environmentVariables,
             cancellationToken);
 
