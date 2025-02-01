@@ -62,6 +62,7 @@ jobs:
       with:
         filter: 'tree:0'
         show-progress: false
+        submodules: 'recursive'
 
     - name: Install .NET SDKs
       uses: actions/setup-dotnet@3951f0dfe7a07e2313ec93c75700083e2005cbab # v4.3.0

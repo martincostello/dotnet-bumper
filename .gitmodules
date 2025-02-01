@@ -1,0 +1,3 @@
+[submodule "vendor/dotnet-outdated"]
+	path = vendor/dotnet-outdated
+	url = https://github.com/martincostello/dotnet-outdated.git
