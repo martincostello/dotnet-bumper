@@ -217,6 +217,8 @@ internal sealed partial class DotNetTestPostProcessor(
             "Release",
             "--logger",
             BumperTestLogger.ExtensionUri,
+            "--logger",
+            "console;verbosity=detailed",
             "--nologo",
             "--test-adapter-path",
             adapterDirectory.Path,
