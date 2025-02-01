@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper;
 
@@ -277,8 +278,6 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
                 StreamReader reader,
                 CancellationToken cancellationToken)
             {
-                await Task.Yield();
-
                 var builder = new StringBuilder();
 
                 while (!cancellationToken.IsCancellationRequested)
@@ -293,7 +292,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
                         }
 
                         builder.AppendLine(line);
-                        Console.WriteLine(line);
+                        AnsiConsole.WriteLine(line);
                     }
                     catch (OperationCanceledException)
                     {
