@@ -51,14 +51,25 @@ internal static class MSBuildHelper
 
         var dotNetSdkPath = Path.Combine(dotnetRoot, "sdk", sdkVersion);
 
-        if (!Directory.Exists(dotNetSdkPath))
+        SetIfFileExists(WellKnownEnvironmentVariables.MSBuildExePath, Path.Combine(dotNetSdkPath, "MSBuild.dll"));
+        SetIfDirectoryExists(WellKnownEnvironmentVariables.MSBuildExtensionsPath, dotNetSdkPath);
+        SetIfDirectoryExists("MSBuildExtensionsPath32", dotNetSdkPath);
+        SetIfDirectoryExists(WellKnownEnvironmentVariables.MSBuildSdksPath, Path.Combine(dotNetSdkPath, "Sdks"));
+
+        void SetIfFileExists(string key, string path)
         {
-            return;
+            if (File.Exists(path))
+            {
+                environment[key] = path;
+            }
         }
 
-        environment[WellKnownEnvironmentVariables.MSBuildExePath] = Path.Combine(dotNetSdkPath, "MSBuild.dll");
-        environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath] = dotNetSdkPath;
-        environment["MSBuildExtensionsPath32"] = dotNetSdkPath;
-        environment[WellKnownEnvironmentVariables.MSBuildSdksPath] = Path.Combine(dotNetSdkPath, "Sdks");
+        void SetIfDirectoryExists(string key, string path)
+        {
+            if (Directory.Exists(path))
+            {
+                environment[key] = path;
+            }
+        }
     }
 }
