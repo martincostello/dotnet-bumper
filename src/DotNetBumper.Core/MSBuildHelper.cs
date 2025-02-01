@@ -22,12 +22,31 @@ internal static class MSBuildHelper
 
         if (string.IsNullOrEmpty(dotnetRoot))
         {
-            dotnetRoot = Path.Combine(
-                Environment.GetFolderPath(
-                    OperatingSystem.IsWindows() ?
-                    Environment.SpecialFolder.ProgramFiles :
-                    Environment.SpecialFolder.CommonApplicationData),
-                "dotnet");
+            // See https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables
+            string[] candidates = OperatingSystem.IsWindows() ?
+            [
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
+            ]
+            :
+            [
+                "/usr/local/share/dotnet",
+                "/usr/share/dotnet",
+                "/usr/lib/dotnet",
+            ];
+
+            string? root = null;
+
+            foreach (string candidate in candidates)
+            {
+                if (Directory.Exists(candidate))
+                {
+                    root = candidate;
+                    break;
+                }
+            }
+
+            dotnetRoot = root ?? candidates[0];
         }
 
         var dotNetSdkPath = Path.Combine(dotnetRoot, "sdk", sdkVersion);
