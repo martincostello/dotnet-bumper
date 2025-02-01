@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
@@ -229,22 +230,73 @@ internal sealed partial class PackageVersionUpgrader(
             environmentVariables[WellKnownEnvironmentVariables.NoWarn] = string.Join(";", configuration.NoWarn);
         }
 
-        var current = Environment.CurrentDirectory;
-        Environment.CurrentDirectory = directory;
-
-        try
+        if (Environment.GetEnvironmentVariable("CI") is null)
         {
-            if (DotNetOutdated.Program.Main([.. arguments]) is 0)
+            var current = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = directory;
+
+            try
             {
-                return ProcessingResult.Success;
+                if (DotNetOutdated.Program.Main([.. arguments]) is 0)
+                {
+                    return ProcessingResult.Success;
+                }
+
+                return ProcessingResult.Warning;
+            }
+            finally
+            {
+                Environment.CurrentDirectory = current;
+            }
+        }
+
+        var result = await dotnet.RunAsync(directory, ["outdated", .. arguments], environmentVariables, cancellationToken);
+
+        logContext.Add(result);
+
+        if (!result.Success)
+        {
+            string[] warnings =
+            [
+                $"Failed to upgrade NuGet packages for {RelativeName(directory)}.",
+                $"dotnet outdated exited with code {result.ExitCode}.",
+            ];
+
+            Console.WriteLine();
+
+            foreach (var warning in warnings)
+            {
+                Console.WriteWarningLine(warning);
+                logContext.Warnings.Add(warning);
             }
 
             return ProcessingResult.Warning;
         }
-        finally
+
+        int updatedDependencies = 0;
+
+        if (tempFile.Exists())
         {
-            Environment.CurrentDirectory = current;
+            string json = await File.ReadAllTextAsync(tempFile.Path, cancellationToken);
+
+            if (json.Length > 0)
+            {
+                var updates = JsonDocument.Parse(json, JsonHelpers.DocumentOptions);
+                var projects = updates.RootElement.GetProperty("Projects");
+
+                foreach (var project in projects.EnumerateArray())
+                {
+                    foreach (var tfm in project.GetProperty("TargetFrameworks").EnumerateArray())
+                    {
+                        updatedDependencies += tfm.GetProperty("Dependencies").EnumerateArray().Count();
+                    }
+                }
+            }
         }
+
+        Log.UpgradedPackages(logger, updatedDependencies);
+
+        return updatedDependencies > 0 ? ProcessingResult.Success : ProcessingResult.None;
     }
 
     private async Task<bool> HasWorkloadsAsync(
