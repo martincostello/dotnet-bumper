@@ -186,6 +186,8 @@ jobs:
         DOTNET_BUMPER_TEST: 'true' # ${{ format('{0}', matrix.test) }}
         DOTNET_BUMPER_UPGRADE_TYPE: ${{ matrix.upgrade-type }}
         DOTNET_BUMPER_WARNINGS_AS_ERRORS: 'true' # ${{ format('{0}', matrix.warnings-as-errors) }}
+        MSBUILDDEBUGENGINE: '1'
+        MSBUILDDEBUGPATH: '${{ github.workspace }}/binlogs'
       run: |
         $bumperArgs = @(
           ".",
@@ -223,7 +225,7 @@ jobs:
       if: ${{ failure() }}
       with:
         name: binlog
-        path: binlogs
+        path: '${{ github.workspace }}/binlogs'
         if-no-files-found: 'ignore'
         include-hidden-files: true
 
