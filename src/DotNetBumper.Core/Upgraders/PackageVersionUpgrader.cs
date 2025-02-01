@@ -101,6 +101,8 @@ internal sealed partial class PackageVersionUpgrader(
         else
         {
             Log.UnableToRestorePackages(logger, directory);
+            Console.WriteErrorLine(result.StandardOutput);
+            Console.WriteErrorLine(result.StandardError);
         }
     }
 
@@ -231,6 +233,9 @@ internal sealed partial class PackageVersionUpgrader(
 
         if (!result.Success)
         {
+            Console.WriteErrorLine(result.StandardOutput);
+            Console.WriteErrorLine(result.StandardError);
+
             string[] warnings =
             [
                 $"Failed to upgrade NuGet packages for {RelativeName(directory)}.",
