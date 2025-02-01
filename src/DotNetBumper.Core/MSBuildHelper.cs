@@ -51,7 +51,7 @@ internal static class MSBuildHelper
 
         var dotNetSdkPath = Path.Combine(dotnetRoot, "sdk", sdkVersion);
 
-        environment[WellKnownEnvironmentVariables.MSBuildExePath] = Path.Combine(dotNetSdkPath, "MSBuild.dll"));
+        environment[WellKnownEnvironmentVariables.MSBuildExePath] = Path.Combine(dotNetSdkPath, "MSBuild.dll");
         environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath] = dotNetSdkPath;
         environment["MSBuildExtensionsPath32"] = dotNetSdkPath;
         environment[WellKnownEnvironmentVariables.MSBuildSdksPath] = Path.Combine(dotNetSdkPath, "Sdks");
