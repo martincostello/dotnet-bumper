@@ -188,6 +188,7 @@ internal sealed partial class DotNetTestPostProcessor(
         var environmentVariables = new Dictionary<string, string?>()
         {
             [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
+            ["MSBuildEnableWorkloadResolver"] = "false",
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
         };
 
