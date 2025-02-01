@@ -216,7 +216,9 @@ internal sealed partial class PackageVersionUpgrader(
         var environmentVariables = new Dictionary<string, string?>(3)
         {
             [WellKnownEnvironmentVariables.DotNetRollForward] = "Major",
+            ["MSBuildTreatWarningsAsErrors"] = "false",
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
+            ["TreatWarningsAsErrors"] = "false",
         };
 
         MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
