@@ -222,7 +222,7 @@ jobs:
     needs: [ package, test ]
     if: ${{ !cancelled() }}
     env:
-      TESTS_SUCCESS: ${{ !contains(needs.*.result, 'failure') }}
+      TESTS_SUCCESS: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     runs-on: ubuntu-latest
     steps:
     - run: |
