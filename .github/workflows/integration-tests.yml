@@ -224,6 +224,7 @@ jobs:
           $bumperArgs += "--verbose"
         }
         dotnet bumper $bumperArgs
+        dotnet test
 
     - name: Show git diff
       if: ${{ !cancelled() }}
