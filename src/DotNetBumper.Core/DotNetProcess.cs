@@ -277,15 +277,22 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
                 StreamReader reader,
                 CancellationToken cancellationToken)
             {
+                await Task.Yield();
+
                 var builder = new StringBuilder();
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
-                        var line = await reader.ReadToEndAsync(cancellationToken);
+                        var line = await reader.ReadLineAsync(cancellationToken);
 
-                        builder.Append(line);
+                        if (line is null)
+                        {
+                            break;
+                        }
+
+                        builder.AppendLine(line);
                         Console.WriteLine(line);
                     }
                     catch (OperationCanceledException)
