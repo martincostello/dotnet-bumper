@@ -11,7 +11,7 @@ internal static class ILoggerExtensions
 #if DEBUG
             "detailed" :
 #else
-            "detailed" :
+            "normal" :
 #endif
             "minimal";
 }
