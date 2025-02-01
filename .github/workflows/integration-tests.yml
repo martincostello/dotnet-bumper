@@ -211,6 +211,7 @@ jobs:
         if (${env:RUNNER_DEBUG} -eq "1") {
           $bumperArgs += "--verbose"
         }
+        mkdir binlogs
         dotnet bumper $bumperArgs
 
     - name: Show git diff
