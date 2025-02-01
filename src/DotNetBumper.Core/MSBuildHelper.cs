@@ -56,6 +56,7 @@ internal static class MSBuildHelper
             return;
         }
 
+        environment["MSBuildEnableWorkloadResolver"] = "false";
         environment[WellKnownEnvironmentVariables.MSBuildExePath] = Path.Combine(dotNetSdkPath, "MSBuild.dll");
         environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath] = dotNetSdkPath;
         environment["MSBuildExtensionsPath32"] = dotNetSdkPath;
