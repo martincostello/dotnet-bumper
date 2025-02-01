@@ -126,6 +126,7 @@ jobs:
         repository: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) }}
         ref: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) == github.repository && github.ref || '' }}
         show-progress: false
+        submodules: 'recursive'
 
     - name: Install .NET SDKs
       uses: actions/setup-dotnet@3951f0dfe7a07e2313ec93c75700083e2005cbab # v4.3.0
@@ -218,9 +219,9 @@ jobs:
 
   integration-tests:
     needs: [ package, test ]
-    if: ${{ always() }}
+    if: ${{ !cancelled() }}
     env:
-      TESTS_SUCCESS: ${{ !contains(needs.*.result, 'failure') }}
+      TESTS_SUCCESS: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     runs-on: ubuntu-latest
     steps:
     - run: |
