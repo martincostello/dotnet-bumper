@@ -227,6 +227,21 @@ internal sealed partial class PackageVersionUpgrader(
             environmentVariables[WellKnownEnvironmentVariables.NoWarn] = string.Join(";", configuration.NoWarn);
         }
 
+        var current = Environment.CurrentDirectory;
+        Environment.CurrentDirectory = directory;
+
+        try
+        {
+            if (DotNetOutdated.Program.Main([.. arguments]) is not 0)
+            {
+                throw new InvalidOperationException("Failed to run dotnet outdated.");
+            }
+        }
+        finally
+        {
+            Environment.CurrentDirectory = current;
+        }
+
         var result = await dotnet.RunAsync(directory, ["outdated", .. arguments], environmentVariables, cancellationToken);
 
         logContext.Add(result);
