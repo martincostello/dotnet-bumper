@@ -79,7 +79,7 @@ jobs:
       shell: pwsh
       run: |
         dotnet tool restore
-        dotnet tool install --global dotnet-outdated-tool --version "4.6.5" --add-source ./.packages
+        dotnet tool install dotnet-outdated-tool --version "4.6.5" --add-source ./.packages
 
     - name: Build, Test and Package
       id: build
