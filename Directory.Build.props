@@ -26,6 +26,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <NeutralLanguage>en-US</NeutralLanguage>
     <Nullable>enable</Nullable>
     <PackageIcon>package-icon.png</PackageIcon>
