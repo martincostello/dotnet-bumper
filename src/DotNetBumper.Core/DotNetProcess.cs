@@ -12,8 +12,6 @@ namespace MartinCostello.DotNetBumper;
 /// <param name="logger">The <see cref="ILogger{DotNetProcess}"/> to use.</param>
 public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 {
-    private readonly bool _debug = logger.IsEnabled(LogLevel.Debug);
-
     /// <summary>
     /// Tries to find the path of the .NET installation on the current machine.
     /// </summary>
@@ -209,7 +207,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         // See https://stackoverflow.com/a/16326426/1064169 and
         // https://learn.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.redirectstandardoutput.
         using var outputTokenSource = new CancellationTokenSource();
-        var readOutput = ReadOutputAsync(process, _debug, outputTokenSource.Token);
+        var readOutput = ReadOutputAsync(process, outputTokenSource.Token);
 
         try
         {
@@ -255,11 +253,10 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 
         static async Task<(string Error, string Output)> ReadOutputAsync(
             Process process,
-            bool isDebug,
             CancellationToken cancellationToken)
         {
-            var processErrors = ConsumeStreamAsync(process.StandardError, process.StartInfo.RedirectStandardError, isDebug, cancellationToken);
-            var processOutput = ConsumeStreamAsync(process.StandardOutput, process.StartInfo.RedirectStandardOutput, isDebug, cancellationToken);
+            var processErrors = ConsumeStreamAsync(process.StandardError, process.StartInfo.RedirectStandardError, cancellationToken);
+            var processOutput = ConsumeStreamAsync(process.StandardOutput, process.StartInfo.RedirectStandardOutput, cancellationToken);
 
             await Task.WhenAll(processErrors, processOutput);
 
@@ -282,42 +279,25 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         static Task<StringBuilder> ConsumeStreamAsync(
             StreamReader reader,
             bool isRedirected,
-            bool isDebug,
             CancellationToken cancellationToken)
         {
             return isRedirected ?
-                Task.Run(() => ProcessStream(reader, isDebug, cancellationToken), cancellationToken) :
+                Task.Run(() => ProcessStream(reader, cancellationToken), cancellationToken) :
                 Task.FromResult(new StringBuilder(0));
 
             static async Task<StringBuilder> ProcessStream(
                 StreamReader reader,
-                bool isDebug,
                 CancellationToken cancellationToken)
             {
                 var builder = new StringBuilder();
 
-                while (!cancellationToken.IsCancellationRequested)
+                try
                 {
-                    try
-                    {
-                        var line = await reader.ReadLineAsync(cancellationToken);
-
-                        if (line is null)
-                        {
-                            break;
-                        }
-
-                        builder.Append(line);
-
-                        if (isDebug)
-                        {
-                            Spectre.Console.AnsiConsole.WriteLine($"[dotnet] {line}");
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // Ignore
-                    }
+                    builder.Append(await reader.ReadToEndAsync(cancellationToken));
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignore
                 }
 
                 return builder;
