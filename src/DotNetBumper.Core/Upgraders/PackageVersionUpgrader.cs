@@ -228,26 +228,6 @@ internal sealed partial class PackageVersionUpgrader(
             environmentVariables[WellKnownEnvironmentVariables.NoWarn] = string.Join(";", configuration.NoWarn);
         }
 
-        if (Environment.GetEnvironmentVariable("CI") is null)
-        {
-            var current = Environment.CurrentDirectory;
-            Environment.CurrentDirectory = directory;
-
-            try
-            {
-                if (DotNetOutdated.Program.Main([.. arguments]) is 0)
-                {
-                    return ProcessingResult.Success;
-                }
-
-                return ProcessingResult.Warning;
-            }
-            finally
-            {
-                Environment.CurrentDirectory = current;
-            }
-        }
-
         var result = await dotnet.RunAsync(directory, ["outdated", .. arguments], environmentVariables, cancellationToken);
 
         logContext.Add(result);

@@ -30,7 +30,6 @@
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\vendor\dotnet-outdated\src\DotNetOutdated\DotNetOutdated.csproj" />
     <ProjectReference Include="..\DotNetBumper.MSBuild\DotNetBumper.MSBuild.csproj" />
     <ProjectReference Include="..\DotNetBumper.TestLogger\DotNetBumper.TestLogger.csproj" />
   </ItemGroup>
