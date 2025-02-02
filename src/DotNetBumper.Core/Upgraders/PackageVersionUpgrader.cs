@@ -354,7 +354,12 @@ internal sealed partial class PackageVersionUpgrader(
 
                 if (getTargetResult.Success)
                 {
-                    return getTargetResult.StandardOutput.Trim();
+                    var stdout = getTargetResult.StandardOutput.Trim();
+
+                    if (!string.IsNullOrEmpty(stdout))
+                    {
+                        return stdout;
+                    }
                 }
             }
             catch (Exception ex)
