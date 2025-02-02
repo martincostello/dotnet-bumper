@@ -20,6 +20,11 @@ internal sealed partial class PackageVersionUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<PackageVersionUpgrader> logger) : Upgrader(console, environment, options, logger)
 {
+    /// <summary>
+    /// The minimum version of https://www.nuget.org/packages/dotnet-outdated-tool that supports the <c>--pre-release-label</c> option.
+    /// </summary>
+    private static readonly NuGetVersion MinimumVersionForPrereleaseLabel = new(4, 6, 1);
+
     public override int Order => int.MaxValue - 1; // Packages need to be updated after the TFM so the packages relate to the update but before C# updates
 
     protected override string Action => "Upgrading NuGet packages";
@@ -78,6 +83,31 @@ internal sealed partial class PackageVersionUpgrader(
 
     private static bool HasDotNetToolManifest(string path)
         => FileHelpers.FindFileInProject(path, Path.Join(".config", WellKnownFileNames.ToolsManifest)) is not null;
+
+    private async Task<NuGetVersion?> GetDotNetOutdatedVersionAsync(CancellationToken cancellationToken)
+    {
+        var result = await dotnet.RunAsync(
+            Options.ProjectPath,
+            ["outdated", "--version"],
+            cancellationToken: cancellationToken);
+
+        if (result.Success)
+        {
+            using var reader = new StringReader(result.StandardOutput);
+
+            string? line;
+
+            while ((line = await reader.ReadLineAsync(cancellationToken)) is not null)
+            {
+                if (NuGetVersion.TryParse(line, out var version))
+                {
+                    return version;
+                }
+            }
+        }
+
+        return null;
+    }
 
     private async Task TryRestoreNuGetPackagesAsync(
         string directory,
@@ -162,6 +192,17 @@ internal sealed partial class PackageVersionUpgrader(
         NuGetVersion sdkVersion,
         CancellationToken cancellationToken)
     {
+        var outdatedVersion = await GetDotNetOutdatedVersionAsync(cancellationToken);
+
+        if (outdatedVersion is null)
+        {
+            Log.UnableToDetermineDotNetOutdatedToolVersion(Logger);
+        }
+        else
+        {
+            Log.DotNetOutdatedToolVersion(Logger, outdatedVersion);
+        }
+
         using var tempFile = new TemporaryFile();
 
         List<string> arguments =
@@ -176,14 +217,12 @@ internal sealed partial class PackageVersionUpgrader(
         {
             arguments.Add("--pre-release:Always");
 
-            // Requires .NET Outdated v4.6.1+.
-            // See https://github.com/dotnet-outdated/dotnet-outdated/pull/467.
-            if (sdkVersion.IsPrerelease && sdkVersion.ReleaseLabels.Count() > 2)
+            // See https://github.com/dotnet-outdated/dotnet-outdated/pull/467
+            if (sdkVersion.IsPrerelease && sdkVersion.ReleaseLabels.Count() > 2 &&
+                (outdatedVersion is null || outdatedVersion >= MinimumVersionForPrereleaseLabel))
             {
                 var label = string.Join('.', sdkVersion.ReleaseLabels.Take(2));
-
-                arguments.Add("--pre-release-label");
-                arguments.Add(label);
+                arguments.AddRange(["--pre-release-label", label]);
             }
         }
         else
@@ -422,5 +461,17 @@ internal sealed partial class PackageVersionUpgrader(
             Level = LogLevel.Debug,
             Message = "Failed to evaluate the result of the {TargetName} MSBuild target from {ProjectFile}.")]
         public static partial void FailedToEvaluateTarget(ILogger logger, string targetName, string projectFile, Exception exception);
+
+        [LoggerMessage(
+            EventId = 10,
+            Level = LogLevel.Debug,
+            Message = "Installed version of dotnet-outdated-tool is {Version}.")]
+        public static partial void DotNetOutdatedToolVersion(ILogger logger, NuGetVersion version);
+
+        [LoggerMessage(
+            EventId = 11,
+            Level = LogLevel.Warning,
+            Message = "Unable to determine the installed version of dotnet-outdated-tool.")]
+        public static partial void UnableToDetermineDotNetOutdatedToolVersion(ILogger logger);
     }
 }
