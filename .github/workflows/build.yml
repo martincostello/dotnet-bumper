@@ -79,8 +79,7 @@ jobs:
       shell: pwsh
       run: |
         dotnet tool restore
-        $dotnetOutdatedVersion = (Get-Content "./.config/dotnet-tools.json" | Out-String | ConvertFrom-Json).tools.'dotnet-outdated-tool'.version
-        dotnet tool install --global dotnet-outdated-tool --version "$dotnetOutdatedVersion"
+        dotnet tool install --global dotnet-outdated-tool --version "4.6.5" --add-source ./.packages
 
     - name: Build, Test and Package
       id: build
