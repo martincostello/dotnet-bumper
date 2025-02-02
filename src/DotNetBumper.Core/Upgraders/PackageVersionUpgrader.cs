@@ -221,11 +221,7 @@ internal sealed partial class PackageVersionUpgrader(
             [WellKnownEnvironmentVariables.MSBuildTreatWarningsAsErrors] = "false",
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
             [WellKnownEnvironmentVariables.TreatWarningsAsErrors] = "false",
-            ////["MSBUILDDEBUGENGINE"] = "1",
-            ////["MSBUILDDEBUGPATH"] = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE"),
         };
-
-        ////MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
 
         if (configuration.NoWarn.Count > 0)
         {

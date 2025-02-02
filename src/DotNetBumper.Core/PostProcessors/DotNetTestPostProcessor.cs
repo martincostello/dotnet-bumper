@@ -189,9 +189,6 @@ internal sealed partial class DotNetTestPostProcessor(
         {
             [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
-            ////["MSBUILDDEBUGENGINE"] = "1",
-            ////["MSBUILDDEBUGPATH"] = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE"),
-            ////[WellKnownEnvironmentVariables.MSBuildEnableWorkloadResolver] = "false",
         };
 
         if (sdkVersion.IsPrerelease)
@@ -202,8 +199,6 @@ internal sealed partial class DotNetTestPostProcessor(
             // to generate an OpenAPI document as part of building an app.
             environmentVariables[WellKnownEnvironmentVariables.DotNetRollForward] = "Major";
         }
-
-        ////MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
 
         TemporaryFile? propertiesOverrides = null;
 
