@@ -103,6 +103,7 @@ internal sealed partial class DotNetCodeUpgrader(
 
         var environmentVariables = new Dictionary<string, string?>()
         {
+            [WellKnownEnvironmentVariables.MSBuildSdksPath] = null,
             [WellKnownEnvironmentVariables.NoWarn] = "CA1515", // HACK Ignore CA1515 from .NET 9 as it seems to just break things
         };
 

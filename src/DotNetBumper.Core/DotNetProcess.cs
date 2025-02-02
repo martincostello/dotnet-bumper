@@ -366,11 +366,5 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             Level = LogLevel.Error,
             Message = "Command \"dotnet {Command}\" standard error: {Error}")]
         public static partial void CommandFailedError(ILogger logger, string command, string error);
-
-        [LoggerMessage(
-            EventId = 4,
-            Level = LogLevel.Error,
-            Message = "Failed to get the version of the .NET SDK.")]
-        public static partial void GetSdkVersionFailed(ILogger logger, Exception exception);
     }
 }
