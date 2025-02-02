@@ -200,19 +200,7 @@ internal sealed partial class DotNetTestPostProcessor(
             environmentVariables[WellKnownEnvironmentVariables.DotNetRollForward] = "Major";
         }
 
-        if (Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.MSBuildSdksPath) is { Length: > 0 } sdksPath)
-        {
-            var targetSdkVersion = Path.GetFileName(sdksPath);
-            var installedSdkVersion = await dotnet.TryGetSdkVersionAsync(cancellationToken);
-
-            Console.WriteLine($"Installed SDK version: {installedSdkVersion}");
-            Console.WriteLine($"Target SDK version: {targetSdkVersion}");
-
-            if (installedSdkVersion is not null && targetSdkVersion != installedSdkVersion)
-            {
-                MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
-            }
-        }
+        MSBuildHelper.TryAddSdkPropertiesIfVersionMismatch(environmentVariables, sdkVersion.ToString());
 
         TemporaryFile? propertiesOverrides = null;
 

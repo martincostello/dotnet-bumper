@@ -16,6 +16,25 @@ internal static class MSBuildHelper
         return environment;
     }
 
+    public static void TryAddSdkPropertiesIfVersionMismatch(IDictionary<string, string?> environmentVariables, string desiredSdkVersion)
+    {
+        if (Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.MSBuildSdksPath) is { Length: > 0 } sdksPath)
+        {
+            string? configuredSdkVersion = null;
+            string[] segments = sdksPath.Split(Path.DirectorySeparatorChar);
+
+            if (segments.Length > 1 && segments[^1] is "Sdks" && NuGet.Versioning.NuGetVersion.TryParse(segments[^2], out var version))
+            {
+                configuredSdkVersion = version.ToString();
+            }
+
+            if (configuredSdkVersion is not null && configuredSdkVersion != desiredSdkVersion)
+            {
+                MSBuildHelper.TryAddSdkProperties(environmentVariables, desiredSdkVersion);
+            }
+        }
+    }
+
     public static void TryAddSdkProperties(IDictionary<string, string?> environment, string sdkVersion)
     {
         var dotnetPath = DotNetProcess.TryFindDotNetInstallation();
