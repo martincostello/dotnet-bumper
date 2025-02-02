@@ -217,6 +217,7 @@ internal sealed partial class PackageVersionUpgrader(
         {
             [WellKnownEnvironmentVariables.DotNetRollForward] = "Major",
             [WellKnownEnvironmentVariables.MSBuildEnableWorkloadResolver] = "false",
+            [WellKnownEnvironmentVariables.MSBuildSdksPath] = null,
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
         };
 
@@ -295,6 +296,7 @@ internal sealed partial class PackageVersionUpgrader(
 
         var environment = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
         {
+            [WellKnownEnvironmentVariables.MSBuildEnableWorkloadResolver] = "true",
             [WellKnownEnvironmentVariables.SkipResolvePackageAssets] = bool.TrueString,
         };
 
