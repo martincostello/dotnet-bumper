@@ -234,7 +234,12 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         await fixture.Project.AddApplicationProjectAsync(targetFrameworks);
         await fixture.Project.AddTestProjectAsync(targetFrameworks);
 
-        List<string> args = ["--verbose"];
+        List<string> args = [];
+
+        if (IsDebug())
+        {
+            args.Add("--verbose");
+        }
 
         if (runTests)
         {
@@ -552,7 +557,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
 #if DEBUG
         const string Verbose = "--verbose";
-        if (!arguments.Contains(Verbose) && Environment.GetEnvironmentVariable("RUNNER_DEBUG") is "1")
+        if (!arguments.Contains(Verbose) && IsDebug())
         {
             arguments = [.. arguments, Verbose];
         }
@@ -575,6 +580,9 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         script.ShouldNotContain($" net{channel} ");
         script.ShouldContain(" win-x64 ");
     }
+
+    private static bool IsDebug()
+        => Environment.GetEnvironmentVariable("RUNNER_DEBUG") is "1";
 
     private static Dictionary<string, string> Packages(params (string Name, string Version)[] packages)
         => packages.ToDictionary((p) => p.Name, (p) => p.Version);
