@@ -86,8 +86,6 @@ internal sealed partial class PackageVersionUpgrader(
     {
         var environmentVariables = MSBuildHelper.GetSdkProperties(sdkVersion);
 
-        environmentVariables[WellKnownEnvironmentVariables.MSBuildEnableWorkloadResolver] = "false";
-
         var result = await dotnet.RunWithLoggerAsync(
             directory,
             ["restore", "--verbosity", Logger.GetMSBuildVerbosity()],
@@ -214,13 +212,10 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.Add(package);
         }
 
-        var environmentVariables = new Dictionary<string, string?>(6)
+        var environmentVariables = new Dictionary<string, string?>(3)
         {
             [WellKnownEnvironmentVariables.DotNetRollForward] = "Major",
-            [WellKnownEnvironmentVariables.MSBuildEnableWorkloadResolver] = "false",
-            [WellKnownEnvironmentVariables.MSBuildTreatWarningsAsErrors] = "false",
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
-            [WellKnownEnvironmentVariables.TreatWarningsAsErrors] = "false",
         };
 
         MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
