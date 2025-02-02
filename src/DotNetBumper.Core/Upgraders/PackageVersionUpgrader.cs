@@ -320,19 +320,26 @@ internal sealed partial class PackageVersionUpgrader(
 
             var json = await EvaluateMSBuildTargetAsync(projectFile, WorkloadsTarget, environment, cancellationToken);
 
-            if (string.IsNullOrWhiteSpace(json) || !JsonHelpers.TryLoadObjectFromString(json, out var document))
+            try
             {
-                return false;
-            }
+                if (string.IsNullOrWhiteSpace(json) || !JsonHelpers.TryLoadObjectFromString(json, out var document))
+                {
+                    return false;
+                }
 
-            if (document.TryGetPropertyValue("TargetResults", out var results) &&
-                results is JsonObject targetResults &&
-                targetResults.TryGetPropertyValue(WorkloadsTarget, out var targetResult) &&
-                targetResult is JsonObject result &&
-                result.TryGetPropertyValue("Items", out var items) &&
-                items is JsonArray array)
+                if (document.TryGetPropertyValue("TargetResults", out var results) &&
+                    results is JsonObject targetResults &&
+                    targetResults.TryGetPropertyValue(WorkloadsTarget, out var targetResult) &&
+                    targetResult is JsonObject result &&
+                    result.TryGetPropertyValue("Items", out var items) &&
+                    items is JsonArray array)
+                {
+                    return array.Count > 0;
+                }
+            }
+            catch (JsonException ex)
             {
-                return array.Count > 0;
+                throw new JsonException($"Failed to parse JSON: {json}", ex);
             }
 
             return false;
