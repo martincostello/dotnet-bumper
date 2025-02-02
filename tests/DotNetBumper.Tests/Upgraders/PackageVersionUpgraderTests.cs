@@ -14,9 +14,10 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Does_Not_Include_Prerelease_Packages()
     {
         // Arrange
+        var channel = new Version(8, 0);
         string[] targetFrameworks = ["net6.0"];
 
-        var upgrade = await GetUpgradeAsync("8.0");
+        var upgrade = await GetUpgradeAsync(channel.ToString());
 
         using var fixture = new UpgraderFixture(outputHelper)
         {
@@ -36,12 +37,18 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
 
         await fixture.Project.AddApplicationProjectAsync(targetFrameworks);
 
-        string dependencyName = "Microsoft.Extensions.Configuration";
-        string dependencyVersion = "6.0.2-mauipre.1.22102.15";
+        string prereleaseDependency = "Microsoft.Extensions.Configuration";
+        string prereleaseDependencyVersion = "6.0.2-mauipre.1.22102.15";
+
+        string stableDependency = "System.Text.Json";
+        string stableDependencyVersion = "6.0.0";
 
         string testProject = await fixture.Project.AddTestProjectAsync(
             targetFrameworks,
-            [KeyValuePair.Create(dependencyName, dependencyVersion)]);
+            [
+                KeyValuePair.Create(prereleaseDependency, prereleaseDependencyVersion),
+                KeyValuePair.Create(stableDependency, stableDependencyVersion),
+            ]);
 
         await fixture.Project.AddUnitTestsAsync();
 
@@ -57,11 +64,22 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
 
         var upgradedReferences = await ProjectAssertionHelpers.GetPackageReferencesAsync(fixture, testProject);
 
-        upgradedReferences.ShouldContainKey(dependencyName);
-        upgradedReferences.ShouldNotContainValueForKey(dependencyName, dependencyVersion);
+        upgradedReferences.ShouldContainKey(prereleaseDependency);
+        upgradedReferences.ShouldNotContainValueForKey(prereleaseDependency, prereleaseDependencyVersion);
 
-        NuGetVersion.TryParse(upgradedReferences[dependencyName], out var version).ShouldBeTrue();
+        NuGetVersion.TryParse(upgradedReferences[prereleaseDependency], out var version).ShouldBeTrue();
         version.IsPrerelease.ShouldBeFalse();
+
+        // TODO Depends on https://github.com/martincostello/dotnet-bumper/issues/499
+        /*version.Major.ShouldBe(channel.Major);
+        version.Minor.ShouldBe(channel.Minor);
+        version.Patch.ShouldBeGreaterThanOrEqualTo(0);
+
+        NuGetVersion.TryParse(upgradedReferences[stableDependency], out version).ShouldBeTrue();
+        version.IsPrerelease.ShouldBeFalse();
+        version.Major.ShouldBe(channel.Major);
+        version.Minor.ShouldBe(channel.Minor);
+        version.Patch.ShouldBeGreaterThan(0);*/
     }
 
     private static PackageVersionUpgrader CreateTarget(UpgraderFixture fixture)
