@@ -9,13 +9,11 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
 
     public static TheoryData<string> Channels()
     {
-#pragma warning disable IDE0028 // See https://github.com/dotnet/roslyn/issues/72668
-        return new()
-        {
+        return
+        [
             "8.0",
             "9.0",
-        };
-#pragma warning restore IDE0028
+        ];
     }
 
     [Theory]
@@ -23,7 +21,6 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Applies_Code_Fix(string channel)
     {
         Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
-        Assert.SkipWhen(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
@@ -74,7 +71,6 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Applies_Code_Fixes(string channel)
     {
         Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
-        Assert.SkipWhen(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
@@ -129,7 +125,6 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Honors_User_Project_Settings(string channel)
     {
         Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
-        Assert.SkipWhen(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
@@ -173,7 +168,6 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Does_Not_Fix_Information_Diagnostics(string channel)
     {
         Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
-        Assert.SkipWhen(channel is "9.0", "See https://github.com/dotnet/sdk/issues/39909 and https://github.com/dotnet/sdk/issues/40174");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
