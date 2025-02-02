@@ -154,6 +154,7 @@ jobs:
       env:
         DOTNET_OUTDATED_VERSION: '4.6.5'
       run: |
+        dotnet tool install dotnet-outdated-tool --version ${env:DOTNET_OUTDATED_VERSION} --add-source ./packages
         dotnet tool install --global dotnet-outdated-tool --version ${env:DOTNET_OUTDATED_VERSION} --add-source ./packages
         dotnet tool install --global MartinCostello.DotNetBumper --add-source ./packages --prerelease
 
