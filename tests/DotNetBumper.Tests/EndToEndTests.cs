@@ -233,7 +233,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         await fixture.Project.AddGlobalJsonAsync(sdkVersion);
         await fixture.Project.AddApplicationProjectAsync(targetFrameworks);
         await fixture.Project.AddTestProjectAsync(targetFrameworks);
-        await fixture.Project.AddUnitTestsAsync("Always_Fails_Test", "Assert.True(false);");
+        await fixture.Project.AddUnitTestsWithNoCodeFixesAsync("Always_Fails_Test", "Assert.True(false);");
 
         List<string> args = [];
 

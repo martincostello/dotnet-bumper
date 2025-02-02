@@ -301,7 +301,7 @@ internal sealed partial class PackageVersionUpgrader(
             [WellKnownEnvironmentVariables.SkipResolvePackageAssets] = bool.TrueString,
         };
 
-        MSBuildHelper.TryAddSdkProperties(environment, sdkVersion.ToString());
+        MSBuildHelper.TryAddSdkPropertiesIfVersionMismatch(environment, sdkVersion.ToString());
 
         foreach (var project in projects)
         {

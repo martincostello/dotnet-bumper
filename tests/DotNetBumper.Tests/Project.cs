@@ -168,6 +168,34 @@ internal sealed class Project : IDisposable
         return await AddFileAsync(path, testClass);
     }
 
+    public async Task<string> AddUnitTestsWithNoCodeFixesAsync(
+        string testName = "Always_Passes_Test",
+        string assertion = "Assert.True(true);",
+        string path = "tests/Project.Tests/UnitTests.cs")
+    {
+        var testClass =
+            $$"""
+              using System;
+              using Xunit;
+              
+              namespace MyProject.Tests;
+              
+              public static class UnitTests
+              {
+                  public static string[] Items { get; } = [];
+                  public static bool IsTrue() => string.Equals(bool.TrueString, "true", StringComparison.OrdinalIgnoreCase);
+
+                  [Fact]
+                  public static void {{testName}}()
+                  {
+                      {{assertion}}
+                  }
+              }
+              """;
+
+        return await AddFileAsync(path, testClass);
+    }
+
     public async Task<string> AddVisualStudioCodeLaunchConfigurationsAsync(
         string channel = "6.0",
         string path = ".vscode/launch.json")
