@@ -221,7 +221,8 @@ internal sealed partial class PackageVersionUpgrader(
             [WellKnownEnvironmentVariables.MSBuildTreatWarningsAsErrors] = "false",
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
             [WellKnownEnvironmentVariables.TreatWarningsAsErrors] = "false",
-            ["PATH"] = DotNetProcess.TryFindDotNetInstallation() + (OperatingSystem.IsWindows() ? ';' : ':') + Environment.GetEnvironmentVariable("PATH"),
+            ////["MSBUILDDEBUGENGINE"] = "1",
+            ////["MSBUILDDEBUGPATH"] = Environment.GetEnvironmentVariable("GITHUB_WORKSPACE"),
         };
 
         MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());

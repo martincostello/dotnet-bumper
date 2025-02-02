@@ -16,6 +16,7 @@ internal static class WellKnownEnvironmentVariables
     internal const string MSBuildExePath = "MSBUILD_EXE_PATH";
     internal const string MSBuildExtensionsPath = "MSBuildExtensionsPath";
     internal const string MSBuildExtensionsPath32 = "MSBuildExtensionsPath32";
+    internal const string MSBuildExtensionsPath64 = "MSBuildExtensionsPath64";
     internal const string MSBuildSdksPath = "MSBuildSDKsPath";
     internal const string MSBuildTreatWarningsAsErrors = "MSBuildTreatWarningsAsErrors";
     internal const string NoWarn = "NoWarn";
