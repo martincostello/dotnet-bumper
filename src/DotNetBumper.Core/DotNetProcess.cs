@@ -59,31 +59,6 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
     }
 
     /// <summary>
-    /// Gets the version of the .NET SDK installed on the current machine, if any.
-    /// </summary>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to use.</param>
-    /// <returns>
-    /// The version of the .NET SDK installed on the current machine, if any; otherwise <see langword="null"/>.
-    /// </returns>
-    public async Task<string?> TryGetSdkVersionAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var result = await RunAsync(
-                Environment.CurrentDirectory,
-                ["--version"],
-                cancellationToken);
-
-            return result.Success ? result.StandardOutput.Trim() : null;
-        }
-        catch (Exception ex)
-        {
-            Log.GetSdkVersionFailed(logger, ex);
-            return null;
-        }
-    }
-
-    /// <summary>
     /// Runs the specified dotnet command.
     /// </summary>
     /// <param name="workingDirectory">The working directory for the process.</param>
