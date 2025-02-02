@@ -25,6 +25,11 @@ internal sealed partial class PackageVersionUpgrader(
     /// </summary>
     private static readonly NuGetVersion MinimumVersionForPrereleaseLabel = new(4, 6, 1);
 
+    /// <summary>
+    /// The minimum version of https://www.nuget.org/packages/dotnet-outdated-tool that supports the <c>--maximum-version</c> option.
+    /// </summary>
+    private static readonly NuGetVersion MinimumVersionForMaximumVersion = new(4, 6, 5);
+
     public override int Order => int.MaxValue - 1; // Packages need to be updated after the TFM so the packages relate to the update but before C# updates
 
     protected override string Action => "Upgrading NuGet packages";
@@ -70,7 +75,7 @@ internal sealed partial class PackageVersionUpgrader(
 
             context.Status = StatusMessage($"Update NuGet packages for {name}...");
 
-            result = result.Max(await TryUpgradePackagesAsync(project, upgrade.SdkVersion, cancellationToken));
+            result = result.Max(await TryUpgradePackagesAsync(project, upgrade.Channel, upgrade.SdkVersion, cancellationToken));
         }
 
         if (result is ProcessingResult.Success)
@@ -189,6 +194,7 @@ internal sealed partial class PackageVersionUpgrader(
 
     private async Task<ProcessingResult> TryUpgradePackagesAsync(
         string directory,
+        Version channel,
         NuGetVersion sdkVersion,
         CancellationToken cancellationToken)
     {
@@ -213,6 +219,12 @@ internal sealed partial class PackageVersionUpgrader(
             "--upgrade",
         ];
 
+        // See https://github.com/dotnet-outdated/dotnet-outdated/pull/640
+        if (outdatedVersion is null || outdatedVersion >= MinimumVersionForMaximumVersion)
+        {
+            arguments.AddRange(["--maximum-version", channel.ToString(2)]);
+        }
+
         if (Options.UpgradeType is UpgradeType.Preview)
         {
             arguments.Add("--pre-release:Always");
@@ -231,10 +243,6 @@ internal sealed partial class PackageVersionUpgrader(
             // if a project is using a .NET 6 preview package, it should be upgraded
             // to a .NET 8 version for an LTS upgrade, not to a .NET 9 preview version.
             arguments.Add("--pre-release:Never");
-
-            // TODO Upgrading from .NET 6 to .NET 8 is not possible as it will skip
-            // .NET 8 and go straight to .NET 9, which isn't what is actually wanted.
-            // See https://github.com/martincostello/dotnet-bumper/issues/499.
         }
 
         var configuration = await configurationProvider.GetAsync(cancellationToken);

@@ -167,7 +167,7 @@ remainingReferencesIgnore:
 
 - .NET 8 must be installed to use the tool
   - The .NET SDK version to upgrade to must also be installed if this is different
-- The [dotnet-outdated][dotnet-outdated] .NET Global tool must also be installed
+- The [dotnet-outdated][dotnet-outdated] .NET Global tool must also be installed (v4.6.5 or later is recommended)
 - Any project being upgraded must already target at least .NET 6
 
 ## Questions
