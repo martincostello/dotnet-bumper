@@ -106,7 +106,7 @@ internal sealed partial class DotNetCodeUpgrader(
             [WellKnownEnvironmentVariables.NoWarn] = "CA1515", // HACK Ignore CA1515 from .NET 9 as it seems to just break things
         };
 
-        MSBuildHelper.TryAddSdkProperties(environmentVariables, globalJson?.SdkVersion ?? sdkVersion.ToString());
+        MSBuildHelper.TryAddSdkPropertiesIfVersionMismatch(environmentVariables, globalJson?.SdkVersion ?? sdkVersion.ToString());
 
         var formatResult = await dotnet.RunAsync(
             workingDirectory,
