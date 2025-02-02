@@ -216,7 +216,7 @@ internal sealed partial class PackageVersionUpgrader(
 
         var environmentVariables = new Dictionary<string, string?>(6)
         {
-            ////[WellKnownEnvironmentVariables.DotNetRollForward] = "Minor",
+            [WellKnownEnvironmentVariables.DotNetRollForward] = "Major",
             [WellKnownEnvironmentVariables.MSBuildEnableWorkloadResolver] = "false",
             [WellKnownEnvironmentVariables.MSBuildTreatWarningsAsErrors] = "false",
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
