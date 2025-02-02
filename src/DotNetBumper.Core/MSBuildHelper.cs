@@ -30,7 +30,7 @@ internal static class MSBuildHelper
 
             if (configuredSdkVersion is not null && configuredSdkVersion != desiredSdkVersion)
             {
-                MSBuildHelper.TryAddSdkProperties(environmentVariables, desiredSdkVersion);
+                TryAddSdkProperties(environmentVariables, desiredSdkVersion);
             }
         }
     }
