@@ -32,7 +32,7 @@ jobs:
 
     outputs:
       dotnet-outdated-version: ${{ steps.get-dotnet-outdated-version.outputs.dotnet-outdated-version }}
-      dotnet-sdk-version: ${{ steps.get-dotnet-sdk-version.outputs.dotnet-sdk-version }}
+      dotnet-sdk-version: ${{ steps.get-dotnet-sdk-version.outputs.dotnet-version }}
 
     steps:
 
@@ -53,6 +53,7 @@ jobs:
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@3951f0dfe7a07e2313ec93c75700083e2005cbab # v4.3.0
+      id: get-dotnet-sdk-version
 
     - name: Publish NuGet package
       shell: pwsh
@@ -66,13 +67,6 @@ jobs:
         name: packages
         path: ./artifacts/package/release
         if-no-files-found: error
-
-    - name: Get .NET SDK version
-      id: get-dotnet-sdk-version
-      shell: pwsh
-      run: |
-        $dotnetSdkVersion = (Get-Content "./global.json" | Out-String | ConvertFrom-Json).sdk.version
-        "dotnet-sdk-version=${dotnetSdkVersion}" >> $env:GITHUB_OUTPUT
 
     - name: Get dotnet-outdated version
       id: get-dotnet-outdated-version
