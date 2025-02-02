@@ -12,6 +12,52 @@ namespace MartinCostello.DotNetBumper;
 /// <param name="logger">The <see cref="ILogger{DotNetProcess}"/> to use.</param>
 public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 {
+    private readonly bool _debug = logger.IsEnabled(LogLevel.Debug);
+
+    /// <summary>
+    /// Tries to find the path of the .NET installation on the current machine.
+    /// </summary>
+    /// <returns>
+    /// The actual path of the .NET installation on the current machine, if
+    /// found; otherwise the default location for the current operating system.
+    /// </returns>
+    public static string TryFindDotNetInstallation()
+    {
+        // Adapted from https://github.com/natemcmaster/CommandLineUtils/blob/210871add72e8ad22661194c6f630fc1ecee140f/src/CommandLineUtils/Utilities/DotNetExe.cs#L1
+        var dotnetRoot = Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot);
+
+        if (string.IsNullOrEmpty(dotnetRoot))
+        {
+            // See https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables
+            string[] candidates = OperatingSystem.IsWindows() ?
+            [
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
+            ]
+            :
+            [
+                "/usr/local/share/dotnet",
+                "/usr/share/dotnet",
+                "/usr/lib/dotnet",
+            ];
+
+            string? root = null;
+
+            foreach (string candidate in candidates)
+            {
+                if (Directory.Exists(candidate))
+                {
+                    root = candidate;
+                    break;
+                }
+            }
+
+            dotnetRoot = root ?? candidates[0];
+        }
+
+        return dotnetRoot;
+    }
+
     /// <summary>
     /// Runs the specified dotnet command.
     /// </summary>
@@ -106,38 +152,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             return mainModule.FileName;
         }
 
-        var dotnetRoot = Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot);
-
-        if (string.IsNullOrEmpty(dotnetRoot))
-        {
-            // See https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables
-            string[] candidates = isWindows ?
-            [
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
-            ]
-            :
-            [
-                "/usr/local/share/dotnet",
-                "/usr/share/dotnet",
-                "/usr/lib/dotnet",
-            ];
-
-            string? root = null;
-
-            foreach (string candidate in candidates)
-            {
-                if (Directory.Exists(candidate))
-                {
-                    root = candidate;
-                    break;
-                }
-            }
-
-            dotnetRoot = root ?? candidates[0];
-        }
-
-        return Path.Combine(dotnetRoot, fileName);
+        return Path.Combine(TryFindDotNetInstallation(), fileName);
     }
 
     private static Process StartDotNet(
@@ -195,7 +210,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         // See https://stackoverflow.com/a/16326426/1064169 and
         // https://learn.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.redirectstandardoutput.
         using var outputTokenSource = new CancellationTokenSource();
-        var readOutput = ReadOutputAsync(process, outputTokenSource.Token);
+        var readOutput = ReadOutputAsync(process, _debug, outputTokenSource.Token);
 
         try
         {
@@ -241,10 +256,11 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 
         static async Task<(string Error, string Output)> ReadOutputAsync(
             Process process,
+            bool isDebug,
             CancellationToken cancellationToken)
         {
-            var processErrors = ConsumeStreamAsync(process.StandardError, process.StartInfo.RedirectStandardError, cancellationToken);
-            var processOutput = ConsumeStreamAsync(process.StandardOutput, process.StartInfo.RedirectStandardOutput, cancellationToken);
+            var processErrors = ConsumeStreamAsync(process.StandardError, process.StartInfo.RedirectStandardError, isDebug, cancellationToken);
+            var processOutput = ConsumeStreamAsync(process.StandardOutput, process.StartInfo.RedirectStandardOutput, isDebug, cancellationToken);
 
             await Task.WhenAll(processErrors, processOutput);
 
@@ -267,14 +283,16 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         static Task<StringBuilder> ConsumeStreamAsync(
             StreamReader reader,
             bool isRedirected,
+            bool isDebug,
             CancellationToken cancellationToken)
         {
             return isRedirected ?
-                Task.Run(() => ProcessStream(reader, cancellationToken), cancellationToken) :
+                Task.Run(() => ProcessStream(reader, isDebug, cancellationToken), cancellationToken) :
                 Task.FromResult(new StringBuilder(0));
 
             static async Task<StringBuilder> ProcessStream(
                 StreamReader reader,
+                bool isDebug,
                 CancellationToken cancellationToken)
             {
                 var builder = new StringBuilder();
@@ -283,11 +301,23 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
                 {
                     try
                     {
-                        builder.Append(await reader.ReadToEndAsync(cancellationToken));
+                        var line = await reader.ReadLineAsync(cancellationToken);
+
+                        if (line is null)
+                        {
+                            break;
+                        }
+
+                        builder.Append(line);
+
+                        if (isDebug)
+                        {
+                            Spectre.Console.AnsiConsole.WriteLine($"[dotnet] {line}");
+                        }
                     }
                     catch (OperationCanceledException)
                     {
-                        break;
+                        // Ignore
                     }
                 }
 
