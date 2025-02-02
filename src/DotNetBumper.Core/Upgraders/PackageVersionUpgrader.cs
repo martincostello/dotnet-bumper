@@ -223,7 +223,7 @@ internal sealed partial class PackageVersionUpgrader(
             [WellKnownEnvironmentVariables.TreatWarningsAsErrors] = "false",
         };
 
-        MSBuildHelper.TryAddSdkPropertiesIfVersionMismatch(environmentVariables, sdkVersion.ToString());
+        MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
 
         if (configuration.NoWarn.Count > 0)
         {
@@ -301,7 +301,7 @@ internal sealed partial class PackageVersionUpgrader(
             [WellKnownEnvironmentVariables.SkipResolvePackageAssets] = bool.TrueString,
         };
 
-        MSBuildHelper.TryAddSdkPropertiesIfVersionMismatch(environment, sdkVersion.ToString());
+        MSBuildHelper.TryAddSdkProperties(environment, sdkVersion.ToString());
 
         foreach (var project in projects)
         {

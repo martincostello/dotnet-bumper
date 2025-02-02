@@ -200,7 +200,7 @@ internal sealed partial class DotNetTestPostProcessor(
             environmentVariables[WellKnownEnvironmentVariables.DotNetRollForward] = "Major";
         }
 
-        MSBuildHelper.TryAddSdkPropertiesIfVersionMismatch(environmentVariables, sdkVersion.ToString());
+        MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
 
         TemporaryFile? propertiesOverrides = null;
 

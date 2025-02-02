@@ -16,7 +16,7 @@ internal static class MSBuildHelper
         return environment;
     }
 
-    public static void TryAddSdkPropertiesIfVersionMismatch(IDictionary<string, string?> environmentVariables, string desiredSdkVersion)
+    public static void TryAddSdkProperties(IDictionary<string, string?> environmentVariables, string desiredSdkVersion)
     {
         if (Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.MSBuildSdksPath) is { Length: > 0 } sdksPath)
         {
@@ -30,12 +30,12 @@ internal static class MSBuildHelper
 
             if (configuredSdkVersion is not null && configuredSdkVersion != desiredSdkVersion)
             {
-                TryAddSdkProperties(environmentVariables, desiredSdkVersion);
+                TryAddMSBuildProperties(environmentVariables, desiredSdkVersion);
             }
         }
     }
 
-    public static void TryAddSdkProperties(IDictionary<string, string?> environment, string sdkVersion)
+    private static void TryAddMSBuildProperties(IDictionary<string, string?> environment, string sdkVersion)
     {
         var dotnetPath = DotNetProcess.TryFindDotNetInstallation();
         var dotNetSdkPath = Path.Combine(dotnetPath, "sdk", sdkVersion);
