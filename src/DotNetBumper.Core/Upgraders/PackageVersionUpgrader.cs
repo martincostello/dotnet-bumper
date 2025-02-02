@@ -230,7 +230,7 @@ internal sealed partial class PackageVersionUpgrader(
             environmentVariables[WellKnownEnvironmentVariables.NoWarn] = string.Join(";", configuration.NoWarn);
         }
 
-        if (Environment.GetEnvironmentVariable("CI") is null)
+        if (Environment.GetEnvironmentVariable("CI") is not null)
         {
             var current = Environment.CurrentDirectory;
             Environment.CurrentDirectory = directory;
