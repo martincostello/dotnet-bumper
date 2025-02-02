@@ -69,9 +69,7 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
 
         NuGetVersion.TryParse(upgradedReferences[prereleaseDependency], out var version).ShouldBeTrue();
         version.IsPrerelease.ShouldBeFalse();
-
-        // TODO Depends on https://github.com/martincostello/dotnet-bumper/issues/499
-        /*version.Major.ShouldBe(channel.Major);
+        version.Major.ShouldBe(channel.Major);
         version.Minor.ShouldBe(channel.Minor);
         version.Patch.ShouldBeGreaterThanOrEqualTo(0);
 
@@ -79,7 +77,7 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
         version.IsPrerelease.ShouldBeFalse();
         version.Major.ShouldBe(channel.Major);
         version.Minor.ShouldBe(channel.Minor);
-        version.Patch.ShouldBeGreaterThan(0);*/
+        version.Patch.ShouldBeGreaterThan(0);
     }
 
     private static PackageVersionUpgrader CreateTarget(UpgraderFixture fixture)
