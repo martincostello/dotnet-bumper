@@ -124,8 +124,6 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Honors_User_Project_Settings(string channel)
     {
-        Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
-
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
 
@@ -167,8 +165,6 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Does_Not_Fix_Information_Diagnostics(string channel)
     {
-        Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
-
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
 
