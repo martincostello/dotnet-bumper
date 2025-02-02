@@ -11,7 +11,7 @@ internal static class MSBuildHelper
     {
         var environment = new Dictionary<string, string?>();
 
-        TryAddSdkProperties(environment, sdkVersion);
+        TryAddMSBuildProperties(environment, sdkVersion);
 
         return environment;
     }
