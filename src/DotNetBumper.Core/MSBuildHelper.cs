@@ -11,26 +11,34 @@ internal static class MSBuildHelper
     {
         var environment = new Dictionary<string, string?>();
 
-        TryAddSdkProperties(environment, sdkVersion);
+        TryAddMSBuildProperties(environment, sdkVersion);
 
         return environment;
     }
 
-    public static void TryAddSdkProperties(IDictionary<string, string?> environment, string sdkVersion)
+    public static void TryAddSdkProperties(IDictionary<string, string?> environmentVariables, string desiredSdkVersion)
     {
-        var dotnetRoot = Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot);
-
-        if (string.IsNullOrEmpty(dotnetRoot))
+        if (Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.MSBuildSdksPath) is { Length: > 0 } sdksPath)
         {
-            dotnetRoot = Path.Combine(
-                Environment.GetFolderPath(
-                    OperatingSystem.IsWindows() ?
-                    Environment.SpecialFolder.ProgramFiles :
-                    Environment.SpecialFolder.CommonApplicationData),
-                "dotnet");
-        }
+            string? configuredSdkVersion = null;
+            string[] segments = sdksPath.Split(Path.DirectorySeparatorChar);
 
-        var dotNetSdkPath = Path.Combine(dotnetRoot, "sdk", sdkVersion);
+            if (segments.Length > 1 && segments[^1] is "Sdks" && NuGet.Versioning.NuGetVersion.TryParse(segments[^2], out var version))
+            {
+                configuredSdkVersion = version.ToString();
+            }
+
+            if (configuredSdkVersion is not null && configuredSdkVersion != desiredSdkVersion)
+            {
+                TryAddMSBuildProperties(environmentVariables, desiredSdkVersion);
+            }
+        }
+    }
+
+    private static void TryAddMSBuildProperties(IDictionary<string, string?> environment, string sdkVersion)
+    {
+        var dotnetPath = DotNetProcess.TryFindDotNetInstallation();
+        var dotNetSdkPath = Path.Combine(dotnetPath, "sdk", sdkVersion);
 
         if (!Directory.Exists(dotNetSdkPath))
         {
@@ -39,6 +47,8 @@ internal static class MSBuildHelper
 
         environment[WellKnownEnvironmentVariables.MSBuildExePath] = Path.Combine(dotNetSdkPath, "MSBuild.dll");
         environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath] = dotNetSdkPath;
+        environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath32] = dotNetSdkPath;
+        environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath64] = dotNetSdkPath;
         environment[WellKnownEnvironmentVariables.MSBuildSdksPath] = Path.Combine(dotNetSdkPath, "Sdks");
     }
 }

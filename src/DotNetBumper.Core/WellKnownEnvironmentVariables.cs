@@ -12,8 +12,11 @@ internal static class WellKnownEnvironmentVariables
     internal const string DotNetNoLogo = "DOTNET_NOLOGO";
     internal const string DotNetRollForward = "DOTNET_ROLL_FORWARD";
     internal const string DotNetRoot = "DOTNET_ROOT";
+    internal const string MSBuildEnableWorkloadResolver = "MSBuildEnableWorkloadResolver";
     internal const string MSBuildExePath = "MSBUILD_EXE_PATH";
     internal const string MSBuildExtensionsPath = "MSBuildExtensionsPath";
+    internal const string MSBuildExtensionsPath32 = "MSBuildExtensionsPath32";
+    internal const string MSBuildExtensionsPath64 = "MSBuildExtensionsPath64";
     internal const string MSBuildSdksPath = "MSBuildSDKsPath";
     internal const string NoWarn = "NoWarn";
     internal const string NuGetAudit = "NuGetAudit";
