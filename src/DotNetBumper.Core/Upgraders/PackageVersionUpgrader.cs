@@ -221,7 +221,7 @@ internal sealed partial class PackageVersionUpgrader(
             [WellKnownEnvironmentVariables.MSBuildTreatWarningsAsErrors] = "false",
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
             [WellKnownEnvironmentVariables.TreatWarningsAsErrors] = "false",
-            ["PATH"] = DotNetProcess.TryFindDotNetInstallation() + ';' + Environment.GetEnvironmentVariable("PATH"),
+            ["PATH"] = DotNetProcess.TryFindDotNetInstallation() + (OperatingSystem.IsWindows() ? ';' : ':') + Environment.GetEnvironmentVariable("PATH"),
         };
 
         MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
