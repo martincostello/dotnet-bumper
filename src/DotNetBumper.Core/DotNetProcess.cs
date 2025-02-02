@@ -290,13 +290,26 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
                 StreamReader reader,
                 CancellationToken cancellationToken)
             {
+                var debug = Environment.GetEnvironmentVariable("RUNNER_DEBUG") is "1";
                 var builder = new StringBuilder();
 
-                if (!cancellationToken.IsCancellationRequested)
+                while (!cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
-                        builder.Append(await reader.ReadToEndAsync(cancellationToken));
+                        var line = await reader.ReadLineAsync(cancellationToken);
+
+                        if (line is null)
+                        {
+                            break;
+                        }
+
+                        builder.Append(line);
+
+                        if (debug)
+                        {
+                            Spectre.Console.AnsiConsole.WriteLine($"[dotnet] {line}");
+                        }
                     }
                     catch (OperationCanceledException)
                     {
