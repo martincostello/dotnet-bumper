@@ -13,6 +13,50 @@ namespace MartinCostello.DotNetBumper;
 public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 {
     /// <summary>
+    /// Tries to find the path of the .NET installation on the current machine.
+    /// </summary>
+    /// <returns>
+    /// The actual path of the .NET installation on the current machine, if
+    /// found; otherwise the default location for the current operating system.
+    /// </returns>
+    public static string TryFindDotNetInstallation()
+    {
+        // Adapted from https://github.com/natemcmaster/CommandLineUtils/blob/210871add72e8ad22661194c6f630fc1ecee140f/src/CommandLineUtils/Utilities/DotNetExe.cs#L1
+        var dotnetRoot = Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot);
+
+        if (string.IsNullOrEmpty(dotnetRoot))
+        {
+            // See https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables
+            string[] candidates = OperatingSystem.IsWindows() ?
+            [
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
+            ]
+            :
+            [
+                "/usr/local/share/dotnet",
+                "/usr/share/dotnet",
+                "/usr/lib/dotnet",
+            ];
+
+            string? root = null;
+
+            foreach (string candidate in candidates)
+            {
+                if (Directory.Exists(candidate))
+                {
+                    root = candidate;
+                    break;
+                }
+            }
+
+            dotnetRoot = root ?? candidates[0];
+        }
+
+        return dotnetRoot;
+    }
+
+    /// <summary>
     /// Runs the specified dotnet command.
     /// </summary>
     /// <param name="workingDirectory">The working directory for the process.</param>
@@ -106,38 +150,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             return mainModule.FileName;
         }
 
-        var dotnetRoot = Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot);
-
-        if (string.IsNullOrEmpty(dotnetRoot))
-        {
-            // See https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables
-            string[] candidates = isWindows ?
-            [
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
-            ]
-            :
-            [
-                "/usr/local/share/dotnet",
-                "/usr/share/dotnet",
-                "/usr/lib/dotnet",
-            ];
-
-            string? root = null;
-
-            foreach (string candidate in candidates)
-            {
-                if (Directory.Exists(candidate))
-                {
-                    root = candidate;
-                    break;
-                }
-            }
-
-            dotnetRoot = root ?? candidates[0];
-        }
-
-        return Path.Combine(dotnetRoot, fileName);
+        return Path.Combine(TryFindDotNetInstallation(), fileName);
     }
 
     private static Process StartDotNet(
@@ -279,7 +292,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             {
                 var builder = new StringBuilder();
 
-                while (!cancellationToken.IsCancellationRequested)
+                if (!cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
@@ -287,7 +300,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
                     }
                     catch (OperationCanceledException)
                     {
-                        break;
+                        // Ignore
                     }
                 }
 

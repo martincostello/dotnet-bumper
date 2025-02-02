@@ -18,42 +18,12 @@ internal static class MSBuildHelper
 
     public static void TryAddSdkProperties(IDictionary<string, string?> environment, string sdkVersion)
     {
-        var dotnetRoot = Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot);
-
-        if (string.IsNullOrEmpty(dotnetRoot))
-        {
-            // See https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables
-            string[] candidates = OperatingSystem.IsWindows() ?
-            [
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
-            ]
-            :
-            [
-                "/usr/local/share/dotnet",
-                "/usr/share/dotnet",
-                "/usr/lib/dotnet",
-            ];
-
-            string? root = null;
-
-            foreach (string candidate in candidates)
-            {
-                if (Directory.Exists(candidate))
-                {
-                    root = candidate;
-                    break;
-                }
-            }
-
-            dotnetRoot = root ?? candidates[0];
-        }
-
-        var dotNetSdkPath = Path.Combine(dotnetRoot, "sdk", sdkVersion);
+        var dotnetPath = DotNetProcess.TryFindDotNetInstallation();
+        var dotNetSdkPath = Path.Combine(dotnetPath, "sdk", sdkVersion);
 
         environment[WellKnownEnvironmentVariables.MSBuildExePath] = Path.Combine(dotNetSdkPath, "MSBuild.dll");
         environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath] = dotNetSdkPath;
-        environment["MSBuildExtensionsPath32"] = dotNetSdkPath;
+        environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath32] = dotNetSdkPath;
         environment[WellKnownEnvironmentVariables.MSBuildSdksPath] = Path.Combine(dotNetSdkPath, "Sdks");
     }
 }
