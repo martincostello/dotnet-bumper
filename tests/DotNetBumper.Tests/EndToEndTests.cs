@@ -222,8 +222,8 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         string? expectedLogFile)
     {
         // Arrange
-        string sdkVersion = "6.0.100";
-        string[] targetFrameworks = ["net6.0"];
+        string sdkVersion = "8.0.100";
+        string[] targetFrameworks = ["net8.0"];
 
         using var fixture = new UpgraderFixture(outputHelper);
         fixture.Project.AddGitRepository();
@@ -235,7 +235,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         await fixture.Project.AddTestProjectAsync(targetFrameworks);
         await fixture.Project.AddUnitTestsAsync("Always_Fails_Test", "Assert.True(false);");
 
-        List<string> args = [];
+        List<string> args = ["--upgrade-type", "Latest"];
 
         if (IsDebug())
         {
