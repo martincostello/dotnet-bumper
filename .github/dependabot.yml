@@ -28,5 +28,6 @@ updates:
     - dependency-name: Microsoft.Build
     - dependency-name: Microsoft.Build.Utilities.Core
     - dependency-name: Microsoft.TestPlatform.ObjectModel
+    - dependency-name: System.Management.Automation
     - dependency-name: System.Text.Json
       update-types: ["version-update:semver-major"]
