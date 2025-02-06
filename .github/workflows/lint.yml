@@ -58,13 +58,15 @@ jobs:
 
         Install-Module -Name powershell-yaml -Force -MaximumVersion ${env:POWERSHELL_YAML_VERSION}
 
-        $files = @()
-        $files += Get-ChildItem -Path (Join-Path ${env:GITHUB_WORKSPACE} ".github" "workflows") -Filter *.yml
-        $files += Get-ChildItem -Path (Join-Path ${env:GITHUB_WORKSPACE} ".github" "workflows") -Filter *.yaml
+        $workflowsPath = (Join-Path ${env:GITHUB_WORKSPACE} ".github" "workflows")
+
+        $workflows = @()
+        $workflows += Get-ChildItem -Path $workflowsPath -Filter *.yml
+        $workflows += Get-ChildItem -Path $workflowsPath -Filter *.yaml
 
         $hasIssues = $false
 
-        foreach ($file in $files) {
+        foreach ($file in $workflows) {
           $path = $file.FullName
           $content = Get-Content -Path $file.FullName -Raw
 
