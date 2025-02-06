@@ -48,20 +48,29 @@ jobs:
         globs: |
           **/*.md
 
-    - name: Install PowerShell modules
+    - name: Install PowerShell modules
+
       shell: pwsh
       env:
         POWERSHELL_YAML_VERSION: '0.4.12'
-        PSSCRIPTANALYZER_VERSION: '1.23.0'
+        PSSCRIPTANALYZER_VERSION: '1.23.0'
+
       run: |
-        Install-Module -Name powershell-yaml -Force -MaximumVersion ${env:POWERSHELL_YAML_VERSION}
-        Install-Module -Name PSScriptAnalyzer -Force -MaximumVersion ${env:PSSCRIPTANALYZER_VERSION}
-
-    - name: Lint PowerShell
-      shell: pwsh
-      run: |
+        Install-Module -Name powershell-yaml -Force -MaximumVersion ${env:POWERSHELL_YAML_VERSION}
+
+        Install-Module -Name PSScriptAnalyzer -Force -MaximumVersion ${env:PSSCRIPTANALYZER_VERSION}
+
+
+
+    - name: Lint PowerShell
+
+      shell: pwsh
+
+      run: |
+
         $ErrorActionPreference = "Stop"
-
+
+
         Invoke-ScriptAnalyzer -Path . -Recurse -IncludeDefaultRules -ReportSummary -Severity @('Error','Warning') -EnableExit
 
         $workflowsPath = (Join-Path ${env:GITHUB_WORKSPACE} ".github" "workflows")
