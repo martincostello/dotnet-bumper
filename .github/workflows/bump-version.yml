@@ -96,7 +96,7 @@ jobs:
           git rev-parse --verify --quiet "remotes/origin/${branchName}" | Out-Null
 
           if ($LASTEXITCODE -eq 0) {
-            Write-Host "Branch ${branchName} already exists."
+            Write-Information "Branch ${branchName} already exists."
             exit 0
           }
 
