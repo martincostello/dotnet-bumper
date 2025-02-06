@@ -90,7 +90,7 @@ jobs:
 
                 foreach ($issue in $issues) {
                   $hasIssues = $true
-                  $level = $issue.Severity -eq "Warning" ? "warning" : "error"
+                  $level = $issue.Severity -eq "Warning" ? "error" : "error"
                   $line = $offset + $issue.Line - 1
                   Write-Output "::${level} file=${fileName},line=${line},title=PSScriptAnalyzer::${issue}"
                 }
