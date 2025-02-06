@@ -101,4 +101,6 @@ jobs:
           Write-Output "Errors: $($errors); Warnings: $($warnings)."
         }
 
-        exit ($hasIssues ? 1 : 0)
+        if ($hasIssues) {
+          throw "PSScriptAnalyzer issues found."
+        }
