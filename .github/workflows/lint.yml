@@ -90,7 +90,7 @@ jobs:
 
                 foreach ($issue in $issues) {
                   $hasIssues = $true
-                  $level = $issue.Severity -eq "Warning" ? "error" : "error"
+                  $level = $issue.Severity -eq "Warning" ? "warning" : "error"
                   $line = $offset + $issue.Line - 1
                   Write-Output "::${level} file=${fileName},line=${line},title=PSScriptAnalyzer::${issue}"
                 }
@@ -102,5 +102,6 @@ jobs:
         }
 
         if ($hasIssues) {
-          throw "PSScriptAnalyzer issues found."
+          # https://github.com/actions/runner/issues/351
+          $Host.SetShouldExit(1)
         }
