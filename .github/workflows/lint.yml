@@ -60,7 +60,7 @@ jobs:
         $files += Get-ChildItem -Path .github/workflows -Filter *.yml -Recurse
         $files += Get-ChildItem -Path .github/workflows -Filter *.yaml -Recurse
 
-        $hasErrors = $false
+        $hasIssues = $false
 
         foreach ($file in $files) {
             $path = $file.FullName
@@ -88,6 +88,7 @@ jobs:
                         $warnings += $issues.Count - $errors
 
                         foreach ($issue in $issues) {
+                            $hasIssues = $true
                             $level = $issue.Severity -eq "Warning" ? "warning" : "error"
                             $line = $offset + $issue.Line - 1
                             Write-Output "::${level} file=${fileName},line=${line},title=PSScriptAnalyzer::${issue}"
@@ -99,6 +100,6 @@ jobs:
             Write-Output "Errors: $($errors); Warnings: $($warnings)."
         }
 
-        if ($hasErrors) {
+        if ($hasIssues) {
             exit 1
         }
