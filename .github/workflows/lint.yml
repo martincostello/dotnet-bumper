@@ -51,6 +51,7 @@ jobs:
     - name: Lint PowerShell
       shell: pwsh
       run: |
+        $ErrorActionPreference = "Stop"
         Invoke-ScriptAnalyzer -Path . -Recurse -IncludeDefaultRules -ReportSummary -Severity @('Error','Warning') -EnableExit
 
         $POWERSHELL_YAML_VERSION = "0.4.12"
