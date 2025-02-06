@@ -50,11 +50,12 @@ jobs:
 
     - name: Lint PowerShell
       shell: pwsh
+      env:
+        POWERSHELL_YAML_VERSION: '0.4.12'
       run: |
         $ErrorActionPreference = "Stop"
         Invoke-ScriptAnalyzer -Path . -Recurse -IncludeDefaultRules -ReportSummary -Severity @('Error','Warning') -EnableExit
 
-        $POWERSHELL_YAML_VERSION = "0.4.12"
         Install-Module -Name powershell-yaml -Force -MaximumVersion ${env:POWERSHELL_YAML_VERSION}
 
         $files = @()
