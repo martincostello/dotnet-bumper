@@ -101,5 +101,5 @@ jobs:
         }
 
         if ($hasIssues) {
-            exit 1
+            throw "One or more PowerShell lint warnings/errors were found in the GitHub workflows."
         }
