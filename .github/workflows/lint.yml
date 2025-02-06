@@ -97,8 +97,6 @@ jobs:
               }
             }
           }
-
-          Write-Output "Errors: $($errors); Warnings: $($warnings)."
         }
 
         if ($hasIssues) {
