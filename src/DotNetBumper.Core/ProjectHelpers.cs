@@ -13,12 +13,7 @@ internal static class ProjectHelpers
     private static readonly XNamespace[] Namespaces = [None, MSBuild];
 
     public static List<string> FindProjects(string path, SearchOption searchOption = SearchOption.AllDirectories)
-    {
-        return FindProjectFiles(path, searchOption)
-            .Select(Path.GetDirectoryName)
-            .Cast<string>()
-            .ToList();
-    }
+        => [.. FindProjectFiles(path, searchOption).Select(Path.GetDirectoryName).Cast<string>()];
 
     public static List<string> FindProjectFiles(string path, SearchOption searchOption = SearchOption.AllDirectories)
     {
@@ -44,7 +39,7 @@ internal static class ProjectHelpers
             var solution = SolutionFile.Parse(solutionFile);
             var projects = solution.ProjectsInOrder.Where((p) => p.ProjectType != SolutionProjectType.SolutionFolder);
 
-            return projects.Select((p) => p.AbsolutePath).ToList();
+            return [.. projects.Select((p) => p.AbsolutePath)];
         }
         catch (Exception)
         {

@@ -390,9 +390,7 @@ internal sealed partial class GitHubActionsUpgrader(
                 {
                     // Strip-out any pre-release versions from the SDK versions for this major version so
                     // we can consider the version format we need to use based only on the stable versions.
-                    sdkVersionsParts = sdkVersionsParts
-                        .Where((p) => p.Length is not 3 || !p[2].Contains(PrereleaseSeparator, StringComparison.Ordinal))
-                        .ToArray();
+                    sdkVersionsParts = [.. sdkVersionsParts.Where((p) => p.Length is not 3 || !p[2].Contains(PrereleaseSeparator, StringComparison.Ordinal))];
                 }
 
                 // Only add more parts if any one of the versions has more than one

@@ -26,9 +26,7 @@ internal sealed partial class VisualStudioCodeUpgrader(
 
     protected override IReadOnlyList<string> FindFiles()
     {
-        return base.FindFiles()
-                   .Where(IsVSCodeConfig)
-                   .ToList();
+        return [.. base.FindFiles().Where(IsVSCodeConfig)];
 
         static bool IsVSCodeConfig(string path)
         {
