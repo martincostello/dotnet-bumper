@@ -11,6 +11,8 @@
     <AnalysisMode>All</AnalysisMode>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)DotNetBumper.snk</AssemblyOriginatorKeyFile>
     <Authors>martin_costello</Authors>
+    <!-- HACK Workaround for https://github.com/dotnet/sdk/issues/17454 -->
+    <BuildInParallel Condition="$([MSBuild]::IsOSPlatform('Windows'))">false</BuildInParallel>
     <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)DotNetBumper.ruleset</CodeAnalysisRuleSet>
     <Company>https://github.com/martincostello/dotnet-bumper</Company>
