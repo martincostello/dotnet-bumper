@@ -70,6 +70,7 @@ jobs:
           6.0.x
           8.0.x
           9.0.x
+          10.0.x
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@3951f0dfe7a07e2313ec93c75700083e2005cbab # v4.3.0
