@@ -20,7 +20,7 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Applies_Code_Fix(string channel)
     {
-        Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
+        Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/roslyn/issues/73261");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);
@@ -70,7 +70,7 @@ public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
     [MemberData(nameof(Channels))]
     public async Task UpgradeAsync_Applies_Code_Fixes(string channel)
     {
-        Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/sdk/issues/39742");
+        Assert.SkipWhen(channel is "8.0", "See https://github.com/dotnet/roslyn/issues/73261");
 
         // Arrange
         var upgrade = await GetUpgradeAsync(channel);

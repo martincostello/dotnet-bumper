@@ -11,16 +11,7 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 {
     private static TimeSpan Timeout { get; } = TimeSpan.FromMinutes(4);
 
-    public static TheoryData<string> Channels()
-    {
-#pragma warning disable IDE0028 // See https://github.com/dotnet/roslyn/issues/72668
-        return new()
-        {
-            "8.0",
-            "9.0",
-        };
-#pragma warning restore IDE0028
-    }
+    public static TheoryData<string> Channels() => ["8.0", "9.0"];
 
     [Theory]
     [MemberData(nameof(Channels))]
