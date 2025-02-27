@@ -39,13 +39,15 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         };
 #pragma warning restore IDE0090
 
+        // TODO Dynamically work out if there's a preview available
         // These test cases only work when there's actually a preview in development
         if (Environment.GetEnvironmentVariable("DOTNET_HAS_PREVIEW") is "true")
         {
             testCases.AddRange(
                 [
                     new BumperTestCase("6.0.100", ["net6.0"], ["--upgrade-type=preview"]),
-                    new BumperTestCase("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("System.Text.Json", "8.0.0"))),
+                    new BumperTestCase("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "8.0.0"))),
+                    new BumperTestCase("9.0.100", ["net9.0"], ["--upgrade-type=preview"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "9.0.0"))),
                 ]);
         }
 
