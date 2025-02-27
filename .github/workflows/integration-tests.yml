@@ -77,24 +77,42 @@ jobs:
         include:
           - repo: alexa-london-travel
             upgrade-type: Latest
+          - repo: alexa-london-travel
+            upgrade-type: Preview
           - repo: alexa-london-travel-site
             upgrade-type: Latest
+          - repo: alexa-london-travel-site
+            upgrade-type: Preview
           - repo: apple-fitness-workout-mapper
             upgrade-type: Latest
+          - repo: apple-fitness-workout-mapper
+            upgrade-type: Preview
           - repo: costellobot
             upgrade-type: Latest
+          - repo: costellobot
+            upgrade-type: Preview
           - repo: dependabot-helper
             upgrade-type: Latest
+          - repo: dependabot-helper
+            upgrade-type: Preview
           - repo: dotnet-bumper
             upgrade-type: Latest
+          - repo: dotnet-bumper
+            upgrade-type: Preview
           - repo: dotnet-bumper-test
             upgrade-type: Latest
           - repo: dotnet-bumper-test
             upgrade-type: LTS
+          - repo: dotnet-bumper-test
+            upgrade-type: Preview
           - repo: project-euler
             upgrade-type: Latest
+          - repo: project-euler
+            upgrade-type: Preview
           - repo: website
             upgrade-type: Latest
+          - repo: website
+            upgrade-type: Preview
 
     steps:
 
@@ -120,6 +138,7 @@ jobs:
           7.0.x
           8.0.x
           9.0.x
+          10.0.x
 
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@3951f0dfe7a07e2313ec93c75700083e2005cbab # v4.3.0
