@@ -82,10 +82,12 @@ jobs:
           - repo: alexa-london-travel-site
             upgrade-type: Latest
           - repo: alexa-london-travel-site
+            test: false
             upgrade-type: Preview
           - repo: apple-fitness-workout-mapper
             upgrade-type: Latest
           - repo: apple-fitness-workout-mapper
+            test: false
             upgrade-type: Preview
           - repo: costellobot
             upgrade-type: Latest
@@ -98,6 +100,7 @@ jobs:
           - repo: dotnet-bumper
             upgrade-type: Latest
           - repo: dotnet-bumper
+            test: false
             upgrade-type: Preview
           - repo: dotnet-bumper-test
             upgrade-type: Latest
@@ -185,7 +188,7 @@ jobs:
       shell: pwsh
       env:
         DOTNET_BUMPER_CONFIG: ${{ steps.generate-config.outputs.dotnet-bumper-config }}
-        DOTNET_BUMPER_TEST: 'true' # ${{ format('{0}', matrix.test) }}
+        DOTNET_BUMPER_TEST: ${{ format('{0}', matrix.test) }}
         DOTNET_BUMPER_UPGRADE_TYPE: ${{ matrix.upgrade-type }}
         DOTNET_BUMPER_WARNINGS_AS_ERRORS: 'true' # ${{ format('{0}', matrix.warnings-as-errors) }}
       run: |
