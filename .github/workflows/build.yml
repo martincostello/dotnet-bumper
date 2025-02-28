@@ -85,8 +85,6 @@ jobs:
 
     - name: Build, Test and Package
       id: build
-      env:
-        DOTNET_HAS_PREVIEW: ${{ vars.DOTNET_HAS_PREVIEW }}
       shell: pwsh
       run: ./build.ps1
 
