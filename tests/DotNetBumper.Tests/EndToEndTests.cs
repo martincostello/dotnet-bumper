@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
@@ -11,6 +12,8 @@ namespace MartinCostello.DotNetBumper;
 [Collection("End-to-End")]
 public class EndToEndTests(ITestOutputHelper outputHelper)
 {
+    private static bool? _dotnetHasPreview;
+
     [Fact]
     public static async Task Application_Validates_Project_Exists()
     {
@@ -24,7 +27,7 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(1);
     }
 
-    public static TheoryData<BumperTestCase> TestCases()
+    public static async Task<TheoryData<BumperTestCase>> TestCases()
     {
 #pragma warning disable IDE0090
         var testCases = new TheoryData<BumperTestCase>
@@ -39,16 +42,15 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         };
 #pragma warning restore IDE0090
 
-        // TODO Dynamically work out if there's a preview available
         // These test cases only work when there's actually a preview in development
-        if (Environment.GetEnvironmentVariable("DOTNET_HAS_PREVIEW") is "true")
+        if (await DotNetHasPreviewAsync())
         {
             testCases.AddRange(
-                [
-                    new BumperTestCase("6.0.100", ["net6.0"], ["--upgrade-type=preview"]),
-                    new BumperTestCase("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "8.0.0"))),
-                    new BumperTestCase("9.0.100", ["net9.0"], ["--upgrade-type=preview"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "9.0.0"))),
-                ]);
+            [
+                new BumperTestCase("6.0.100", ["net6.0"], ["--upgrade-type=preview"]),
+                new BumperTestCase("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "8.0.0"))),
+                new BumperTestCase("9.0.100", ["net9.0"], ["--upgrade-type=preview"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "9.0.0"))),
+            ]);
         }
 
         List<string> formats = ["Json", "Markdown"];
@@ -582,6 +584,35 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
 
         script.ShouldNotContain($" net{channel} ");
         script.ShouldContain(" win-x64 ");
+    }
+
+    private static async Task<bool> DotNetHasPreviewAsync()
+    {
+        if (_dotnetHasPreview is null)
+        {
+            using var client = new HttpClient();
+            using var index = await client.GetFromJsonAsync<JsonDocument>("https://raw.githubusercontent.com/dotnet/core/refs/heads/main/release-notes/releases-index.json");
+
+            bool hasPreview = false;
+
+            if (index?.RootElement.TryGetProperty("releases-index", out var releases) is true)
+            {
+                foreach (var release in releases.EnumerateArray())
+                {
+                    if (release.TryGetProperty("support-phase", out var supportPhase) &&
+                        supportPhase.ValueKind is JsonValueKind.String &&
+                        supportPhase.GetString() is "go-live" or "preview")
+                    {
+                        hasPreview = true;
+                        break;
+                    }
+                }
+            }
+
+            _dotnetHasPreview = hasPreview;
+        }
+
+        return _dotnetHasPreview.Value;
     }
 
     private static bool IsDebug()
