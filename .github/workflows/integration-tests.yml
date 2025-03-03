@@ -155,6 +155,7 @@ jobs:
         MSBUILDDEBUGENGINE: '1'
         MSBUILDDEBUGPATH: '${{ github.workspace }}/MSBuild_Logs'
       run: |
+        mkdir ${env:MSBUILDDEBUGPATH}
         $bumperArgs = @(
           ".",
           "--log-format",
