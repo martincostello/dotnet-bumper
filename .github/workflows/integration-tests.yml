@@ -185,6 +185,7 @@ jobs:
       with:
         name: binlogs
         path: '${{ github.workspace }}/MSBuild_Logs'
+        include-hidden-files: true
 
     - name: Show git diff
       if: ${{ !cancelled() }}
