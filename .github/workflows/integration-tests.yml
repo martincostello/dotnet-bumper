@@ -75,47 +75,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - repo: alexa-london-travel
-            upgrade-type: Latest
-          - repo: alexa-london-travel
-            upgrade-type: Preview
-          - repo: alexa-london-travel-site
-            upgrade-type: Latest
-          - repo: alexa-london-travel-site
-            test: false
-            upgrade-type: Preview
-            warnings-as-errors: false
-          - repo: apple-fitness-workout-mapper
-            upgrade-type: Latest
-          - repo: apple-fitness-workout-mapper
-            test: false
-            upgrade-type: Preview
           - repo: costellobot
-            upgrade-type: Latest
-          - repo: costellobot
-            upgrade-type: Preview
-          - repo: dependabot-helper
-            upgrade-type: Latest
-          - repo: dependabot-helper
-            upgrade-type: Preview
-          - repo: dotnet-bumper
-            upgrade-type: Latest
-          - repo: dotnet-bumper
-            test: false
-            upgrade-type: Preview
-          - repo: dotnet-bumper-test
-            upgrade-type: Latest
-          - repo: dotnet-bumper-test
-            upgrade-type: LTS
-          - repo: dotnet-bumper-test
-            upgrade-type: Preview
-          - repo: project-euler
-            upgrade-type: Latest
-          - repo: project-euler
-            upgrade-type: Preview
-          - repo: website
-            upgrade-type: Latest
-          - repo: website
             upgrade-type: Preview
 
     steps:
@@ -189,9 +149,11 @@ jobs:
       shell: pwsh
       env:
         DOTNET_BUMPER_CONFIG: ${{ steps.generate-config.outputs.dotnet-bumper-config }}
-        DOTNET_BUMPER_TEST: ${{ format('{0}', matrix.test) }}
+        DOTNET_BUMPER_TEST: ''
         DOTNET_BUMPER_UPGRADE_TYPE: ${{ matrix.upgrade-type }}
-        DOTNET_BUMPER_WARNINGS_AS_ERRORS: ${{ format('{0}', matrix.warnings-as-errors) }}
+        DOTNET_BUMPER_WARNINGS_AS_ERRORS: ''
+        MSBUILDDEBUGENGINE: '1'
+        MSBUILDDEBUGPATH: '${{ github.workspace }}/MSBuild_Logs'
       run: |
         $bumperArgs = @(
           ".",
@@ -216,6 +178,13 @@ jobs:
           $bumperArgs += "--verbose"
         }
         dotnet bumper $bumperArgs
+
+    - name: Publish binlogs
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+      if: ${{ always() }}
+      with:
+        name: binlogs
+        path: '${{ github.workspace }}/MSBuild_Logs'
 
     - name: Show git diff
       if: ${{ !cancelled() }}
