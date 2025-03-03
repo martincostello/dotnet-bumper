@@ -184,7 +184,7 @@ jobs:
       if: ${{ always() }}
       with:
         name: binlogs
-        path: '${{ github.workspace }}/MSBuild_Logs'
+        path: '${{ github.workspace }}/MSBuild_Logs/**/*'
         include-hidden-files: true
 
     - name: Show git diff
