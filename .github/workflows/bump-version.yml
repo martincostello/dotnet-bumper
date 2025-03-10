@@ -54,6 +54,9 @@ jobs:
           $updatedVersion = $version.ToString()
           $versionPrefix.InnerText = $updatedVersion
 
+          $packageValidationBaselineVersion = $xml.SelectSingleNode('Project/PropertyGroup/PackageValidationBaselineVersion')
+          $packageValidationBaselineVersion.InnerText = $publishedVersion
+
           $settings = New-Object System.Xml.XmlWriterSettings
           $settings.Encoding = New-Object System.Text.UTF8Encoding($false)
           $settings.Indent = $true

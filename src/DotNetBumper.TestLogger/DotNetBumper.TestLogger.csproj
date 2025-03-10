@@ -7,9 +7,7 @@
     <PackageId>DotNetBumper.TestLogger</PackageId>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
-    <Summary>$(Description)</Summary>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Title>$(PackageId)</Title>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" VersionOverride="17.0.0" />

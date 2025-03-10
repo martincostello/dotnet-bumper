@@ -6,9 +6,7 @@
     <OutputType>Library</OutputType>
     <PackageId>MartinCostello.DotNetBumper.Core</PackageId>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
-    <Summary>$(Description)</Summary>
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-    <Title>MartinCostello.DotNetBumper.Core</Title>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Resources\**\*" />
@@ -33,7 +31,7 @@
     <ProjectReference Include="..\DotNetBumper.TestLogger\DotNetBumper.TestLogger.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="DotNetBumper.Tests" Key="$(StrongNamePublicKey)" />
+    <InternalsVisibleTo Include="DotNetBumper.Tests" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 </Project>

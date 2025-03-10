@@ -1,27 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>A .NET Global Tool that upgrades projects to a newer version of .NET.</Description>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <IsAotCompatible>true</IsAotCompatible>
     <IsPackable>true</IsPackable>
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
     <PackageId>MartinCostello.DotNetBumper</PackageId>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
-    <Summary>$(Description)</Summary>
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <Title>DotNetBumper</Title>
     <ToolCommandName>dotnet-bumper</ToolCommandName>
     <UserSecretsId>MartinCostello.DotNetBumper</UserSecretsId>
-  </PropertyGroup>
-  <PropertyGroup>
-    <EnableAotAnalyzer>true</EnableAotAnalyzer>
-    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
-    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-    <IsAotCompatible>true</IsAotCompatible>
-    <IsTrimmable>true</IsTrimmable>
-  </PropertyGroup>
-  <PropertyGroup>
-    <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>0.4.1</PackageValidationBaselineVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotNetBumper.Core\DotNetBumper.Core.csproj" />
@@ -33,6 +23,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="DotNetBumper.Tests" Key="$(StrongNamePublicKey)" />
+    <InternalsVisibleTo Include="DotNetBumper.Tests" />
   </ItemGroup>
 </Project>
