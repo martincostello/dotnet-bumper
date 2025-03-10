@@ -7,15 +7,13 @@
     <PackageId>MartinCostello.DotNetBumper.MSBuild</PackageId>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
-    <Summary>$(Description)</Summary>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Title>$(PackageId)</Title>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="DotNetBumper.Tests" Key="$(StrongNamePublicKey)" />
+    <InternalsVisibleTo Include="DotNetBumper.Tests" />
   </ItemGroup>
 </Project>
