@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>A .NET Global Tool that upgrades projects to a newer version of .NET.</Description>
+    <EnablePackageValidation>true</EnablePackageValidation>
     <IsAotCompatible>true</IsAotCompatible>
     <IsPackable>true</IsPackable>
     <OutputType>Exe</OutputType>
     <PackAsTool>true</PackAsTool>
     <PackageId>MartinCostello.DotNetBumper</PackageId>
-    <PackageValidationBaselineVersion>0.4.1</PackageValidationBaselineVersion>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <Title>DotNetBumper</Title>
