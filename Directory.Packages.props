@@ -1,6 +1,6 @@
 <Project>
   <ItemGroup>
-    <GlobalPackageReference Include="MartinCostello.BuildKit" Version="0.1.0" />
+    <GlobalPackageReference Include="MartinCostello.BuildKit" Version="0.3.0" />
     <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="All" />
     <GlobalPackageReference Include="ReferenceTrimmer" Version="3.3.11" />
   </ItemGroup>
@@ -17,13 +17,13 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0-preview.1.25080.5" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0-preview.1.25080.5" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.0-preview.1.25080.5" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.3.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0-preview.1.25080.5" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.0-preview.1.25080.5" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.0-preview.1.25080.5" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.12.0" />
-    <PackageVersion Include="MSBuild.ProjectCreation" Version="14.0.0" />
+    <PackageVersion Include="MSBuild.ProjectCreation" Version="14.0.5" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="NuGet.Versioning" Version="6.13.2" />
     <PackageVersion Include="ReportGenerator" Version="5.4.4" />
