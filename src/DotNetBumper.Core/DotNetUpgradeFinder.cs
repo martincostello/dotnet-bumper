@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Versioning;
@@ -41,6 +42,7 @@ public partial class DotNetUpgradeFinder(
 
         using var releasesIndex = await httpClient.GetFromJsonAsync<JsonDocument>(
             "https://raw.githubusercontent.com/dotnet/core/main/release-notes/releases-index.json",
+            DotNetJsonSerializationContext.Default.JsonDocument,
             cancellationToken);
 
         if (releasesIndex is null)
@@ -204,4 +206,9 @@ public partial class DotNetUpgradeFinder(
             string sdkVersion,
             DotNetReleaseType releaseType);
     }
+
+    [ExcludeFromCodeCoverage]
+    [JsonSerializable(typeof(JsonDocument))]
+    [JsonSourceGenerationOptions]
+    private sealed partial class DotNetJsonSerializationContext : JsonSerializerContext;
 }
