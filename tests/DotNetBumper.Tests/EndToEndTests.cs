@@ -53,6 +53,10 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             ]);
         }
 
+        // TODO Work out if there's an active daily build (e.g. when .NET 11 development starts before .NET 10 is released)
+        // TODO Add a test case for upgrading from a daily build to another
+        testCases.Add(new BumperTestCase("9.0.100", ["net9.0"], ["--upgrade-type=daily"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "9.0.0"))));
+
         List<string> formats = ["Json", "Markdown"];
 
         if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") is "true")
