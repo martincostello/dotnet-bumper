@@ -225,7 +225,7 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.AddRange(["--maximum-version", channel.ToString(2)]);
         }
 
-        if (Options.UpgradeType is UpgradeType.Preview)
+        if (Options.UpgradeType.IsPrerelease())
         {
             arguments.Add("--pre-release:Always");
 

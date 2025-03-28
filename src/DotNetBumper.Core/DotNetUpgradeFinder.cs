@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Versioning;
@@ -31,6 +32,59 @@ public partial class DotNetUpgradeFinder(
     /// </returns>
     public virtual async Task<UpgradeInfo?> GetUpgradeAsync(CancellationToken cancellationToken)
     {
+        if (options.Value.UpgradeType is UpgradeType.Daily)
+        {
+            // TODO Make configurable?
+            var quality = DotNetQualities.Daily;
+
+            // TODO Automatically try to compute what the in-development version is
+            // TODO More robust
+            // TODO Need to handle roll-forward as the SDK is unlikely to be installed
+            // TODO Install the new SDK locally to avoid need to install?
+            var channel = new Version(options.Value.DotNetChannel ?? "10.0");
+
+            var versionUrl = $"https://aka.ms/dotnet/{channel.ToString(2)}/{quality}/sdk-productVersion.txt";
+
+            using var response = await httpClient.GetAsync(versionUrl, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // TODO Error handling
+                return null;
+            }
+
+            if (response.Content.Headers.ContentType?.MediaType is not ("application/octet-stream" or "text/plain"))
+            {
+                // TODO Error handling
+                return null;
+            }
+
+            var version = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!NuGetVersion.TryParse(version.Trim(), out var sdkVersion))
+            {
+                // TODO Error handling
+                return null;
+            }
+
+            // TODO Compute when Update Tuesday in November will be and set that as the date
+            var utcNow = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime);
+            var endOfLife = new DateOnly(utcNow.Year, 11, 14);
+            if (endOfLife < utcNow)
+            {
+                endOfLife = endOfLife.AddYears(1);
+            }
+
+            return new()
+            {
+                Channel = channel,
+                EndOfLife = endOfLife,
+                ReleaseType = sdkVersion.Major % 2 is 0 ? DotNetReleaseType.Lts : DotNetReleaseType.Sts, // HACK Better way to determine?
+                SdkVersion = sdkVersion,
+                SupportPhase = DotNetSupportPhase.Preview,
+            };
+        }
+
         var candidates = await GetChannelsAsync(cancellationToken);
         return GetUpgrade(candidates);
     }
@@ -41,6 +95,7 @@ public partial class DotNetUpgradeFinder(
 
         using var releasesIndex = await httpClient.GetFromJsonAsync<JsonDocument>(
             "https://raw.githubusercontent.com/dotnet/core/main/release-notes/releases-index.json",
+            DotNetJsonSerializationContext.Default.JsonDocument,
             cancellationToken);
 
         if (releasesIndex is null)
@@ -148,6 +203,7 @@ public partial class DotNetUpgradeFinder(
 
             return options.Value.UpgradeType switch
             {
+                UpgradeType.Daily => true,
                 UpgradeType.Preview => channel.SdkVersion.IsPrerelease,
                 UpgradeType.Lts => channel.ReleaseType is DotNetReleaseType.Lts && !channel.SdkVersion.IsPrerelease,
                 _ => !channel.SdkVersion.IsPrerelease,
@@ -171,6 +227,14 @@ public partial class DotNetUpgradeFinder(
             latestChannel.ReleaseType);
 
         return latestChannel;
+    }
+
+    private static class DotNetQualities
+    {
+        internal const string Daily = "daily";
+        internal const string Signed = "signed";
+        internal const string Validated = "validated";
+        internal const string Preview = "preview";
     }
 
     [ExcludeFromCodeCoverage]
@@ -204,4 +268,9 @@ public partial class DotNetUpgradeFinder(
             string sdkVersion,
             DotNetReleaseType releaseType);
     }
+
+    [ExcludeFromCodeCoverage]
+    [JsonSerializable(typeof(JsonDocument))]
+    [JsonSourceGenerationOptions]
+    private sealed partial class DotNetJsonSerializationContext : JsonSerializerContext;
 }

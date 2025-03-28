@@ -26,13 +26,15 @@ public class BumperConfigurationProviderTests(ITestOutputHelper outputHelper)
         actual.RemainingReferencesIgnore.ShouldBe([]);
     }
 
-    [Fact]
-    public async Task GetAsync_When_No_Custom_Configuration_For_Preview()
+    [Theory]
+    [InlineData(UpgradeType.Daily)]
+    [InlineData(UpgradeType.Preview)]
+    public async Task GetAsync_When_No_Custom_Configuration_For_Prerelease(UpgradeType upgradeType)
     {
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        var target = CreateTarget(fixture, UpgradeType.Preview);
+        var target = CreateTarget(fixture, upgradeType);
 
         // Act
         var actual = await target.GetAsync(fixture.CancellationToken);
@@ -45,14 +47,16 @@ public class BumperConfigurationProviderTests(ITestOutputHelper outputHelper)
         actual.RemainingReferencesIgnore.ShouldBe([]);
     }
 
-    [Fact]
-    public async Task GetAsync_When_Json_Configuration()
+    [Theory]
+    [InlineData(UpgradeType.Daily)]
+    [InlineData(UpgradeType.Preview)]
+    public async Task GetAsync_When_Json_Configuration_For_Prerelease(UpgradeType upgradeType)
     {
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
         await BumperConfigurationLoaderTests.CreateJsonConfigurationAsync(fixture);
 
-        var target = CreateTarget(fixture, UpgradeType.Preview);
+        var target = CreateTarget(fixture, upgradeType);
 
         // Act
         var actual = await target.GetAsync(fixture.CancellationToken);
@@ -65,14 +69,16 @@ public class BumperConfigurationProviderTests(ITestOutputHelper outputHelper)
         actual.RemainingReferencesIgnore.ShouldBe(["ignore-json-1", "ignore-json-2"]);
     }
 
-    [Fact]
-    public async Task GetAsync_When_Yaml_Configuration()
+    [Theory]
+    [InlineData(UpgradeType.Daily)]
+    [InlineData(UpgradeType.Preview)]
+    public async Task GetAsync_When_Yaml_Configuration(UpgradeType upgradeType)
     {
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
         await BumperConfigurationLoaderTests.CreateYamlConfigurationAsync(fixture);
 
-        var target = CreateTarget(fixture, UpgradeType.Preview);
+        var target = CreateTarget(fixture, upgradeType);
 
         // Act
         var actual = await target.GetAsync(fixture.CancellationToken);
