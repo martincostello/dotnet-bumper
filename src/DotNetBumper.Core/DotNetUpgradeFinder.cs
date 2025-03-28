@@ -150,6 +150,7 @@ public partial class DotNetUpgradeFinder(
 
             return options.Value.UpgradeType switch
             {
+                UpgradeType.Daily => true,
                 UpgradeType.Preview => channel.SdkVersion.IsPrerelease,
                 UpgradeType.Lts => channel.ReleaseType is DotNetReleaseType.Lts && !channel.SdkVersion.IsPrerelease,
                 _ => !channel.SdkVersion.IsPrerelease,

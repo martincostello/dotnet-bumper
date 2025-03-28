@@ -22,4 +22,9 @@ public enum UpgradeType
     /// Upgrade to the latest preview release.
     /// </summary>
     Preview,
+
+    /// <summary>
+    /// Upgrade to the latest daily release.
+    /// </summary>
+    Daily,
 }
