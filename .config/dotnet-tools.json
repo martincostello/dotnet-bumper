@@ -9,7 +9,7 @@
       ]
     },
     "dotnet-validate": {
-      "version": "0.0.1-preview.304",
+      "version": "0.0.1-preview.537",
       "commands": [
         "dotnet-validate"
       ]
