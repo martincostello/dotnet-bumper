@@ -38,46 +38,7 @@ public partial class DotNetUpgradeFinder(
     {
         if (options.Value.UpgradeType is UpgradeType.Daily)
         {
-#pragma warning disable CA1308
-            var quality = options.Value.Quality.ToString().ToLowerInvariant();
-            var channel = options.Value.DotNetChannel is null ? GetDotNetDevelopmentVersion() : Version.Parse(options.Value.DotNetChannel);
-#pragma warning restore CA1307
-
-            var versionUrl = $"https://aka.ms/dotnet/{channel.ToString(2)}/{quality}/sdk-productVersion.txt";
-
-            using var response = await httpClient.GetAsync(versionUrl, cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                Log.UnableToDetermineLatestSdkBuildHttpError(logger, response.StatusCode);
-                return null;
-            }
-
-            if (response.Content.Headers.ContentType?.MediaType is not ("application/octet-stream" or "text/plain"))
-            {
-                Log.UnableToDetermineLatestSdkBuildContentType(logger, response.Content.Headers.ContentType?.MediaType);
-                return null;
-            }
-
-            var version = await response.Content.ReadAsStringAsync(cancellationToken);
-
-            if (!NuGetVersion.TryParse(version.Trim(), out var sdkVersion))
-            {
-                Log.UnableToParseLatestSdkBuildVersion(logger, version);
-                return null;
-            }
-
-            var installer = new DotNetInstaller(httpClient, logger);
-            await installer.TryInstallAsync(sdkVersion, cancellationToken);
-
-            return new()
-            {
-                Channel = channel,
-                EndOfLife = GetDotNetReleaseDate(),
-                ReleaseType = GetDotNetReleaseType(sdkVersion),
-                SdkVersion = sdkVersion,
-                SupportPhase = DotNetSupportPhase.Preview,
-            };
+            return await GetDailyBuildAsync(cancellationToken);
         }
 
         var candidates = await GetChannelsAsync(cancellationToken);
@@ -132,6 +93,50 @@ public partial class DotNetUpgradeFinder(
         }
 
         return releaseDate;
+    }
+
+    private async Task<UpgradeInfo> GetDailyBuildAsync(CancellationToken cancellationToken)
+    {
+#pragma warning disable CA1308
+        var quality = options.Value.Quality.ToString().ToLowerInvariant();
+        var channel = options.Value.DotNetChannel is null ? GetDotNetDevelopmentVersion() : Version.Parse(options.Value.DotNetChannel);
+#pragma warning restore CA1307
+
+        var versionUrl = $"https://aka.ms/dotnet/{channel.ToString(2)}/{quality}/sdk-productVersion.txt";
+
+        using var response = await httpClient.GetAsync(versionUrl, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            Log.UnableToDetermineLatestSdkBuildHttpError(logger, response.StatusCode);
+            return null;
+        }
+
+        if (response.Content.Headers.ContentType?.MediaType is not ("application/octet-stream" or "text/plain"))
+        {
+            Log.UnableToDetermineLatestSdkBuildContentType(logger, response.Content.Headers.ContentType?.MediaType);
+            return null;
+        }
+
+        var version = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        if (!NuGetVersion.TryParse(version.Trim(), out var sdkVersion))
+        {
+            Log.UnableToParseLatestSdkBuildVersion(logger, version);
+            return null;
+        }
+
+        var installer = new DotNetInstaller(httpClient, logger);
+        await installer.TryInstallAsync(sdkVersion, cancellationToken);
+
+        return new()
+        {
+            Channel = channel,
+            EndOfLife = GetDotNetReleaseDate(),
+            ReleaseType = GetDotNetReleaseType(sdkVersion),
+            SdkVersion = sdkVersion,
+            SupportPhase = DotNetSupportPhase.Preview,
+        };
     }
 
     private async Task<IReadOnlyList<UpgradeInfo>> GetChannelsAsync(CancellationToken cancellationToken)
