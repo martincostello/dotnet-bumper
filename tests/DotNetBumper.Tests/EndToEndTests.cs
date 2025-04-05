@@ -54,9 +54,12 @@ public sealed class EndToEndTests(ITestOutputHelper outputHelper) : IAsyncDispos
             ]);
         }
 
-        // TODO Work out if there's an active daily build (e.g. when .NET 11 development starts before .NET 10 is released)
-        // TODO Add a test case for upgrading from a daily build to another
-        testCases.Add(new BumperTestCase("9.0.100", ["net9.0"], ["--upgrade-type=daily"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "9.0.0"))));
+        // Skip daily build test in November and December when one release
+        // // has just finished and the next hasn't ramped up yet.
+        if (TimeProvider.System.GetUtcNow().Month is not (11 or 12))
+        {
+            testCases.Add(new BumperTestCase("9.0.100", ["net9.0"], ["--upgrade-type=daily"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "9.0.0"))));
+        }
 
         List<string> formats = ["Json", "Markdown"];
 
