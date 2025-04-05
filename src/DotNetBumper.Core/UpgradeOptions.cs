@@ -50,4 +50,9 @@ public sealed class UpgradeOptions
     /// Gets or sets a value indicating whether to treat warnings as errors.
     /// </summary>
     public bool TreatWarningsAsErrors { get; set; }
+
+    /// <summary>
+    /// Gets or sets the .NET build quality to use for <see cref="UpgradeType.Daily"/>.
+    /// </summary>
+    public DotNetQuality Quality { get; set; }
 }

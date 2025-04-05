@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -37,10 +38,10 @@ public partial class DotNetUpgradeFinder(
     {
         if (options.Value.UpgradeType is UpgradeType.Daily)
         {
-            // TODO Make configurable?
-            var quality = DotNetQualities.Daily;
-
+#pragma warning disable CA1308
+            var quality = options.Value.Quality.ToString().ToLowerInvariant();
             var channel = options.Value.DotNetChannel is null ? GetDotNetDevelopmentVersion() : Version.Parse(options.Value.DotNetChannel);
+#pragma warning restore CA1307
 
             var versionUrl = $"https://aka.ms/dotnet/{channel.ToString(2)}/{quality}/sdk-productVersion.txt";
 
@@ -48,13 +49,13 @@ public partial class DotNetUpgradeFinder(
 
             if (!response.IsSuccessStatusCode)
             {
-                // TODO Error handling
+                Log.UnableToDetermineLatestSdkBuildHttpError(logger, response.StatusCode);
                 return null;
             }
 
             if (response.Content.Headers.ContentType?.MediaType is not ("application/octet-stream" or "text/plain"))
             {
-                // TODO Error handling
+                Log.UnableToDetermineLatestSdkBuildContentType(logger, response.Content.Headers.ContentType?.MediaType);
                 return null;
             }
 
@@ -62,7 +63,7 @@ public partial class DotNetUpgradeFinder(
 
             if (!NuGetVersion.TryParse(version.Trim(), out var sdkVersion))
             {
-                // TODO Error handling
+                Log.UnableToParseLatestSdkBuildVersion(logger, version);
                 return null;
             }
 
@@ -273,14 +274,6 @@ public partial class DotNetUpgradeFinder(
         return latestChannel;
     }
 
-    private static class DotNetQualities
-    {
-        internal const string Daily = "daily";
-        internal const string Signed = "signed";
-        internal const string Validated = "validated";
-        internal const string Preview = "preview";
-    }
-
     [ExcludeFromCodeCoverage]
     private static partial class Log
     {
@@ -311,6 +304,24 @@ public partial class DotNetUpgradeFinder(
             string channel,
             string sdkVersion,
             DotNetReleaseType releaseType);
+
+        [LoggerMessage(
+            EventId = 5,
+            Level = LogLevel.Error,
+            Message = "Failed to determine the latest daily build version for the .NET SDK: {StatusCode}")]
+        public static partial void UnableToDetermineLatestSdkBuildHttpError(ILogger logger, HttpStatusCode statusCode);
+
+        [LoggerMessage(
+            EventId = 6,
+            Level = LogLevel.Error,
+            Message = "Failed to determine the latest daily build version for the .NET SDK due to unexpected content type {ContentType}.")]
+        public static partial void UnableToDetermineLatestSdkBuildContentType(ILogger logger, string? contentType);
+
+        [LoggerMessage(
+            EventId = 7,
+            Level = LogLevel.Error,
+            Message = "Failed to parse the latest daily build version for the .NET SDK: {Content}")]
+        public static partial void UnableToParseLatestSdkBuildVersion(ILogger logger, string? content);
     }
 
     [ExcludeFromCodeCoverage]
