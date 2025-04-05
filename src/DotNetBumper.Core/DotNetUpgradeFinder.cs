@@ -67,6 +67,9 @@ public partial class DotNetUpgradeFinder(
                 return null;
             }
 
+            var installer = new DotNetInstaller(httpClient, logger);
+            await installer.InstallAsync(sdkVersion, cancellationToken);
+
             // TODO Compute when Update Tuesday in November will be and set that as the date
             var utcNow = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime);
             var endOfLife = new DateOnly(utcNow.Year, 11, 14);
