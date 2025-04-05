@@ -55,7 +55,7 @@ public sealed class EndToEndTests(ITestOutputHelper outputHelper) : IAsyncDispos
         }
 
         // Skip daily build test in November and December when one release
-        // // has just finished and the next hasn't ramped up yet.
+        // has just finished and the next hasn't ramped up yet.
         if (TimeProvider.System.GetUtcNow().Month is not (11 or 12))
         {
             testCases.Add(new BumperTestCase("9.0.100", ["net9.0"], ["--upgrade-type=daily"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "9.0.0"))));
