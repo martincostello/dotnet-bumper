@@ -202,21 +202,21 @@ public partial class ProjectUpgrader(
         var sequence = new List<IUpgrader>(upgraders);
 
         // The SDK version in global.json must be updated first
-        var globalJsonIndex = sequence.FindIndex((p) => p.GetType() == typeof(Upgraders.GlobalJsonUpgrader));
+        var globalJsonIndex = sequence.FindIndex((p) => p is Upgraders.GlobalJsonUpgrader);
         var globalJson = sequence[globalJsonIndex];
 
         sequence.RemoveAt(globalJsonIndex);
         sequence.Insert(0, globalJson);
 
         // The NuGet configuration needs to be updated before any package updates
-        var nugetConfigIndex = sequence.FindIndex((p) => p.GetType() == typeof(Upgraders.NuGetConfigUpgrader));
+        var nugetConfigIndex = sequence.FindIndex((p) => p is Upgraders.NuGetConfigUpgrader);
         var nugetConfig = sequence[nugetConfigIndex];
 
         sequence.RemoveAt(nugetConfigIndex);
         sequence.Insert(1, nugetConfig);
 
         // Packages need to be updated after the TFM so the packages relate to the update but before any code is changed
-        var packageVersionsIndex = sequence.FindIndex((p) => p.GetType() == typeof(Upgraders.PackageVersionUpgrader));
+        var packageVersionsIndex = sequence.FindIndex((p) => p is Upgraders.PackageVersionUpgrader);
         var packageVersions = sequence[packageVersionsIndex];
 
         sequence.RemoveAt(packageVersionsIndex);
@@ -224,7 +224,7 @@ public partial class ProjectUpgrader(
 
         // The code upgrader/formatter must run after all other upgraders as analyzers may
         // have come as part of NuGet packages that were upgraded by dotnet-outdated-tool.
-        var codeIndex = sequence.FindIndex((p) => p.GetType() == typeof(Upgraders.DotNetCodeUpgrader));
+        var codeIndex = sequence.FindIndex((p) => p is Upgraders.DotNetCodeUpgrader);
         var code = sequence[codeIndex];
 
         sequence.RemoveAt(codeIndex);
