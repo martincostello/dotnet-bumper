@@ -89,11 +89,14 @@ internal sealed partial class PackageVersionUpgrader(
     private static bool HasDotNetToolManifest(string path)
         => FileHelpers.FindFileInProject(path, Path.Join(".config", WellKnownFileNames.ToolsManifest)) is not null;
 
-    private async Task<NuGetVersion?> GetDotNetOutdatedVersionAsync(CancellationToken cancellationToken)
+    private async Task<NuGetVersion?> GetDotNetOutdatedVersionAsync(
+        IDictionary<string, string?>? environmentVariables,
+        CancellationToken cancellationToken)
     {
         var result = await dotnet.RunAsync(
             Options.ProjectPath,
             ["outdated", "--version"],
+            environmentVariables,
             cancellationToken: cancellationToken);
 
         if (result.Success)
@@ -198,7 +201,17 @@ internal sealed partial class PackageVersionUpgrader(
         NuGetVersion sdkVersion,
         CancellationToken cancellationToken)
     {
-        var outdatedVersion = await GetDotNetOutdatedVersionAsync(cancellationToken);
+        var environmentVariables = new Dictionary<string, string?>(5)
+        {
+            [WellKnownEnvironmentVariables.DotNetRollForward] = "Major",
+            [WellKnownEnvironmentVariables.MSBuildEnableWorkloadResolver] = "false",
+            [WellKnownEnvironmentVariables.MSBuildSdksPath] = null,
+            [WellKnownEnvironmentVariables.NuGetAudit] = "false",
+        };
+
+        MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
+
+        var outdatedVersion = await GetDotNetOutdatedVersionAsync(environmentVariables, cancellationToken);
 
         if (outdatedVersion is null)
         {
@@ -258,16 +271,6 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.Add("--exclude");
             arguments.Add(package);
         }
-
-        var environmentVariables = new Dictionary<string, string?>(5)
-        {
-            [WellKnownEnvironmentVariables.DotNetRollForward] = "Major",
-            [WellKnownEnvironmentVariables.MSBuildEnableWorkloadResolver] = "false",
-            [WellKnownEnvironmentVariables.MSBuildSdksPath] = null,
-            [WellKnownEnvironmentVariables.NuGetAudit] = "false",
-        };
-
-        MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
 
         if (configuration.NoWarn.Count > 0)
         {
