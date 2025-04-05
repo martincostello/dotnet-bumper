@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -15,10 +16,12 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 /// A class that finds the latest version of .NET available to upgrade to.
 /// </summary>
 /// <param name="httpClient">The <see cref="HttpClient"/> to use.</param>
+/// <param name="timeProvider">The <see cref="TimeProvider"/> to use.</param>
 /// <param name="options">The <see cref="IOptions{UpgradeOptions}"/> to use.</param>
 /// <param name="logger">The <see cref="ILogger{DotNetUpgradeFinder}"/> to use.</param>
 public partial class DotNetUpgradeFinder(
     HttpClient httpClient,
+    TimeProvider timeProvider,
     IOptions<UpgradeOptions> options,
     ILogger<DotNetUpgradeFinder> logger)
 {
@@ -37,11 +40,7 @@ public partial class DotNetUpgradeFinder(
             // TODO Make configurable?
             var quality = DotNetQualities.Daily;
 
-            // TODO Automatically try to compute what the in-development version is
-            // TODO More robust
-            // TODO Need to handle roll-forward as the SDK is unlikely to be installed
-            // TODO Install the new SDK locally to avoid need to install?
-            var channel = new Version(options.Value.DotNetChannel ?? "10.0");
+            var channel = options.Value.DotNetChannel is null ? GetDotNetDevelopmentVersion() : Version.Parse(options.Value.DotNetChannel);
 
             var versionUrl = $"https://aka.ms/dotnet/{channel.ToString(2)}/{quality}/sdk-productVersion.txt";
 
@@ -68,21 +67,13 @@ public partial class DotNetUpgradeFinder(
             }
 
             var installer = new DotNetInstaller(httpClient, logger);
-            await installer.InstallAsync(sdkVersion, cancellationToken);
-
-            // TODO Compute when Update Tuesday in November will be and set that as the date
-            var utcNow = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().UtcDateTime);
-            var endOfLife = new DateOnly(utcNow.Year, 11, 14);
-            if (endOfLife < utcNow)
-            {
-                endOfLife = endOfLife.AddYears(1);
-            }
+            await installer.TryInstallAsync(sdkVersion, cancellationToken);
 
             return new()
             {
                 Channel = channel,
-                EndOfLife = endOfLife,
-                ReleaseType = sdkVersion.Major % 2 is 0 ? DotNetReleaseType.Lts : DotNetReleaseType.Sts, // HACK Better way to determine?
+                EndOfLife = GetDotNetReleaseDate(),
+                ReleaseType = GetDotNetReleaseType(sdkVersion),
                 SdkVersion = sdkVersion,
                 SupportPhase = DotNetSupportPhase.Preview,
             };
@@ -90,6 +81,56 @@ public partial class DotNetUpgradeFinder(
 
         var candidates = await GetChannelsAsync(cancellationToken);
         return GetUpgrade(candidates);
+    }
+
+    private static DateOnly GetUpdateTuesday(DateOnly monthAndYear)
+    {
+        var result = new DateOnly(monthAndYear.Year, monthAndYear.Month, 1);
+        var count = 0;
+
+        while (count < 2)
+        {
+            if (result.DayOfWeek == DayOfWeek.Tuesday)
+            {
+                count++;
+            }
+
+            if (count is 2)
+            {
+                break;
+            }
+
+            result = result.AddDays(1);
+        }
+
+        Debug.Assert(result.DayOfWeek is DayOfWeek.Tuesday, "Failed to determine Update Tuesday date.");
+
+        return result;
+    }
+
+    private static DotNetReleaseType GetDotNetReleaseType(NuGetVersion version)
+        => version.Major % 2 is 0 ? DotNetReleaseType.Lts : DotNetReleaseType.Sts;
+
+    private Version GetDotNetDevelopmentVersion()
+    {
+        var releaseDate = GetDotNetReleaseDate();
+        var major = releaseDate.Year - 2015;
+
+        return new(major, 0);
+    }
+
+    private DateOnly GetDotNetReleaseDate()
+    {
+        var today = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+
+        var releaseDate = GetUpdateTuesday(new(today.Year, 11, 1));
+
+        if (today > releaseDate)
+        {
+            releaseDate = GetUpdateTuesday(new(today.Year + 1, 11, 1));
+        }
+
+        return releaseDate;
     }
 
     private async Task<IReadOnlyList<UpgradeInfo>> GetChannelsAsync(CancellationToken cancellationToken)

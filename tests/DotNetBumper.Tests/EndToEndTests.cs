@@ -10,8 +10,9 @@ using Spectre.Console.Testing;
 namespace MartinCostello.DotNetBumper;
 
 [Collection("End-to-End")]
-public class EndToEndTests(ITestOutputHelper outputHelper)
+public sealed class EndToEndTests(ITestOutputHelper outputHelper) : IAsyncDisposable
 {
+    private static readonly string? _dotnetRoot = Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot);
     private static bool? _dotnetHasPreview;
 
     [Fact]
@@ -70,6 +71,12 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         }
 
         return testCases;
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        Environment.SetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot, _dotnetRoot);
+        return ValueTask.CompletedTask;
     }
 
     [Theory]

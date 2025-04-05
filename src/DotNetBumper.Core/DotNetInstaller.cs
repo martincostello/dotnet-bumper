@@ -14,7 +14,7 @@ namespace MartinCostello.DotNetBumper;
 /// <param name="logger">The <see cref="ILogger"/> to use.</param>
 internal sealed partial class DotNetInstaller(HttpClient httpClient, ILogger logger)
 {
-    public async Task InstallAsync(NuGetVersion sdkVersion, CancellationToken cancellationToken)
+    public async Task TryInstallAsync(NuGetVersion sdkVersion, CancellationToken cancellationToken)
     {
         var version = sdkVersion.ToString();
         var installationPath = EnsureInstallationPath();
