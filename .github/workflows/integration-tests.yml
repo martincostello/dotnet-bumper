@@ -109,8 +109,6 @@ jobs:
             upgrade-type: LTS
           - repo: dotnet-bumper-test
             upgrade-type: Preview
-          - repo: dotnet-bumper-test
-            upgrade-type: Daily
           - repo: project-euler
             upgrade-type: Latest
           - repo: project-euler
