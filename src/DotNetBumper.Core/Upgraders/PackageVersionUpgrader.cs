@@ -260,14 +260,12 @@ internal sealed partial class PackageVersionUpgrader(
 
         foreach (string package in configuration.IncludeNuGetPackages)
         {
-            arguments.Add("--include");
-            arguments.Add(package);
+            arguments.Add($"--include:{package}");
         }
 
         foreach (string package in configuration.ExcludeNuGetPackages)
         {
-            arguments.Add("--exclude");
-            arguments.Add(package);
+            arguments.Add($"--exclude:{package}");
         }
 
         if (configuration.NoWarn.Count > 0)
