@@ -48,6 +48,11 @@ internal partial class Bumper(ProjectUpgrader upgrader)
     public bool NoLogo { get; set; }
 
     [Option(
+        "-ql|--quality <QUALITY>",
+        Description = "The type of quality to use for .NET daily builds.")]
+    public DotNetQuality? Quality { get; set; }
+
+    [Option(
         "-t|--upgrade-type <TYPE>",
         Description = "The type of upgrade to perform.")]
     public UpgradeType? UpgradeType { get; set; }

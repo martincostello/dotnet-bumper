@@ -15,5 +15,6 @@ internal static class WellKnownFileNames
     public const string DirectoryBuildProps = "Directory.Build.props";
     public const string GitHubActionsWorkflowsDirectory = ".github/workflows";
     public const string GlobalJson = "global.json";
+    public const string NuGetConfiguration = "NuGet.config";
     public const string ToolsManifest = "dotnet-tools.json";
 }

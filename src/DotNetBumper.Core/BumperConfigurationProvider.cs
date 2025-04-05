@@ -32,7 +32,7 @@ internal sealed partial class BumperConfigurationProvider(
             },
         };
 
-        if (options.Value.UpgradeType is UpgradeType.Preview)
+        if (options.Value.UpgradeType.IsPrerelease())
         {
             configuration.NoWarn.Add("NETSDK1057");
             configuration.NoWarn.Add("NU5104");

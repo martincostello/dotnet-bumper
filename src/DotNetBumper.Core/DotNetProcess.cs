@@ -153,7 +153,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         return Path.Combine(TryFindDotNetInstallation(), fileName);
     }
 
-    private static Process StartDotNet(
+    private static ProcessStartInfo CreateDotNetStartInfo(
         string workingDirectory,
         IReadOnlyList<string> arguments,
         IDictionary<string, string?>? environmentVariables,
@@ -184,7 +184,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         startInfo.EnvironmentVariables["MSBUILDDISABLENODEREUSE"] = "1";
         startInfo.EnvironmentVariables["MSBUILDENSURESTDOUTFORTASKPROCESSES"] = "1";
 
-        return Process.Start(startInfo) ?? throw new InvalidOperationException($"Failed to start process for dotnet {arguments[0]}.");
+        return startInfo;
     }
 
     private async Task<DotNetResult> RunAsync(
@@ -202,40 +202,15 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             arguments = [.. arguments, customLogger];
         }
 
-        using var process = StartDotNet(workingDirectory, arguments, environmentVariables, logFilePath);
+        var startInfo = CreateDotNetStartInfo(workingDirectory, arguments, environmentVariables, logFilePath);
 
-        // See https://stackoverflow.com/a/16326426/1064169 and
-        // https://learn.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.redirectstandardoutput.
-        using var outputTokenSource = new CancellationTokenSource();
-        var readOutput = ReadOutputAsync(process, outputTokenSource.Token);
-
-        try
-        {
-            await process.WaitForExitAsync(cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            try
-            {
-                process.Kill(entireProcessTree: true);
-            }
-            catch (Exception)
-            {
-                // Ignore
-            }
-        }
-        finally
-        {
-            await outputTokenSource.CancelAsync();
-        }
-
-        (string error, string output) = await readOutput;
+        var process = await ProcessHelper.RunAsync(startInfo, cancellationToken);
 
         var result = new DotNetResult(
-            process.ExitCode == 0,
+            process.Success,
             process.ExitCode,
-            output,
-            error);
+            process.StandardOutput,
+            process.StandardError);
 
         if (logFilePath is not null)
         {
@@ -244,65 +219,12 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
 
         if (!result.Success)
         {
-            Log.LogCommandFailed(logger, process, result.StandardOutput, result.StandardError);
+            Log.LogCommandFailed(logger, startInfo, result);
         }
 
         cancellationToken.ThrowIfCancellationRequested();
 
         return result;
-
-        static async Task<(string Error, string Output)> ReadOutputAsync(
-            Process process,
-            CancellationToken cancellationToken)
-        {
-            var processErrors = ConsumeStreamAsync(process.StandardError, process.StartInfo.RedirectStandardError, cancellationToken);
-            var processOutput = ConsumeStreamAsync(process.StandardOutput, process.StartInfo.RedirectStandardOutput, cancellationToken);
-
-            await Task.WhenAll(processErrors, processOutput);
-
-            string error = string.Empty;
-            string output = string.Empty;
-
-            if (processErrors.Status == TaskStatus.RanToCompletion)
-            {
-                error = (await processErrors).ToString();
-            }
-
-            if (processOutput.Status == TaskStatus.RanToCompletion)
-            {
-                output = (await processOutput).ToString();
-            }
-
-            return (error, output);
-        }
-
-        static Task<StringBuilder> ConsumeStreamAsync(
-            StreamReader reader,
-            bool isRedirected,
-            CancellationToken cancellationToken)
-        {
-            return isRedirected ?
-                Task.Run(() => ProcessStream(reader, cancellationToken), cancellationToken) :
-                Task.FromResult(new StringBuilder(0));
-
-            static async Task<StringBuilder> ProcessStream(
-                StreamReader reader,
-                CancellationToken cancellationToken)
-            {
-                var builder = new StringBuilder();
-
-                try
-                {
-                    builder.Append(await reader.ReadToEndAsync(cancellationToken));
-                }
-                catch (OperationCanceledException)
-                {
-                    // Ignore
-                }
-
-                return builder;
-            }
-        }
     }
 
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
@@ -310,22 +232,21 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
     {
         public static void LogCommandFailed(
             ILogger logger,
-            Process process,
-            string output,
-            string error)
+            ProcessStartInfo startInfo,
+            ProcessResult process)
         {
-            string command = process.StartInfo.ArgumentList[0];
+            string command = startInfo.ArgumentList[0];
 
             CommandFailed(logger, command, process.ExitCode);
 
-            if (!string.IsNullOrEmpty(output))
+            if (!string.IsNullOrEmpty(process.StandardOutput))
             {
-                CommandFailedOutput(logger, command, output);
+                CommandFailedOutput(logger, command, process.StandardOutput);
             }
 
-            if (!string.IsNullOrEmpty(error))
+            if (!string.IsNullOrEmpty(process.StandardError))
             {
-                CommandFailedError(logger, command, error);
+                CommandFailedError(logger, command, process.StandardError);
             }
         }
 

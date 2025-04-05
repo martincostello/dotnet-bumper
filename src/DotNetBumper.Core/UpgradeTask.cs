@@ -13,8 +13,6 @@ internal abstract class UpgradeTask(
     IOptions<UpgradeOptions> options,
     ILogger logger)
 {
-    public virtual int Order => 0;
-
     protected IAnsiConsole Console { get; } = console;
 
     protected IEnvironment TaskEnvironment { get; } = environment;

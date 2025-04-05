@@ -131,6 +131,7 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
     {
         var finder = new DotNetUpgradeFinder(
             new HttpClient(),
+            TimeProvider.System,
             Microsoft.Extensions.Options.Options.Create(new UpgradeOptions() { DotNetChannel = channel }),
             outputHelper.ToLogger<DotNetUpgradeFinder>());
 

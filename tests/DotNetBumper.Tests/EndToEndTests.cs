@@ -10,8 +10,9 @@ using Spectre.Console.Testing;
 namespace MartinCostello.DotNetBumper;
 
 [Collection("End-to-End")]
-public class EndToEndTests(ITestOutputHelper outputHelper)
+public sealed class EndToEndTests(ITestOutputHelper outputHelper) : IAsyncDisposable
 {
+    private static readonly string? _dotnetRoot = Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot);
     private static bool? _dotnetHasPreview;
 
     [Fact]
@@ -53,6 +54,13 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
             ]);
         }
 
+        // Skip daily build test in November and December when one release
+        // has just finished and the next hasn't ramped up yet.
+        if (TimeProvider.System.GetUtcNow().Month is not (11 or 12))
+        {
+            testCases.Add(new BumperTestCase("9.0.100", ["net9.0"], ["--upgrade-type=daily"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "9.0.0"))));
+        }
+
         List<string> formats = ["Json", "Markdown"];
 
         if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") is "true")
@@ -66,6 +74,12 @@ public class EndToEndTests(ITestOutputHelper outputHelper)
         }
 
         return testCases;
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        Environment.SetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot, _dotnetRoot);
+        return ValueTask.CompletedTask;
     }
 
     [Theory]

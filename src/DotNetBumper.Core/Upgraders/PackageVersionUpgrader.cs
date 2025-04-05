@@ -30,8 +30,6 @@ internal sealed partial class PackageVersionUpgrader(
     /// </summary>
     private static readonly NuGetVersion MinimumVersionForMaximumVersion = new(4, 6, 5);
 
-    public override int Order => int.MaxValue - 1; // Packages need to be updated after the TFM so the packages relate to the update but before C# updates
-
     protected override string Action => "Upgrading NuGet packages";
 
     protected override string InitialStatus => "Upgrade NuGet packages";
@@ -89,11 +87,14 @@ internal sealed partial class PackageVersionUpgrader(
     private static bool HasDotNetToolManifest(string path)
         => FileHelpers.FindFileInProject(path, Path.Join(".config", WellKnownFileNames.ToolsManifest)) is not null;
 
-    private async Task<NuGetVersion?> GetDotNetOutdatedVersionAsync(CancellationToken cancellationToken)
+    private async Task<NuGetVersion?> GetDotNetOutdatedVersionAsync(
+        IDictionary<string, string?>? environmentVariables,
+        CancellationToken cancellationToken)
     {
         var result = await dotnet.RunAsync(
             Options.ProjectPath,
             ["outdated", "--version"],
+            environmentVariables,
             cancellationToken: cancellationToken);
 
         if (result.Success)
@@ -198,7 +199,17 @@ internal sealed partial class PackageVersionUpgrader(
         NuGetVersion sdkVersion,
         CancellationToken cancellationToken)
     {
-        var outdatedVersion = await GetDotNetOutdatedVersionAsync(cancellationToken);
+        var environmentVariables = new Dictionary<string, string?>(5)
+        {
+            [WellKnownEnvironmentVariables.DotNetRollForward] = "Major",
+            [WellKnownEnvironmentVariables.MSBuildEnableWorkloadResolver] = "false",
+            [WellKnownEnvironmentVariables.MSBuildSdksPath] = null,
+            [WellKnownEnvironmentVariables.NuGetAudit] = "false",
+        };
+
+        MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
+
+        var outdatedVersion = await GetDotNetOutdatedVersionAsync(environmentVariables, cancellationToken);
 
         if (outdatedVersion is null)
         {
@@ -225,7 +236,7 @@ internal sealed partial class PackageVersionUpgrader(
             arguments.AddRange(["--maximum-version", channel.ToString(2)]);
         }
 
-        if (Options.UpgradeType is UpgradeType.Preview)
+        if (Options.UpgradeType.IsPrerelease())
         {
             arguments.Add("--pre-release:Always");
 
@@ -249,25 +260,13 @@ internal sealed partial class PackageVersionUpgrader(
 
         foreach (string package in configuration.IncludeNuGetPackages)
         {
-            arguments.Add("--include");
-            arguments.Add(package);
+            arguments.Add($"--include:{package}");
         }
 
         foreach (string package in configuration.ExcludeNuGetPackages)
         {
-            arguments.Add("--exclude");
-            arguments.Add(package);
+            arguments.Add($"--exclude:{package}");
         }
-
-        var environmentVariables = new Dictionary<string, string?>(5)
-        {
-            [WellKnownEnvironmentVariables.DotNetRollForward] = "Major",
-            [WellKnownEnvironmentVariables.MSBuildEnableWorkloadResolver] = "false",
-            [WellKnownEnvironmentVariables.MSBuildSdksPath] = null,
-            [WellKnownEnvironmentVariables.NuGetAudit] = "false",
-        };
-
-        MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
 
         if (configuration.NoWarn.Count > 0)
         {

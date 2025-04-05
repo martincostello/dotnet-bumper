@@ -4,27 +4,27 @@
 namespace MartinCostello.DotNetBumper;
 
 /// <summary>
-/// An enumeration representing a type of .NET upgrade to perform.
+/// An enumeration representing the quality of a .NET release.
 /// </summary>
-public enum UpgradeType
+public enum DotNetQuality
 {
     /// <summary>
-    /// Upgrade to the latest Long Term Support (LTS) version.
-    /// </summary>
-    Lts = 0,
-
-    /// <summary>
-    /// Upgrade to the latest stable version.
-    /// </summary>
-    Latest,
-
-    /// <summary>
-    /// Upgrade to the latest preview release.
-    /// </summary>
-    Preview,
-
-    /// <summary>
-    /// Upgrade to the latest daily release.
+    /// A daily build.
     /// </summary>
     Daily,
+
+    /// <summary>
+    /// A signed build.
+    /// </summary>
+    Signed,
+
+    /// <summary>
+    /// A validated build.
+    /// </summary>
+    Validated,
+
+    /// <summary>
+    /// A preview build.
+    /// </summary>
+    Preview,
 }

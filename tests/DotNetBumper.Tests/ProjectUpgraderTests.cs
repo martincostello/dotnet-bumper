@@ -47,6 +47,7 @@ public class ProjectUpgraderTests(ITestOutputHelper outputHelper)
 
         var finder = new DotNetUpgradeFinder(
             new HttpClient(),
+            TimeProvider.System,
             options,
             outputHelper.ToLogger<DotNetUpgradeFinder>());
 

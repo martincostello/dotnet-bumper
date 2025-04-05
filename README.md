@@ -96,8 +96,8 @@ Upgrades projects to a newer version of .NET.
 Usage: dotnet bumper [options] <ProjectPath>
 
 Arguments:
-  ProjectPath                      The path to directory containing a .NET 6+ project to be upgraded. If not specified,
-                                   the current directory will be used.
+  ProjectPath                      The path to directory containing a .NET 6+ project to be upgraded. If not
+                                   specified, the current directory will be used.
 
 Options:
   -v|--verbose                     Show verbose output
@@ -110,8 +110,10 @@ Options:
                                    Default value is: None.
   -lp|--log-path <PATH>            The path to write the log file to, if any.
   -q|--no-logo                     Do not display the startup banner.
+  -ql|--quality <QUALITY>          The type of quality to use for .NET daily builds.
+                                   Allowed values are: Daily, Signed, Validated, Preview.
   -t|--upgrade-type <TYPE>         The type of upgrade to perform.
-                                   Allowed values are: Lts, Latest, Preview.
+                                   Allowed values are: Lts, Latest, Preview, Daily.
   -test|--test                     Test the upgrade by running dotnet test on completion.
   -timeout|--timeout <TIMESPAN>    The optional period to timeout the upgrade after.
   -e|--warnings-as-errors          Treat any warnings encountered during the upgrade as errors.

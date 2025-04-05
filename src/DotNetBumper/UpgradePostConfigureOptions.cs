@@ -27,6 +27,11 @@ internal sealed class UpgradePostConfigureOptions(IModelAccessor accessor) : IPo
             options.ProjectPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(command.ProjectPath));
         }
 
+        if (command.Quality is { } quality)
+        {
+            options.Quality = quality;
+        }
+
         if (command.UpgradeType is { } upgradeType)
         {
             options.UpgradeType = upgradeType;

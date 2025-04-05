@@ -4,25 +4,14 @@
 namespace MartinCostello.DotNetBumper;
 
 /// <summary>
-/// Represents the result of running a .NET process.
+/// Represents the result of running a process.
 /// </summary>
 /// <param name="Success">Whether the process exited successfully.</param>
 /// <param name="ExitCode">The exit code from the process.</param>
 /// <param name="StandardOutput">The standard output from the process.</param>
 /// <param name="StandardError">The standard error from the process.</param>
-public sealed record DotNetResult(
+public record ProcessResult(
     bool Success,
     int ExitCode,
     string StandardOutput,
-    string StandardError) : ProcessResult(Success, ExitCode, StandardOutput, StandardError)
-{
-    /// <summary>
-    /// Gets or sets the build log from the process, if any.
-    /// </summary>
-    public BumperBuildLog? BuildLogs { get; set; }
-
-    /// <summary>
-    /// Gets or sets the test logs from the process, if any.
-    /// </summary>
-    public BumperTestLog? TestLogs { get; set; }
-}
+    string StandardError);
