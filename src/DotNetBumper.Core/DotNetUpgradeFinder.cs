@@ -95,7 +95,7 @@ public partial class DotNetUpgradeFinder(
         return releaseDate;
     }
 
-    private async Task<UpgradeInfo> GetDailyBuildAsync(CancellationToken cancellationToken)
+    private async Task<UpgradeInfo?> GetDailyBuildAsync(CancellationToken cancellationToken)
     {
 #pragma warning disable CA1308
         var quality = options.Value.Quality.ToString().ToLowerInvariant();
