@@ -202,33 +202,45 @@ public partial class ProjectUpgrader(
         var sequence = new List<IUpgrader>(upgraders);
 
         // The SDK version in global.json must be updated first
-        var globalJsonIndex = sequence.FindIndex((p) => p is Upgraders.GlobalJsonUpgrader);
-        var globalJson = sequence[globalJsonIndex];
+        var index = sequence.FindIndex((p) => p is Upgraders.GlobalJsonUpgrader);
 
-        sequence.RemoveAt(globalJsonIndex);
-        sequence.Insert(0, globalJson);
+        if (index is > -1)
+        {
+            var globalJson = sequence[index];
+            sequence.RemoveAt(index);
+            sequence.Insert(0, globalJson);
+        }
 
         // The NuGet configuration needs to be updated before any package updates
-        var nugetConfigIndex = sequence.FindIndex((p) => p is Upgraders.NuGetConfigUpgrader);
-        var nugetConfig = sequence[nugetConfigIndex];
+        index = sequence.FindIndex((p) => p is Upgraders.NuGetConfigUpgrader);
 
-        sequence.RemoveAt(nugetConfigIndex);
-        sequence.Insert(1, nugetConfig);
+        if (index is > -1)
+        {
+            var nugetConfig = sequence[index];
+            sequence.RemoveAt(index);
+            sequence.Insert(1, nugetConfig);
+        }
 
         // Packages need to be updated after the TFM so the packages relate to the update but before any code is changed
-        var packageVersionsIndex = sequence.FindIndex((p) => p is Upgraders.PackageVersionUpgrader);
-        var packageVersions = sequence[packageVersionsIndex];
+        index = sequence.FindIndex((p) => p is Upgraders.PackageVersionUpgrader);
 
-        sequence.RemoveAt(packageVersionsIndex);
-        sequence.Add(packageVersions);
+        if (index is > -1)
+        {
+            var packageVersions = sequence[index];
+            sequence.RemoveAt(index);
+            sequence.Add(packageVersions);
+        }
 
         // The code upgrader/formatter must run after all other upgraders as analyzers may
         // have come as part of NuGet packages that were upgraded by dotnet-outdated-tool.
-        var codeIndex = sequence.FindIndex((p) => p is Upgraders.DotNetCodeUpgrader);
-        var code = sequence[codeIndex];
+        index = sequence.FindIndex((p) => p is Upgraders.DotNetCodeUpgrader);
 
-        sequence.RemoveAt(codeIndex);
-        sequence.Add(code);
+        if (index is > -1)
+        {
+            var code = sequence[index];
+            sequence.RemoveAt(index);
+            sequence.Add(code);
+        }
 
         foreach (var item in sequence)
         {
