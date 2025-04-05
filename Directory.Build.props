@@ -8,9 +8,9 @@
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <PackageTags>dotnet,migrate,migration,sdk,tool,update,upgrade</PackageTags>
     <UseArtifactsOutput>true</UseArtifactsOutput>
-    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <AssemblyVersion>0.10.0.0</AssemblyVersion>
     <PackageValidationBaselineVersion>0.9.2</PackageValidationBaselineVersion>
-    <VersionPrefix>0.9.3</VersionPrefix>
+    <VersionPrefix>0.10.0</VersionPrefix>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(EnableReferenceTrimmer)' != 'false' AND '$(GenerateDocumentationFile)' != 'true' ">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
