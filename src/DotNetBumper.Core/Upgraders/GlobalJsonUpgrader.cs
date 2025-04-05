@@ -18,8 +18,6 @@ internal sealed partial class GlobalJsonUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<GlobalJsonUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
-    public override int Order => int.MinValue;
-
     protected override string Action => "Upgrading .NET SDK";
 
     protected override string InitialStatus => "Update SDK version";

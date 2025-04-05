@@ -94,7 +94,7 @@ public partial class ProjectUpgrader(
 
         var result = ProcessingResult.None;
 
-        foreach (var upgrader in upgraders.OrderBy((p) => p.Order))
+        foreach (var upgrader in Order(upgraders))
         {
             ProcessingResult stepResult;
 
@@ -132,7 +132,7 @@ public partial class ProjectUpgrader(
                 upgrade.Channel.ToString(),
                 upgrade.SdkVersion.ToString());
 
-            foreach (var processor in postProcessors.OrderBy((p) => p.Order))
+            foreach (var processor in Order(postProcessors))
             {
                 ProcessingResult stepResult;
 
@@ -195,6 +195,54 @@ public partial class ProjectUpgrader(
             ProcessingResult.Warning => options.Value.TreatWarningsAsErrors ? Error : Success,
             _ => Error,
         };
+    }
+
+    private static IEnumerable<IUpgrader> Order(IEnumerable<IUpgrader> upgraders)
+    {
+        var sequence = new List<IUpgrader>(upgraders);
+
+        // The SDK version in global.json must be updated first
+        var globalJsonIndex = sequence.FindIndex((p) => p.GetType() == typeof(Upgraders.GlobalJsonUpgrader));
+        var globalJson = sequence[globalJsonIndex];
+
+        sequence.RemoveAt(globalJsonIndex);
+        sequence.Insert(0, globalJson);
+
+        // The NuGet configuration needs to be updated before any package updates
+        var nugetConfigIndex = sequence.FindIndex((p) => p.GetType() == typeof(Upgraders.NuGetConfigUpgrader));
+        var nugetConfig = sequence[nugetConfigIndex];
+
+        sequence.RemoveAt(nugetConfigIndex);
+        sequence.Insert(1, nugetConfig);
+
+        // Packages need to be updated after the TFM so the packages relate to the update but before any code is changed
+        var packageVersionsIndex = sequence.FindIndex((p) => p.GetType() == typeof(Upgraders.PackageVersionUpgrader));
+        var packageVersions = sequence[packageVersionsIndex];
+
+        sequence.RemoveAt(packageVersionsIndex);
+        sequence.Add(packageVersions);
+
+        // The code upgrader/formatter must run after all other upgraders as analyzers may
+        // have come as part of NuGet packages that were upgraded by dotnet-outdated-tool.
+        var codeIndex = sequence.FindIndex((p) => p.GetType() == typeof(Upgraders.DotNetCodeUpgrader));
+        var code = sequence[codeIndex];
+
+        sequence.RemoveAt(codeIndex);
+        sequence.Add(code);
+
+        foreach (var item in sequence)
+        {
+            yield return item;
+        }
+    }
+
+    private static IEnumerable<IPostProcessor> Order(IEnumerable<IPostProcessor> upgraders)
+    {
+        // No special ordering required yet
+        foreach (var item in upgraders)
+        {
+            yield return item;
+        }
     }
 
     private async Task WriteLogsAsync(CancellationToken cancellationToken)

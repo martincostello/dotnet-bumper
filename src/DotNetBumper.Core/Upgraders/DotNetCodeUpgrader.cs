@@ -18,8 +18,6 @@ internal sealed partial class DotNetCodeUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<DotNetCodeUpgrader> logger) : FileUpgrader(console, environment, options, logger)
 {
-    public override int Order => int.MaxValue; // Run after all other upgraders
-
     protected override string Action => "Upgrading .NET code";
 
     protected override string InitialStatus => "Update .NET code";

@@ -9,11 +9,6 @@ namespace MartinCostello.DotNetBumper.PostProcessors;
 public interface IPostProcessor
 {
     /// <summary>
-    /// Gets the global order the post-processor should run in where lower numbers run before higher numbers.
-    /// </summary>
-    int Order { get; }
-
-    /// <summary>
     /// Runs a post-processing after an upgrade to the project.
     /// </summary>
     /// <param name="upgrade">The version of .NET to upgrade to.</param>

@@ -16,8 +16,6 @@ internal sealed partial class NuGetConfigUpgrader(
     IOptions<UpgradeOptions> options,
     ILogger<NuGetConfigUpgrader> logger) : XmlFileUpgrader(console, environment, options, logger)
 {
-    public override int Order => int.MinValue + 1; // Needs to run before PackageVersionUpgrader
-
     protected override string Action => "Updating NuGet configuration file";
 
     protected override string InitialStatus => "Update NuGet configuration";

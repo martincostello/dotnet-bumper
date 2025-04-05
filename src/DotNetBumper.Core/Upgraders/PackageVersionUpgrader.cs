@@ -30,8 +30,6 @@ internal sealed partial class PackageVersionUpgrader(
     /// </summary>
     private static readonly NuGetVersion MinimumVersionForMaximumVersion = new(4, 6, 5);
 
-    public override int Order => int.MaxValue - 1; // Packages need to be updated after the TFM so the packages relate to the update but before C# updates
-
     protected override string Action => "Upgrading NuGet packages";
 
     protected override string InitialStatus => "Upgrade NuGet packages";

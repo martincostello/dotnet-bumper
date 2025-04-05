@@ -9,11 +9,6 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 public interface IUpgrader
 {
     /// <summary>
-    /// Gets the global order the upgrader should run in where lower numbers run before higher numbers.
-    /// </summary>
-    int Order { get; }
-
-    /// <summary>
     /// Attempts to apply an upgrade to the project.
     /// </summary>
     /// <param name="upgrade">The version of .NET to upgrade to.</param>
