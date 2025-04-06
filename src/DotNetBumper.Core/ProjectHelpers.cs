@@ -66,8 +66,8 @@ internal static class ProjectHelpers
 
     private static List<string> TryReduceProjects(List<string> fileNames)
     {
-        var solutionFiles = fileNames.Where((p) => Path.GetExtension(p) is ".sln").ToList();
-        var projectFiles = fileNames.Where((p) => Path.GetExtension(p) is not ".sln").ToList();
+        var solutionFiles = fileNames.Where((p) => Path.GetExtension(p) is (".sln" or ".slnx")).ToList();
+        var projectFiles = fileNames.Where((p) => Path.GetExtension(p) is not (".sln" or ".slnx")).ToList();
 
         if (solutionFiles.Count is 0 || projectFiles.Count is 0)
         {

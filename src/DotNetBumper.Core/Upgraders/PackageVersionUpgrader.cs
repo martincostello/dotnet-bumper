@@ -335,7 +335,7 @@ internal sealed partial class PackageVersionUpgrader(
         }
 
         // See https://github.com/dotnet/sdk/blob/051c52977e668544b58f60ff4d4ff84fe67d33f2/src/Cli/dotnet/commands/dotnet-workload/restore/WorkloadRestoreCommand.cs#L46-L81
-        var projects = Path.GetExtension(projectFile) is ".sln"
+        var projects = Path.GetExtension(projectFile) is (".sln" or ".slnx")
             ? ProjectHelpers.GetSolutionProjects(projectFile)
             : [projectFile];
 
