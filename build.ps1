@@ -100,10 +100,6 @@ $packageProjects = @(
     (Join-Path $solutionPath "src" "DotNetBumper" "DotNetBumper.csproj")
 )
 
-$testProjects = @(
-    (Join-Path $solutionPath "tests" "DotNetBumper.Tests" "DotNetBumper.Tests.csproj")
-)
-
 Write-Information "Packaging libraries..."
 ForEach ($project in $packageProjects) {
     DotNetPack $project $Configuration
