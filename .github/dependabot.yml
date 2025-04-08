@@ -11,6 +11,10 @@ updates:
 - package-ecosystem: nuget
   directory: "/"
   groups:
+    dotnet:
+      patterns:
+        - Microsoft.Extensions.*
+        - System.Text.Json
     Spectre:
       patterns:
         - Spectre.Console*
