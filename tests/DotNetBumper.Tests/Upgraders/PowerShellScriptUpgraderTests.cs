@@ -555,8 +555,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
             SETLOCAL
 
             :: This tells .NET to use the same dotnet.exe that the build script uses.
-            SET DOTNET_ROOT=%~dp0.dotnetcli
-            SET DOTNET_ROOT(x86)=%~dp0.dotnetcli\x86
+            SET DOTNET_ROOT=%~dp0.dotnet
+            SET DOTNET_ROOT(x86)=%~dp0.dotnet\x86
 
             dotnet build -f "net6.0"
 
@@ -569,8 +569,8 @@ public class PowerShellScriptUpgraderTests(ITestOutputHelper outputHelper)
              SETLOCAL
              
              :: This tells .NET to use the same dotnet.exe that the build script uses.
-             SET DOTNET_ROOT=%~dp0.dotnetcli
-             SET DOTNET_ROOT(x86)=%~dp0.dotnetcli\x86
+             SET DOTNET_ROOT=%~dp0.dotnet
+             SET DOTNET_ROOT(x86)=%~dp0.dotnet\x86
              
              dotnet build -f "net{{channel}}"
              
