@@ -1,8 +1,6 @@
 <Project>
   <PropertyGroup>
     <AssemblyIsCLSCompliant>false</AssemblyIsCLSCompliant>
-    <!-- HACK Workaround for https://github.com/dotnet/sdk/issues/17454 -->
-    <BuildInParallel Condition="$([System.OperatingSystem]::IsWindows())">false</BuildInParallel>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)DotNetBumper.ruleset</CodeAnalysisRuleSet>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
