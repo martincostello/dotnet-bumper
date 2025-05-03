@@ -12,8 +12,8 @@ body:
 - type: input
   attributes:
     label: Version
-    description: Which version of the library are you experiencing the issue with?
-    placeholder: 1.0.0
+    description: Which version of the tool are you experiencing the issue with?
+    placeholder: 0.9.2
   validations:
     required: true
 - type: textarea
@@ -58,8 +58,7 @@ body:
   attributes:
     label: .NET Version
     description: |
-      Run `dotnet --version` to get the .NET SDK version you're using.
-      Alternatively, which target framework(s) (e.g. `net8.0`) does the project you're using the package with target?
+      Run `dotnet --version` to get the .NET SDK version you're using or trying to upgrade to.
     placeholder: 9.0.100
   validations:
     required: false
