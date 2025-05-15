@@ -62,7 +62,7 @@ If you prefer, you can instead configure a custom set of NuGet package reference
 
 To do this, add either a JSON or YAML configuration file to the root of your repository with the name
 `.dotnet-bumper.json` or `.dotnet-bumper.yml` respectively. A custom configuration file can also be specified
-using the `--configuration-file` option. The JSON schema for the configuration file can be found [here][dotnet-bumper-schema].
+using the `--configuration-file` option. There is also a [JSON schema for the configuration file][dotnet-bumper-schema] available.
 
 Example content for these files is shown below.
 
@@ -125,8 +125,8 @@ To do so, the tool needs to be run with the `--upgrade-type` option set to `Prev
 .NET Bumper was designed with the intention of being run on a per-repository basis.
 
 For my own personal usage, I created a GitHub Actions workflow that allows me to run the tool against all of
-the repositories that I maintain. The workflow can be found [here][dotnet-bumper-workflow] - you're welcome to
-use it as a source of inspiration to create your own bulk upgrade processes.
+the repositories that I maintain. The workflow can be found in my [github-automation repository][dotnet-bumper-workflow] - you're
+welcome to use it as a source of inspiration to create your own bulk upgrade processes.
 
 ## Why didn't .NET Bumper update this file that needs updating?
 
