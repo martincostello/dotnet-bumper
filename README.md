@@ -174,7 +174,7 @@ remainingReferencesIgnore:
 
 ## Questions
 
-An FAQ document for .NET Bumper is available [here](./docs/faq.md).
+See the [FAQ document for .NET Bumper](./docs/faq.md).
 
 ## Building and Testing
 
