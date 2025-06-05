@@ -83,6 +83,14 @@ internal sealed class Project : IDisposable
     {
         packageReferences ??= [];
 
+        properties ??= [];
+        properties =
+        [
+            .. properties,
+            KeyValuePair.Create("OutputType", "Exe"),
+            KeyValuePair.Create("SuppressTfmSupportBuildErrors", "true"),
+        ];
+
         string[] testPackages =
         [
             "Microsoft.NET.Test.Sdk",
@@ -90,7 +98,7 @@ internal sealed class Project : IDisposable
             "xunit.v3",
         ];
 
-        foreach (var id in testPackages)
+        foreach (var id in testPackages.Where((p) => packageReferences is null || !packageReferences.Any((r) => r.Key == p)))
         {
             packageReferences.Add(KeyValuePair.Create(id, GetNuGetPackageVersion(id)));
         }

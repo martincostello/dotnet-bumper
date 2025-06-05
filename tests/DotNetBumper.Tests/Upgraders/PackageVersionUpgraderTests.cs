@@ -48,6 +48,7 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
             [
                 KeyValuePair.Create(prereleaseDependency, prereleaseDependencyVersion),
                 KeyValuePair.Create(stableDependency, stableDependencyVersion),
+                KeyValuePair.Create("Microsoft.NET.Test.Sdk", "17.13.0"),
             ]);
 
         await fixture.Project.AddUnitTestsAsync();
