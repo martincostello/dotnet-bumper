@@ -109,7 +109,8 @@ public sealed class EndToEndTests(ITestOutputHelper outputHelper) : IAsyncDispos
             testCase.PackageReferences);
 
         string testProject = await fixture.Project.AddTestProjectAsync(
-            testCase.TargetFrameworks);
+            testCase.TargetFrameworks,
+            [KeyValuePair.Create("Microsoft.NET.Test.Sdk", "17.13.0")]);
 
         await fixture.Project.AddUnitTestsAsync();
 
