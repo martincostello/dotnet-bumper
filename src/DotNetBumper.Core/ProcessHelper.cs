@@ -16,7 +16,10 @@ internal static class ProcessHelper
         // See https://stackoverflow.com/a/16326426/1064169 and
         // https://learn.microsoft.com/dotnet/api/system.diagnostics.processstartinfo.redirectstandardoutput.
         using var outputTokenSource = new CancellationTokenSource();
+
+#pragma warning disable CA2025
         var readOutput = ReadOutputAsync(process, outputTokenSource.Token);
+#pragma warning restore CA2025
 
         try
         {
