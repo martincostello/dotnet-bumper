@@ -19,6 +19,7 @@
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="ReportGenerator" />
     <PackageReference Include="Shouldly" />
+    <PackageReference Include="Spectre.Console" />
     <PackageReference Include="Spectre.Console.Testing" />
     <PackageReference Include="System.Linq.Async" />
     <PackageReference Include="xunit.runner.visualstudio" />
