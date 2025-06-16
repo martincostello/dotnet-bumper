@@ -10,7 +10,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" VersionOverride="17.0.0" />
-    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" VersionOverride="[17.0.0,)" />
+    <PackageReference Include="System.Text.Json" VersionOverride="[8.0.5,)" />
   </ItemGroup>
 </Project>
