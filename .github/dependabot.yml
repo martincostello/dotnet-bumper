@@ -1,29 +1,9 @@
 version: 2
 updates:
-- package-ecosystem: "docker"
-  directory: ".devcontainer"
-  schedule:
-    interval: daily
-    time: "05:30"
-    timezone: Europe/London
-- package-ecosystem: "github-actions"
-  directory: "/"
-  schedule:
-    interval: daily
-    time: "05:30"
-    timezone: Europe/London
 - package-ecosystem: nuget
   directory: "/"
-  groups:
-    Spectre:
-      patterns:
-        - Spectre.Console*
-    xunit:
-      patterns:
-        - xunit*
   schedule:
-    interval: daily
-    time: "05:30"
+    interval: yearly
     timezone: Europe/London
   open-pull-requests-limit: 99
   ignore:
@@ -32,4 +12,3 @@ updates:
     - dependency-name: Microsoft.TestPlatform.ObjectModel
     - dependency-name: System.Management.Automation
     - dependency-name: System.Text.Json
-      update-types: ["version-update:semver-major"]
