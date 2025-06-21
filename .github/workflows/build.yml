@@ -151,6 +151,7 @@ jobs:
         github.event.sender.login != 'dependabot[bot]'
       env:
         AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.CRASH_DUMPS_STORAGE_CONNECTION_STRING }}
+        # renovate: datasource=github-releases depName=PSCompression packageName=santisq/PSCompression
         PSCOMPRESSION_VERSION: '2.1.0'
       run: |
         $dumps = Get-ChildItem -Path ${env:GITHUB_WORKSPACE} -Filter "*.dmp" -Recurse
