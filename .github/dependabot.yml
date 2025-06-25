@@ -1,14 +1,7 @@
 version: 2
 updates:
-- package-ecosystem: nuget
+- package-ecosystem: github-actions
   directory: "/"
   schedule:
     interval: yearly
     timezone: Europe/London
-  open-pull-requests-limit: 99
-  ignore:
-    - dependency-name: Microsoft.Build
-    - dependency-name: Microsoft.Build.Utilities.Core
-    - dependency-name: Microsoft.TestPlatform.ObjectModel
-    - dependency-name: System.Management.Automation
-    - dependency-name: System.Text.Json
