@@ -152,7 +152,7 @@ jobs:
       env:
         AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.CRASH_DUMPS_STORAGE_CONNECTION_STRING }}
         # renovate: datasource=github-releases depName=PSCompression packageName=santisq/PSCompression
-        PSCOMPRESSION_VERSION: '3.0.0'
+        PSCOMPRESSION_VERSION: '3.0.1'
       run: |
         $dumps = Get-ChildItem -Path ${env:GITHUB_WORKSPACE} -Filter "*.dmp" -Recurse
         if ($null -ne $dumps) {
