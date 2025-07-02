@@ -113,6 +113,8 @@ internal sealed partial class DockerfileUpgrader(
                 {
                     edited = true;
                 }
+
+                // TODO Add support for updating the digest if present
             }
 
             if (!string.IsNullOrEmpty(name))
