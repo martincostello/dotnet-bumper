@@ -14,6 +14,7 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 internal sealed partial class DockerfileUpgrader(
     IAnsiConsole console,
     IEnvironment environment,
+    ContainerRegistryClient registryClient,
     BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<DockerfileUpgrader> logger) : FileUpgrader(console, environment, options, logger)
@@ -72,14 +73,13 @@ internal sealed partial class DockerfileUpgrader(
         return edited;
     }
 
-    internal static bool TryUpdateImage(
+    internal static async Task<(bool Result, string? Updated)> TryUpdateImageAsync(
+        ContainerRegistryClient client,
         string current,
         Version channel,
         DotNetSupportPhase supportPhase,
-        [NotNullWhen(true)] out string? updated)
+        CancellationToken cancellationToken)
     {
-        updated = null;
-
         // See https://docs.docker.com/engine/reference/builder/#from for the syntax
         var match = DockerImageMatch(current);
 
@@ -87,12 +87,12 @@ internal sealed partial class DockerfileUpgrader(
         {
             var platform = match.Groups["platform"].Value;
             var image = match.Groups["image"].Value;
-            var tag = match.Groups["tag"].Value;
             var name = match.Groups["name"].Value;
+            var currentTag = match.Groups["tag"].Value;
 
             if (IsDotNetImage(image) is false)
             {
-                return false;
+                return (false, null);
             }
 
             var builder = new StringBuilder("FROM ");
@@ -105,16 +105,26 @@ internal sealed partial class DockerfileUpgrader(
 
             bool edited = AppendImage(builder, image, channel);
 
-            if (!string.IsNullOrEmpty(tag))
+            if (!string.IsNullOrEmpty(currentTag))
             {
                 builder.Append(':');
 
-                if (AppendTag(builder, tag, channel, supportPhase))
+                if (AppendTag(currentTag, channel, supportPhase, out var updatedTag))
                 {
+                    builder.Append(updatedTag);
                     edited = true;
                 }
 
-                // TODO Add support for updating the digest if present
+                if (!string.IsNullOrEmpty(match.Groups["digest"].Value) && updatedTag is not null)
+                {
+                    var digest = await client.GetImageDigestAsync(image, updatedTag, cancellationToken);
+
+                    if (digest is not null)
+                    {
+                        builder.Append('@')
+                               .Append(digest);
+                    }
+                }
             }
 
             if (!string.IsNullOrEmpty(name))
@@ -125,21 +135,21 @@ internal sealed partial class DockerfileUpgrader(
 
             if (edited)
             {
-                updated = builder.ToString();
+                var updated = builder.ToString();
 
                 Debug.Assert(!string.Equals(current, updated, StringComparison.Ordinal), "The Docker image was not updated.");
 
-                return true;
+                return (true, updated);
             }
         }
 
-        return false;
+        return (false, null);
 
         static bool AppendTag(
-            StringBuilder builder,
             ReadOnlySpan<char> tag,
             Version channel,
-            DotNetSupportPhase supportPhase)
+            DotNetSupportPhase supportPhase,
+            out string? updatedTag)
         {
             var maybeVersion = tag;
             var suffix = ReadOnlySpan<char>.Empty;
@@ -153,7 +163,8 @@ internal sealed partial class DockerfileUpgrader(
 
             if (Version.TryParse(maybeVersion, out var version) && version < channel)
             {
-                builder.Append(channel);
+                var builder = new StringBuilder()
+                    .Append(channel);
 
                 const string PreviewSuffix = "preview";
 
@@ -186,11 +197,13 @@ internal sealed partial class DockerfileUpgrader(
                     builder.Append(PreviewSuffix);
                 }
 
+                updatedTag = builder.ToString();
+
                 return true;
             }
             else
             {
-                builder.Append(tag);
+                updatedTag = null;
                 return false;
             }
         }
@@ -347,7 +360,14 @@ internal sealed partial class DockerfileUpgrader(
 
             while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
-                if (TryUpdateImage(line, upgrade.Channel, upgrade.SupportPhase, out var updated))
+                (var result, var updated) = await TryUpdateImageAsync(
+                    registryClient,
+                    line,
+                    upgrade.Channel,
+                    upgrade.SupportPhase,
+                    cancellationToken);
+
+                if (result && updated is not null)
                 {
                     line = updated;
                     edited |= true;

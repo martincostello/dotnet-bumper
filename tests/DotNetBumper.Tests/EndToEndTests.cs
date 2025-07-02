@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
@@ -10,10 +9,10 @@ using Spectre.Console.Testing;
 namespace MartinCostello.DotNetBumper;
 
 [Collection("End-to-End")]
-public sealed class EndToEndTests(ITestOutputHelper outputHelper) : IAsyncDisposable
+public sealed class EndToEndTests(
+    ITestOutputHelper outputHelper) : IAsyncDisposable
 {
     private static readonly string? _dotnetRoot = Environment.GetEnvironmentVariable(WellKnownEnvironmentVariables.DotNetRoot);
-    private static bool? _dotnetHasPreview;
 
     [Fact]
     public static async Task Application_Validates_Project_Exists()
@@ -44,7 +43,7 @@ public sealed class EndToEndTests(ITestOutputHelper outputHelper) : IAsyncDispos
 #pragma warning restore IDE0090
 
         // These test cases only work when there's actually a preview in development
-        if (await DotNetHasPreviewAsync())
+        if (await DotNetPreviewFixture.HasPreviewAsync())
         {
             testCases.AddRange(
             [
@@ -599,35 +598,6 @@ public sealed class EndToEndTests(ITestOutputHelper outputHelper) : IAsyncDispos
 
         script.ShouldNotContain($" net{channel} ");
         script.ShouldContain(" win-x64 ");
-    }
-
-    private static async Task<bool> DotNetHasPreviewAsync()
-    {
-        if (_dotnetHasPreview is null)
-        {
-            using var client = new HttpClient();
-            using var index = await client.GetFromJsonAsync<JsonDocument>("https://raw.githubusercontent.com/dotnet/core/refs/heads/main/release-notes/releases-index.json");
-
-            bool hasPreview = false;
-
-            if (index?.RootElement.TryGetProperty("releases-index", out var releases) is true)
-            {
-                foreach (var release in releases.EnumerateArray())
-                {
-                    if (release.TryGetProperty("support-phase", out var supportPhase) &&
-                        supportPhase.ValueKind is JsonValueKind.String &&
-                        supportPhase.GetString() is "go-live" or "preview")
-                    {
-                        hasPreview = true;
-                        break;
-                    }
-                }
-            }
-
-            _dotnetHasPreview = hasPreview;
-        }
-
-        return _dotnetHasPreview.Value;
     }
 
     private static bool IsDebug()

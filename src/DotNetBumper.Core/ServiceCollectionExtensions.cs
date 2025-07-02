@@ -42,11 +42,12 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
 
         services.AddSingleton(configuration)
-                .AddSingleton<DotNetProcess>()
+                .AddSingleton(console)
                 .AddSingleton<BumperConfigurationLoader>()
                 .AddSingleton<BumperConfigurationProvider>()
                 .AddSingleton<BumperLogContext>()
-                .AddSingleton(console)
+                .AddSingleton<ContainerRegistryClient>()
+                .AddSingleton<DotNetProcess>()
                 .AddSingleton<IEnvironment, BumperEnvironment>()
                 .AddSingleton<IValidateOptions<UpgradeOptions>, UpgradeOptionsValidator>()
                 .AddSingleton<ProjectUpgrader>();

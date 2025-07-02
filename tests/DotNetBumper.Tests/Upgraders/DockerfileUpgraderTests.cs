@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.ComponentModel;
+using System.Diagnostics;
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace MartinCostello.DotNetBumper.Upgraders;
 
 public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
@@ -315,7 +319,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
     [Theory]
     [MemberData(nameof(DockerImages))]
-    public static void TryUpdateImage_Returns_Expected_Values(
+    public static async Task TryUpdateImageAsync_Returns_Expected_Values(
         string value,
         string channel,
         DotNetSupportPhase supportPhase,
@@ -325,8 +329,16 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         var channelVersion = Version.Parse(channel);
 
+        using var httpClient = new HttpClient();
+        var registryClient = new ContainerRegistryClient(httpClient, NullLogger<ContainerRegistryClient>.Instance);
+
         // Act
-        var actualResult = DockerfileUpgrader.TryUpdateImage(value, channelVersion, supportPhase, out var actualImage);
+        (var actualResult, var actualImage) = await DockerfileUpgrader.TryUpdateImageAsync(
+            registryClient,
+            value,
+            channelVersion,
+            supportPhase,
+            TestContext.Current.CancellationToken);
 
         // Assert
         actualResult.ShouldBe(expectedResult);
@@ -397,6 +409,115 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [ClassData(typeof(DotNetChannelTestData))]
+    public async Task UpgradeAsync_Upgrades_Dockerfile_With_Digest(string channel)
+    {
+        // Arrange
+        var supportPhase =
+            await DotNetPreviewFixture.HasPreviewAsync() && await DotNetPreviewFixture.LatestChannelAsync() == channel ?
+            DotNetSupportPhase.Preview :
+            DotNetSupportPhase.Active;
+
+        var digest = "sha256:4763240791cd850c6803964c38ec22d88b259ac7c127b4ad1000a4fd41a08e01";
+        var suffix = supportPhase is DotNetSupportPhase.Preview ? "-preview" : string.Empty;
+
+        string fileContents =
+            $"""
+             FROM mcr.microsoft.com/dotnet/sdk:6.0.100@{digest} AS build-env
+             WORKDIR /App
+             
+             COPY . ./
+             RUN dotnet restore
+             RUN dotnet publish -c Release -o out
+             
+             FROM mcr.microsoft.com/dotnet/aspnet:6.0
+             WORKDIR /App
+             COPY --from=build-env /App/out .
+             ENTRYPOINT ["dotnet", "DotNet.Docker.dll"]
+             """;
+
+        string expectedContentsExceptFirstLine =
+            $"""
+             WORKDIR /App
+
+             COPY . ./
+             RUN dotnet restore
+             RUN dotnet publish -c Release -o out
+
+             FROM mcr.microsoft.com/dotnet/aspnet:{channel}{suffix}
+             WORKDIR /App
+             COPY --from=build-env /App/out .
+             ENTRYPOINT ["dotnet", "DotNet.Docker.dll"]
+             """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        await fixture.Project.AddSolutionAsync("Container.sln");
+        await fixture.Project.AddApplicationProjectAsync(["net6.0"]);
+        await fixture.Project.AddTestProjectAsync(["net6.0"]);
+
+        string dockerfile = await fixture.Project.AddFileAsync("Dockerfile", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse(channel),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new($"{channel}.100"),
+            SupportPhase = supportPhase,
+        };
+
+        using var httpClient = new HttpClient();
+        var target = CreateTarget(fixture, httpClient);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(dockerfile, fixture.CancellationToken);
+
+        var actualLines = actualContent.TrimEnd().Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        var expectedLines = expectedContentsExceptFirstLine.TrimEnd().Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+
+        actualLines.Skip(1).ShouldBe(expectedLines);
+
+        var actualImage = DockerfileUpgrader.DockerImageMatch(actualLines[0]);
+
+        actualImage.Success.ShouldBeTrue();
+        actualImage.Groups["platform"].Value.ShouldBeEmpty();
+        actualImage.Groups["image"].Value.ShouldBe("mcr.microsoft.com/dotnet/sdk");
+        actualImage.Groups["tag"].Value.ShouldBe(channel + suffix);
+
+        var actualDigest = actualImage.Groups["digest"].Value;
+        actualDigest.ShouldNotBeNullOrWhiteSpace();
+        actualDigest.ShouldNotBe(digest);
+        actualDigest.Length.ShouldBe(64);
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+
+        // Arrange
+        if (await IsDockerInstalledAsync(fixture.CancellationToken))
+        {
+            using var process = Process.Start(new ProcessStartInfo("docker", ["build", "."])
+            {
+                WorkingDirectory = fixture.Project.DirectoryName,
+            })!;
+
+            // Act
+            await process.WaitForExitAsync(fixture.CancellationToken);
+
+            // Assert
+            process.ExitCode.ShouldBe(0);
+        }
     }
 
     [Fact]
@@ -707,13 +828,45 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
-    private static DockerfileUpgrader CreateTarget(UpgraderFixture fixture)
+    private static DockerfileUpgrader CreateTarget(UpgraderFixture fixture, HttpClient? httpClient = null)
     {
+        var registryClient = new ContainerRegistryClient(httpClient!, fixture.CreateLogger<ContainerRegistryClient>());
+
         return new(
             fixture.Console,
             fixture.Environment,
+            registryClient,
             fixture.LogContext,
             fixture.CreateOptions(),
             fixture.CreateLogger<DockerfileUpgrader>());
+    }
+
+    private static async Task<bool> IsDockerInstalledAsync(CancellationToken cancellationToken)
+    {
+        using var process = new Process()
+        {
+            StartInfo = new("docker", ["version", "--format", "'{{.Server.Os}}'"])
+            {
+                RedirectStandardOutput = true,
+            },
+        };
+
+        var output = new StringBuilder();
+        process.OutputDataReceived += (_, e) => output.Append(e.Data);
+
+        try
+        {
+            process.Start();
+            process.BeginOutputReadLine();
+
+            await process.WaitForExitAsync(cancellationToken);
+
+            return process.ExitCode is 0 && output.ToString().Contains("linux", StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Win32Exception)
+        {
+            // Docker is not installed or is not available on the PATH
+            return false;
+        }
     }
 }
