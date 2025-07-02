@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -853,11 +854,19 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         var output = new StringBuilder();
         process.OutputDataReceived += (_, e) => output.Append(e.Data);
 
-        process.Start();
-        process.BeginOutputReadLine();
+        try
+        {
+            process.Start();
+            process.BeginOutputReadLine();
 
-        await process.WaitForExitAsync(cancellationToken);
+            await process.WaitForExitAsync(cancellationToken);
 
-        return process.ExitCode is 0 && output.ToString().Contains("linux", StringComparison.OrdinalIgnoreCase);
+            return process.ExitCode is 0 && output.ToString().Contains("linux", StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Win32Exception)
+        {
+            // Docker is not installed or is not available on the PATH
+            return false;
+        }
     }
 }
