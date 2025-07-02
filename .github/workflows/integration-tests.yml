@@ -109,6 +109,10 @@ jobs:
             upgrade-type: LTS
           - repo: dotnet-bumper-test
             upgrade-type: Preview
+          - repo: eurovision-hue
+            upgrade-type: Latest
+          - repo: eurovision-hue
+            upgrade-type: Preview
           - repo: project-euler
             upgrade-type: Latest
           - repo: project-euler
