@@ -39,7 +39,7 @@ internal partial class ContainerRegistryClient(
 
         if (digest is not null)
         {
-            Log.LatestManifestDigest(logger, image, digest);
+            Log.LatestManifestDigest(logger, image, tag, digest);
             return digest;
         }
 
@@ -59,7 +59,7 @@ internal partial class ContainerRegistryClient(
 
         if (digest is not null)
         {
-            Log.LatestManifestDigest(logger, image, digest);
+            Log.LatestManifestDigest(logger, image, tag, digest);
 
             DigestCache[cacheKey] = digest;
             _token = token;
@@ -167,8 +167,8 @@ internal partial class ContainerRegistryClient(
         [LoggerMessage(
             EventId = 1,
             Level = LogLevel.Debug,
-            Message = "Retrieved latest digest for container {Container}: {Digest}.")]
-        public static partial void LatestManifestDigest(ILogger logger, string container, string digest);
+            Message = "Retrieved latest digest for container {Container} with tag {Tag}: {Digest}.")]
+        public static partial void LatestManifestDigest(ILogger logger, string container, string tag, string digest);
 
         [LoggerMessage(
             EventId = 2,
