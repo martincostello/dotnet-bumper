@@ -113,6 +113,8 @@ internal sealed partial class DockerfileUpgrader(
                 {
                     edited = true;
                 }
+
+                // TODO Add support for updating the digest if present
             }
 
             if (!string.IsNullOrEmpty(name))
@@ -316,7 +318,7 @@ internal sealed partial class DockerfileUpgrader(
         return edited;
     }
 
-    [GeneratedRegex(@"^(?i)FROM(?-i) ((?<platform>--platform=[\$\w]+)\s)?(?<image>[\w\.\/\-]+)(:(?<tag>[\w\-\.]+))?(\s(?<name>(?i)AS(?-i) [\S]+))?$")]
+    [GeneratedRegex(@"^(?i)FROM(?-i) ((?<platform>--platform=[\$\w]+)\s)?(?<image>[\w\.\/\-]+)(:(?<tag>[\w\-\.]+)(@sha256:(?<digest>[0-9a-f{64}]+))?)?(\s(?<name>(?i)AS(?-i) [\S]+))?$")]
     private static partial Regex DockerImage();
 
     [GeneratedRegex(@"[1-9]+[0-9]*\.[0-9]")]
