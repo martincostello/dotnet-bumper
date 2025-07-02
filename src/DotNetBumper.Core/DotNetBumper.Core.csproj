@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Ignore" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -28,6 +29,7 @@
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+    <PackageReference Update="Microsoft.AspNetCore.WebUtilities" VersionOverride="8.0.17"  />
     <PackageReference Update="Microsoft.Build" VersionOverride="[17.11.31,)" />
     <PackageReference Update="System.Management.Automation" VersionOverride="[7.4.10,)" />
   </ItemGroup>

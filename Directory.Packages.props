@@ -11,6 +11,7 @@
     <PackageVersion Include="JunitXml.TestLogger" Version="6.1.0" />
     <PackageVersion Include="MartinCostello.Logging.XUnit.v3" Version="0.6.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.6" />
     <PackageVersion Include="Microsoft.Build" Version="17.14.8" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.14.8" />
     <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
