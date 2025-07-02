@@ -56,6 +56,11 @@ internal partial class ContainerRegistryClient(
 
         authorization = await GetRegistryAuthorizationAsync(registry, wwwAuthenticate, cancellationToken);
 
+        if (authorization is null)
+        {
+            return null;
+        }
+
         (digest, _) = await GetDigestAsync(registry, image, tag, authorization, cancellationToken);
 
         if (digest is not null)
@@ -136,7 +141,7 @@ internal partial class ContainerRegistryClient(
         return ($"sha256:{digest}", null);
     }
 
-    private async Task<AuthenticationHeaderValue> GetRegistryAuthorizationAsync(
+    private async Task<AuthenticationHeaderValue?> GetRegistryAuthorizationAsync(
         string registry,
         AuthenticationHeaderValue authorization,
         CancellationToken cancellationToken)
@@ -192,7 +197,7 @@ internal partial class ContainerRegistryClient(
             Log.UnableToParseWwwAuthenticate(logger, registry, authorization.Parameter);
         }
 
-        return authorization;
+        return null;
     }
 
     [ExcludeFromCodeCoverage]
