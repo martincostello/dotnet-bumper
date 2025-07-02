@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text.Json;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
@@ -161,15 +160,21 @@ internal partial class ContainerRegistryClient(
             Uri.TryCreate(realm, UriKind.Absolute, out _))
         {
             var requestUri = realm;
+            var query = new Dictionary<string, string>();
 
             if (parts.TryGetValue("service", out var service))
             {
-                requestUri = QueryHelpers.AddQueryString(requestUri, "service", service);
+                query.Add("service", service);
             }
 
             if (parts.TryGetValue("scope", out var scope))
             {
-                requestUri = QueryHelpers.AddQueryString(requestUri, "scope", scope);
+                query.Add("scope", scope);
+            }
+
+            if (query.Count > 0)
+            {
+                requestUri += '?' + string.Join('&', query.Select((p) => $"{p.Key}={p.Value}"));
             }
 
             using var response = await client.GetAsync(requestUri, cancellationToken);
