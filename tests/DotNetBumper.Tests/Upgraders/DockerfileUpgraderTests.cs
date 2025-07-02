@@ -22,54 +22,56 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(expected);
     }
 
-    public static TheoryData<string, bool, string, string, string, string> ParsedDockerImages()
+    public static TheoryData<string, bool, string, string, string, string, string> ParsedDockerImages()
     {
-        return new TheoryData<string, bool, string, string, string, string>
+        return new TheoryData<string, bool, string, string, string, string, string>
         {
             //// Valid images
-            { "FROM mcr.microsoft.com/dotnet/aspnet:7.0", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "7.0", string.Empty },
-            { "FROM mcr.microsoft.com/dotnet/aspnet:8.0", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "8.0", string.Empty },
-            { "FROM mcr.microsoft.com/dotnet/aspnet:9.0", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "9.0", string.Empty },
-            { "FROM mcr.microsoft.com/dotnet/aspnet:10.0", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "10.0", string.Empty },
-            { "FROM mcr.microsoft.com/dotnet/aspnet:9.0-preview", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "9.0-preview", string.Empty },
-            { "FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "10.0-preview", string.Empty },
-            { "FROM docker.custom-domain.com/base-images/dotnet-8.0-sdk", true, string.Empty, "docker.custom-domain.com/base-images/dotnet-8.0-sdk", string.Empty, string.Empty },
-            { "FROM docker.custom-domain.com/base-images/dotnet-10.0-sdk", true, string.Empty, "docker.custom-domain.com/base-images/dotnet-10.0-sdk", string.Empty, string.Empty },
-            { "FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra", true, string.Empty, "docker-virtual.custom-domain.com/dotnet/runtime-deps", "8.0-jammy-chiseled-extra", string.Empty },
-            { "FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:10.0-jammy-chiseled-extra", true, string.Empty, "docker-virtual.custom-domain.com/dotnet/runtime-deps", "10.0-jammy-chiseled-extra", string.Empty },
-            { "FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "7.0", "AS build" },
-            { "FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "8.0", "AS build" },
-            { "FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "9.0", "AS build" },
-            { "FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "10.0", "AS build" },
-            { "FROM mcr.microsoft.com/dotnet/aspnet:9.0-preview AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "9.0-preview", "AS build" },
-            { "FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "10.0-preview", "AS build" },
-            { "FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra AS final", true, string.Empty, "mcr.microsoft.com/dotnet/runtime-deps", "8.0-jammy-chiseled-extra", "AS final" },
-            { "FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-jammy-chiseled-extra AS final", true, string.Empty, "mcr.microsoft.com/dotnet/runtime-deps", "9.0-jammy-chiseled-extra", "AS final" },
-            { "FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-jammy-chiseled-extra AS final", true, string.Empty, "mcr.microsoft.com/dotnet/runtime-deps", "10.0-jammy-chiseled-extra", "AS final" },
-            { "FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-preview-jammy-chiseled-extra AS final", true, string.Empty, "mcr.microsoft.com/dotnet/runtime-deps", "9.0-preview-jammy-chiseled-extra", "AS final" },
-            { "FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-preview-jammy-chiseled-extra AS final", true, string.Empty, "mcr.microsoft.com/dotnet/runtime-deps", "10.0-preview-jammy-chiseled-extra", "AS final" },
-            { "FROM docker.custom-domain.com/base-images/dotnet-8.0-sdk AS build", true, string.Empty, "docker.custom-domain.com/base-images/dotnet-8.0-sdk", string.Empty, "AS build" },
-            { "FROM docker.custom-domain.com/base-images/dotnet-10.0-sdk AS build", true, string.Empty, "docker.custom-domain.com/base-images/dotnet-10.0-sdk", string.Empty, "AS build" },
-            { "FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra AS final", true, string.Empty, "docker-virtual.custom-domain.com/dotnet/runtime-deps", "8.0-jammy-chiseled-extra", "AS final" },
-            { "FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:10.0-jammy-chiseled-extra AS final", true, string.Empty, "docker-virtual.custom-domain.com/dotnet/runtime-deps", "10.0-jammy-chiseled-extra", "AS final" },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:7.0", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "7.0", string.Empty },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "8.0", string.Empty },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:9.0", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "9.0", string.Empty },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:10.0", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "10.0", string.Empty },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:9.0-preview", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "9.0-preview", string.Empty },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:10.0-preview", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "10.0-preview", string.Empty },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:7.0 AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "7.0", "AS build" },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0 AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "8.0", "AS build" },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:9.0 AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "9.0", "AS build" },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:10.0 AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "10.0", "AS build" },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:9.0-preview AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "9.0-preview", "AS build" },
-            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "10.0-preview", "AS build" },
-            { "FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-8.0-sdk AS build", true, "--platform=$BUILDPLATFORM", "docker.custom-domain.com/base-images/dotnet-8.0-sdk", string.Empty, "AS build" },
-            { "FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-10.0-sdk AS build", true, "--platform=$BUILDPLATFORM", "docker.custom-domain.com/base-images/dotnet-10.0-sdk", string.Empty, "AS build" },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:7.0", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "7.0", string.Empty, string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:8.0", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "8.0", string.Empty, string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:9.0", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "9.0", string.Empty, string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:10.0", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "10.0", string.Empty, string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:9.0-preview", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "9.0-preview", string.Empty, string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "10.0-preview", string.Empty, string.Empty },
+            { "FROM docker.custom-domain.com/base-images/dotnet-8.0-sdk", true, string.Empty, "docker.custom-domain.com/base-images/dotnet-8.0-sdk", string.Empty, string.Empty, string.Empty },
+            { "FROM docker.custom-domain.com/base-images/dotnet-10.0-sdk", true, string.Empty, "docker.custom-domain.com/base-images/dotnet-10.0-sdk", string.Empty, string.Empty, string.Empty },
+            { "FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra", true, string.Empty, "docker-virtual.custom-domain.com/dotnet/runtime-deps", "8.0-jammy-chiseled-extra", string.Empty, string.Empty },
+            { "FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:10.0-jammy-chiseled-extra", true, string.Empty, "docker-virtual.custom-domain.com/dotnet/runtime-deps", "10.0-jammy-chiseled-extra", string.Empty, string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "7.0", "AS build", string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "8.0", "AS build", string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "9.0", "AS build", string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "10.0", "AS build", string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:9.0-preview AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "9.0-preview", "AS build", string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS build", true, string.Empty, "mcr.microsoft.com/dotnet/aspnet", "10.0-preview", "AS build", string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra AS final", true, string.Empty, "mcr.microsoft.com/dotnet/runtime-deps", "8.0-jammy-chiseled-extra", "AS final", string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-jammy-chiseled-extra AS final", true, string.Empty, "mcr.microsoft.com/dotnet/runtime-deps", "9.0-jammy-chiseled-extra", "AS final", string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-jammy-chiseled-extra AS final", true, string.Empty, "mcr.microsoft.com/dotnet/runtime-deps", "10.0-jammy-chiseled-extra", "AS final", string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-preview-jammy-chiseled-extra AS final", true, string.Empty, "mcr.microsoft.com/dotnet/runtime-deps", "9.0-preview-jammy-chiseled-extra", "AS final", string.Empty },
+            { "FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-preview-jammy-chiseled-extra AS final", true, string.Empty, "mcr.microsoft.com/dotnet/runtime-deps", "10.0-preview-jammy-chiseled-extra", "AS final", string.Empty },
+            { "FROM docker.custom-domain.com/base-images/dotnet-8.0-sdk AS build", true, string.Empty, "docker.custom-domain.com/base-images/dotnet-8.0-sdk", string.Empty, "AS build", string.Empty },
+            { "FROM docker.custom-domain.com/base-images/dotnet-10.0-sdk AS build", true, string.Empty, "docker.custom-domain.com/base-images/dotnet-10.0-sdk", string.Empty, "AS build", string.Empty },
+            { "FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra AS final", true, string.Empty, "docker-virtual.custom-domain.com/dotnet/runtime-deps", "8.0-jammy-chiseled-extra", "AS final", string.Empty },
+            { "FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:10.0-jammy-chiseled-extra AS final", true, string.Empty, "docker-virtual.custom-domain.com/dotnet/runtime-deps", "10.0-jammy-chiseled-extra", "AS final", string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:7.0", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "7.0", string.Empty, string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "8.0", string.Empty, string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:9.0", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "9.0", string.Empty, string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:10.0", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "10.0", string.Empty, string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:9.0-preview", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "9.0-preview", string.Empty, string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:10.0-preview", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "10.0-preview", string.Empty, string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:7.0 AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "7.0", "AS build", string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0 AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "8.0", "AS build", string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:9.0 AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "9.0", "AS build", string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:10.0 AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "10.0", "AS build", string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:9.0-preview AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "9.0-preview", "AS build", string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:10.0-preview AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/aspnet", "10.0-preview", "AS build", string.Empty },
+            { "FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0.301@sha256:faa2daf2b72cbe787ee1882d9651fa4ef3e938ee56792b8324516f5a448f3abe AS build", true, "--platform=$BUILDPLATFORM", "mcr.microsoft.com/dotnet/sdk", "9.0.301", "AS build", "faa2daf2b72cbe787ee1882d9651fa4ef3e938ee56792b8324516f5a448f3abe" },
+            { "FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-8.0-sdk AS build", true, "--platform=$BUILDPLATFORM", "docker.custom-domain.com/base-images/dotnet-8.0-sdk", string.Empty, "AS build", string.Empty },
+            { "FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-10.0-sdk AS build", true, "--platform=$BUILDPLATFORM", "docker.custom-domain.com/base-images/dotnet-10.0-sdk", string.Empty, "AS build", string.Empty },
+            { "FROM --platform=$BUILDPLATFORM docker.custom-domain.com/base-images/dotnet-10.0-sdk AS build", true, "--platform=$BUILDPLATFORM", "docker.custom-domain.com/base-images/dotnet-10.0-sdk", string.Empty, "AS build", string.Empty },
+            { "FROM mcr.microsoft.com/vscode/devcontainers/dotnet:latest@sha256:6e5d9440418393a00b05d306bf45bbab97d4bb9771f2b5d52f5f2304e393cc2f", true, string.Empty, "mcr.microsoft.com/vscode/devcontainers/dotnet", "latest", string.Empty, "6e5d9440418393a00b05d306bf45bbab97d4bb9771f2b5d52f5f2304e393cc2f" },
             //// Invalid/unsupported images
-            { string.Empty, false, string.Empty, string.Empty, string.Empty, string.Empty },
-            { "foo", false, string.Empty, string.Empty, string.Empty, string.Empty },
-            { "FROM mcr.microsoft.com/vscode/devcontainers/dotnet:latest@sha256:6e5d9440418393a00b05d306bf45bbab97d4bb9771f2b5d52f5f2304e393cc2f", false, string.Empty, string.Empty, string.Empty, string.Empty },
+            { string.Empty, false, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty },
+            { "foo", false, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty },
         };
     }
 
@@ -81,7 +83,8 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         string expectedPlatform,
         string expectedImage,
         string expectedTag,
-        string expectedName)
+        string expectedName,
+        string expectedDigest)
     {
         // Act
         var actual = DockerfileUpgrader.DockerImageMatch(value);
@@ -92,6 +95,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         actual.Groups["image"].Value.ShouldBe(expectedImage);
         actual.Groups["tag"].Value.ShouldBe(expectedTag);
         actual.Groups["name"].Value.ShouldBe(expectedName);
+        actual.Groups["digest"].Value.ShouldBe(expectedDigest);
     }
 
     public static TheoryData<string, string, DotNetSupportPhase, bool, string?> DockerImages()
