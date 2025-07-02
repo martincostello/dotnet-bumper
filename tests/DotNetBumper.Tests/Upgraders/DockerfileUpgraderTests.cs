@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace MartinCostello.DotNetBumper.Upgraders;
 
 public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
@@ -315,7 +317,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
     [Theory]
     [MemberData(nameof(DockerImages))]
-    public static void TryUpdateImage_Returns_Expected_Values(
+    public static async Task TryUpdateImageAsync_Returns_Expected_Values(
         string value,
         string channel,
         DotNetSupportPhase supportPhase,
@@ -325,8 +327,16 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         var channelVersion = Version.Parse(channel);
 
+        using var httpClient = new HttpClient();
+        var registryClient = new ContainerRegistryClient(httpClient, NullLogger<ContainerRegistryClient>.Instance);
+
         // Act
-        var actualResult = DockerfileUpgrader.TryUpdateImage(value, channelVersion, supportPhase, out var actualImage);
+        (var actualResult, var actualImage) = await DockerfileUpgrader.TryUpdateImageAsync(
+            registryClient,
+            value,
+            channelVersion,
+            supportPhase,
+            TestContext.Current.CancellationToken);
 
         // Assert
         actualResult.ShouldBe(expectedResult);
@@ -391,6 +401,89 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
         string actualContent = await File.ReadAllTextAsync(dockerfile, fixture.CancellationToken);
         actualContent.TrimEnd().ShouldBe(expectedContents.TrimEnd());
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
+    [Theory]
+    [ClassData(typeof(DotNetChannelTestData))]
+    public async Task UpgradeAsync_Upgrades_Dockerfile_With_Digest(string channel)
+    {
+        // Arrange
+        var digest = "sha256:4763240791cd850c6803964c38ec22d88b259ac7c127b4ad1000a4fd41a08e01";
+
+        string fileContents =
+            $"""
+             FROM mcr.microsoft.com/dotnet/sdk:6.0.100@{digest} AS build-env
+             WORKDIR /App
+             
+             COPY . ./
+             RUN dotnet restore
+             RUN dotnet publish -c Release -o out
+             
+             FROM mcr.microsoft.com/dotnet/aspnet:6.0
+             WORKDIR /App
+             COPY --from=build-env /App/out .
+             ENTRYPOINT ["dotnet", "DotNet.Docker.dll"]
+             """;
+
+        string expectedContentsExceptFirstLine =
+            $"""
+             WORKDIR /App
+
+             COPY . ./
+             RUN dotnet restore
+             RUN dotnet publish -c Release -o out
+
+             FROM mcr.microsoft.com/dotnet/aspnet:{channel}
+             WORKDIR /App
+             COPY --from=build-env /App/out .
+             ENTRYPOINT ["dotnet", "DotNet.Docker.dll"]
+             """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string dockerfile = await fixture.Project.AddFileAsync("Dockerfile", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse(channel),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new($"{channel}.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(dockerfile, fixture.CancellationToken);
+
+        var actualLines = actualContent.TrimEnd().Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        var expectedLines = expectedContentsExceptFirstLine.TrimEnd().Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+
+        actualLines.Skip(1).ShouldBe(expectedLines);
+
+        var actualImage = DockerfileUpgrader.DockerImageMatch(actualLines[0]);
+
+        actualImage.Success.ShouldBeTrue();
+        actualImage.Groups["platform"].Value.ShouldBeEmpty();
+        actualImage.Groups["image"].Value.ShouldBe("mcr.microsoft.com/dotnet/sdk");
+        actualImage.Groups["tag"].Value.ShouldBe(channel);
+
+        var actualDigest = actualImage.Groups["digest"].Value;
+        actualDigest.ShouldNotBeNullOrWhiteSpace();
+        actualDigest.ShouldNotBe(digest);
+        actualDigest.Length.ShouldBe(64);
 
         // Act
         actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
@@ -709,9 +802,13 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
     private static DockerfileUpgrader CreateTarget(UpgraderFixture fixture)
     {
+        var httpClient = new HttpClient();
+        var registryClient = new ContainerRegistryClient(httpClient, fixture.CreateLogger<ContainerRegistryClient>());
+
         return new(
             fixture.Console,
             fixture.Environment,
+            registryClient,
             fixture.LogContext,
             fixture.CreateOptions(),
             fixture.CreateLogger<DockerfileUpgrader>());

@@ -14,6 +14,7 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 internal sealed partial class DockerfileUpgrader(
     IAnsiConsole console,
     IEnvironment environment,
+    ContainerRegistryClient registryClient,
     BumperLogContext logContext,
     IOptions<UpgradeOptions> options,
     ILogger<DockerfileUpgrader> logger) : FileUpgrader(console, environment, options, logger)
@@ -72,14 +73,13 @@ internal sealed partial class DockerfileUpgrader(
         return edited;
     }
 
-    internal static bool TryUpdateImage(
+    internal static async Task<(bool Result, string? Updated)> TryUpdateImageAsync(
+        ContainerRegistryClient client,
         string current,
         Version channel,
         DotNetSupportPhase supportPhase,
-        [NotNullWhen(true)] out string? updated)
+        CancellationToken cancellationToken)
     {
-        updated = null;
-
         // See https://docs.docker.com/engine/reference/builder/#from for the syntax
         var match = DockerImageMatch(current);
 
@@ -92,7 +92,7 @@ internal sealed partial class DockerfileUpgrader(
 
             if (IsDotNetImage(image) is false)
             {
-                return false;
+                return (false, null);
             }
 
             var builder = new StringBuilder("FROM ");
@@ -114,7 +114,16 @@ internal sealed partial class DockerfileUpgrader(
                     edited = true;
                 }
 
-                // TODO Add support for updating the digest if present
+                if (!string.IsNullOrEmpty(match.Groups["digest"].Value))
+                {
+                    var digest = await client.GetImageDigestAsync(image, tag, cancellationToken);
+
+                    if (digest is not null)
+                    {
+                        builder.Append('@')
+                               .Append(digest);
+                    }
+                }
             }
 
             if (!string.IsNullOrEmpty(name))
@@ -125,15 +134,15 @@ internal sealed partial class DockerfileUpgrader(
 
             if (edited)
             {
-                updated = builder.ToString();
+                var updated = builder.ToString();
 
                 Debug.Assert(!string.Equals(current, updated, StringComparison.Ordinal), "The Docker image was not updated.");
 
-                return true;
+                return (true, updated);
             }
         }
 
-        return false;
+        return (false, null);
 
         static bool AppendTag(
             StringBuilder builder,
@@ -347,7 +356,14 @@ internal sealed partial class DockerfileUpgrader(
 
             while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
-                if (TryUpdateImage(line, upgrade.Channel, upgrade.SupportPhase, out var updated))
+                (var result, var updated) = await TryUpdateImageAsync(
+                    registryClient,
+                    line,
+                    upgrade.Channel,
+                    upgrade.SupportPhase,
+                    cancellationToken);
+
+                if (result && updated is not null)
                 {
                     line = updated;
                     edited |= true;
