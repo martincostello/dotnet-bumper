@@ -118,6 +118,7 @@ internal partial class ContainerRegistryClient(
 
         if (!response.IsSuccessStatusCode)
         {
+            Log.GetManifestFailed(logger, image, tag, response.StatusCode);
             return (null, null);
         }
 
@@ -217,23 +218,29 @@ internal partial class ContainerRegistryClient(
         [LoggerMessage(
             EventId = 2,
             Level = LogLevel.Debug,
+            Message = "Failed to get the manifest for container {Container} with tag {Tag}: {StatusCode}.")]
+        public static partial void GetManifestFailed(ILogger logger, string container, string tag, HttpStatusCode statusCode);
+
+        [LoggerMessage(
+            EventId = 3,
+            Level = LogLevel.Debug,
             Message = "Request to container registry {Registry} was unauthorized.")]
         public static partial void RequestToRegistryUnauthorized(ILogger logger, string registry);
 
         [LoggerMessage(
-            EventId = 3,
+            EventId = 4,
             Level = LogLevel.Debug,
             Message = "Successfully obtained authorization for realm {Realm}.")]
         public static partial void GotAuthorizationForRealm(ILogger logger, string realm);
 
         [LoggerMessage(
-            EventId = 4,
+            EventId = 5,
             Level = LogLevel.Debug,
             Message = "Failed to get token for realm {Realm}. HTTP status code: {StatusCode}.")]
         public static partial void FailedToGetAuthorization(ILogger logger, string realm, HttpStatusCode statusCode);
 
         [LoggerMessage(
-            EventId = 5,
+            EventId = 6,
             Level = LogLevel.Debug,
             Message = "Unable to parse WWW-Authenticate parameter for realm from registry {Registry}. Value: {Value}")]
         public static partial void UnableToParseWwwAuthenticate(ILogger logger, string registry, string value);
