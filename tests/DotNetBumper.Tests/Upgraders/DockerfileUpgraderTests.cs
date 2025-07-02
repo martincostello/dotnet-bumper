@@ -504,16 +504,19 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
 
         // Arrange
-        using var process = Process.Start(new ProcessStartInfo("docker", ["build", "."])
+        if (await IsDockerInstalledAsync(fixture.CancellationToken))
         {
-            WorkingDirectory = fixture.Project.DirectoryName,
-        })!;
+            using var process = Process.Start(new ProcessStartInfo("docker", ["build", "."])
+            {
+                WorkingDirectory = fixture.Project.DirectoryName,
+            })!;
 
-        // Act
-        await process.WaitForExitAsync(fixture.CancellationToken);
+            // Act
+            await process.WaitForExitAsync(fixture.CancellationToken);
 
-        // Assert
-        process.ExitCode.ShouldBe(0);
+            // Assert
+            process.ExitCode.ShouldBe(0);
+        }
     }
 
     [Fact]
@@ -835,5 +838,26 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             fixture.LogContext,
             fixture.CreateOptions(),
             fixture.CreateLogger<DockerfileUpgrader>());
+    }
+
+    private static async Task<bool> IsDockerInstalledAsync(CancellationToken cancellationToken)
+    {
+        using var process = new Process()
+        {
+            StartInfo = new("docker", ["version", "--format", "'{{.Server.Os}}'"])
+            {
+                RedirectStandardOutput = true,
+            },
+        };
+
+        var output = new StringBuilder();
+        process.OutputDataReceived += (_, e) => output.Append(e.Data);
+
+        process.Start();
+        process.BeginOutputReadLine();
+
+        await process.WaitForExitAsync(cancellationToken);
+
+        return process.ExitCode is 0 && output.ToString().Contains("linux", StringComparison.OrdinalIgnoreCase);
     }
 }
