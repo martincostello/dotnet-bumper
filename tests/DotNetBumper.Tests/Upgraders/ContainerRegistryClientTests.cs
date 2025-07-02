@@ -17,9 +17,17 @@ public class ContainerRegistryClientTests(ITestOutputHelper outputHelper)
         var target = new ContainerRegistryClient(client, logger);
 
         // Act
-        var actual = await target.GetImageDigestAsync(image, tag, CancellationToken.None);
+        var actual = await target.GetImageDigestAsync(image, tag, TestContext.Current.CancellationToken);
 
         // Assert
         actual.ShouldNotBeNullOrWhiteSpace();
+
+        // Arrange
+        var original = actual;
+
+        actual = await target.GetImageDigestAsync(image, tag, TestContext.Current.CancellationToken);
+
+        // Assert
+        actual.ShouldBe(original);
     }
 }
