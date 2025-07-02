@@ -414,7 +414,13 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Upgrades_Dockerfile_With_Digest(string channel)
     {
         // Arrange
+        var supportPhase =
+            await DotNetPreviewFixture.HasPreviewAsync() && await DotNetPreviewFixture.LatestChannelAsync() == channel ?
+            DotNetSupportPhase.Preview :
+            DotNetSupportPhase.Active;
+
         var digest = "sha256:4763240791cd850c6803964c38ec22d88b259ac7c127b4ad1000a4fd41a08e01";
+        var suffix = supportPhase is DotNetSupportPhase.Preview ? "-preview" : string.Empty;
 
         string fileContents =
             $"""
@@ -439,7 +445,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
              RUN dotnet restore
              RUN dotnet publish -c Release -o out
 
-             FROM mcr.microsoft.com/dotnet/aspnet:{channel}
+             FROM mcr.microsoft.com/dotnet/aspnet:{channel}{suffix}
              WORKDIR /App
              COPY --from=build-env /App/out .
              ENTRYPOINT ["dotnet", "DotNet.Docker.dll"]
@@ -455,7 +461,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
             SdkVersion = new($"{channel}.100"),
-            SupportPhase = DotNetSupportPhase.Active,
+            SupportPhase = supportPhase,
         };
 
         using var httpClient = new HttpClient();
@@ -479,7 +485,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         actualImage.Success.ShouldBeTrue();
         actualImage.Groups["platform"].Value.ShouldBeEmpty();
         actualImage.Groups["image"].Value.ShouldBe("mcr.microsoft.com/dotnet/sdk");
-        actualImage.Groups["tag"].Value.ShouldBe(channel);
+        actualImage.Groups["tag"].Value.ShouldBe(channel + suffix);
 
         var actualDigest = actualImage.Groups["digest"].Value;
         actualDigest.ShouldNotBeNullOrWhiteSpace();

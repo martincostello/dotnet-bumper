@@ -87,8 +87,8 @@ internal sealed partial class DockerfileUpgrader(
         {
             var platform = match.Groups["platform"].Value;
             var image = match.Groups["image"].Value;
-            var tag = match.Groups["tag"].Value;
             var name = match.Groups["name"].Value;
+            var currentTag = match.Groups["tag"].Value;
 
             if (IsDotNetImage(image) is false)
             {
@@ -105,18 +105,19 @@ internal sealed partial class DockerfileUpgrader(
 
             bool edited = AppendImage(builder, image, channel);
 
-            if (!string.IsNullOrEmpty(tag))
+            if (!string.IsNullOrEmpty(currentTag))
             {
                 builder.Append(':');
 
-                if (AppendTag(builder, tag, channel, supportPhase))
+                if (AppendTag(currentTag, channel, supportPhase, out var updatedTag))
                 {
+                    builder.Append(updatedTag);
                     edited = true;
                 }
 
-                if (!string.IsNullOrEmpty(match.Groups["digest"].Value))
+                if (!string.IsNullOrEmpty(match.Groups["digest"].Value) && updatedTag is not null)
                 {
-                    var digest = await client.GetImageDigestAsync(image, tag, cancellationToken);
+                    var digest = await client.GetImageDigestAsync(image, updatedTag, cancellationToken);
 
                     if (digest is not null)
                     {
@@ -145,10 +146,10 @@ internal sealed partial class DockerfileUpgrader(
         return (false, null);
 
         static bool AppendTag(
-            StringBuilder builder,
             ReadOnlySpan<char> tag,
             Version channel,
-            DotNetSupportPhase supportPhase)
+            DotNetSupportPhase supportPhase,
+            out string? updatedTag)
         {
             var maybeVersion = tag;
             var suffix = ReadOnlySpan<char>.Empty;
@@ -162,7 +163,8 @@ internal sealed partial class DockerfileUpgrader(
 
             if (Version.TryParse(maybeVersion, out var version) && version < channel)
             {
-                builder.Append(channel);
+                var builder = new StringBuilder()
+                    .Append(channel);
 
                 const string PreviewSuffix = "preview";
 
@@ -195,11 +197,13 @@ internal sealed partial class DockerfileUpgrader(
                     builder.Append(PreviewSuffix);
                 }
 
+                updatedTag = builder.ToString();
+
                 return true;
             }
             else
             {
-                builder.Append(tag);
+                updatedTag = null;
                 return false;
             }
         }
