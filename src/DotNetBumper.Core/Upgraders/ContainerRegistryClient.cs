@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
@@ -15,9 +16,13 @@ internal partial class ContainerRegistryClient(
     ILogger<ContainerRegistryClient> logger)
 {
     private static readonly MediaTypeWithQualityHeaderValue ManifestList = new("application/vnd.docker.distribution.manifest.list.v2+json");
+    private static readonly MediaTypeWithQualityHeaderValue Manifest = new("application/vnd.docker.distribution.manifest.v2+json");
+    private static readonly MediaTypeWithQualityHeaderValue OciManifest = new("application/vnd.oci.image.manifest.v1+json");
+    private static readonly MediaTypeWithQualityHeaderValue OciIndex = new("application/vnd.oci.image.index.v1+json");
+
     private static readonly ConcurrentDictionary<string, string> DigestCache = [];
 
-    private string? _token;
+    private AuthenticationHeaderValue? _authorization;
 
     public virtual async Task<string?> GetImageDigestAsync(
         string image,
@@ -33,9 +38,9 @@ internal partial class ContainerRegistryClient(
 
         (var registry, image) = ParseImage(image);
 
-        var token = _token;
+        var authorization = _authorization;
 
-        (digest, var wwwAuthenticate) = await GetManifestDigestAsync(registry, image, tag, token, cancellationToken);
+        (digest, var wwwAuthenticate) = await GetDigestAsync(registry, image, tag, authorization, cancellationToken);
 
         if (digest is not null)
         {
@@ -43,26 +48,26 @@ internal partial class ContainerRegistryClient(
             return digest;
         }
 
-        if (wwwAuthenticate is null)
+        if (wwwAuthenticate is null || wwwAuthenticate.Parameter is null)
         {
             return null;
         }
 
-        token = await GetRegistryTokenAsync(registry, wwwAuthenticate, cancellationToken);
+        authorization = await GetRegistryAuthorizationAsync(registry, wwwAuthenticate, cancellationToken);
 
-        if (token is null)
+        if (authorization is null)
         {
             return null;
         }
 
-        (digest, _) = await GetManifestDigestAsync(registry, image, tag, token, cancellationToken);
+        (digest, _) = await GetDigestAsync(registry, image, tag, authorization, cancellationToken);
 
         if (digest is not null)
         {
             Log.LatestManifestDigest(logger, image, tag, digest);
 
             DigestCache[cacheKey] = digest;
-            _token = token;
+            _authorization = authorization;
         }
 
         return digest;
@@ -81,58 +86,97 @@ internal partial class ContainerRegistryClient(
         return ("registry.hub.docker.com", container);
     }
 
-    private async Task<(string? Digest, string? WwwAuthenticate)> GetManifestDigestAsync(
+    private async Task<(string? Digest, AuthenticationHeaderValue? WwwAuthenticate)> GetDigestAsync(
         string registry,
         string image,
         string tag,
-        string? token,
+        AuthenticationHeaderValue? authorization,
         CancellationToken cancellationToken)
     {
+        // Based on https://github.com/renovatebot/renovate/blob/4f7c26cdf7edcecde68a9fd196273143d563ecc3/lib/modules/datasource/docker/index.ts
         var manifestUrl = $"https://{registry}/v2/{image}/manifests/{tag}";
 
         using var request = new HttpRequestMessage(HttpMethod.Get, manifestUrl);
-        request.Headers.Accept.Add(ManifestList);
 
-        if (token is not null)
+        request.Headers.Accept.Add(ManifestList);
+        request.Headers.Accept.Add(Manifest);
+        request.Headers.Accept.Add(OciManifest);
+        request.Headers.Accept.Add(OciIndex);
+
+        if (authorization is not null)
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            request.Headers.Authorization = authorization;
         }
 
-        using var response = await client.SendAsync(request, cancellationToken);
+        using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && token is null)
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && authorization is null)
         {
             Log.RequestToRegistryUnauthorized(logger, registry);
-
-            var wwwAuthenticate = response.Headers.WwwAuthenticate.FirstOrDefault();
-            return (null, wwwAuthenticate?.Parameter);
+            return (null, response.Headers.WwwAuthenticate.FirstOrDefault());
         }
 
-        string? digest = null;
-
-        if (response.IsSuccessStatusCode && response.Headers.TryGetValues("Docker-Content-Digest", out var digests))
+        if (!response.IsSuccessStatusCode)
         {
-            digest = digests.FirstOrDefault();
+            Log.GetManifestFailed(logger, image, tag, response.StatusCode);
+            return (null, null);
         }
 
-        return (digest, null);
+        if (response.Headers.TryGetValues("Docker-Content-Digest", out var digests))
+        {
+            return (digests.FirstOrDefault(), null);
+        }
+
+        using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var buffer = await SHA256.HashDataAsync(stream, cancellationToken);
+
+#if NET9_0_OR_GREATER
+        var digest = Convert.ToHexStringLower(buffer);
+#else
+#pragma warning disable CA1308
+        var digest = Convert.ToHexString(buffer);
+#pragma warning restore CA1308
+#endif
+
+        return ($"sha256:{digest}", null);
     }
 
-    private async Task<string?> GetRegistryTokenAsync(
+    private async Task<AuthenticationHeaderValue?> GetRegistryAuthorizationAsync(
         string registry,
-        string parameter,
+        AuthenticationHeaderValue authorization,
         CancellationToken cancellationToken)
     {
-        var parts = parameter.Split(',', StringSplitOptions.RemoveEmptyEntries)
+        if (string.IsNullOrEmpty(authorization.Parameter))
+        {
+            return authorization;
+        }
+
+        var parts = authorization.Parameter.Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select((p) => p.Trim().Split('='))
             .Where((p) => p.Length == 2)
             .ToDictionary((p) => p[0].Trim(), (p) => p[1].Trim('"'));
 
+        // Based on https://github.com/renovatebot/renovate/blob/main/lib/modules/datasource/docker/common.ts#L154-L159
         if (parts.TryGetValue("realm", out var realm) &&
-            parts.TryGetValue("service", out var service) &&
-            parts.TryGetValue("scope", out var scope))
+            Uri.TryCreate(realm, UriKind.Absolute, out _))
         {
-            var requestUri = $"{realm}?service={service}&scope={scope}";
+            var requestUri = realm;
+            var query = new Dictionary<string, string>();
+
+            if (parts.TryGetValue("service", out var service))
+            {
+                query.Add("service", service);
+            }
+
+            if (parts.TryGetValue("scope", out var scope))
+            {
+                query.Add("scope", scope);
+            }
+
+            if (query.Count > 0)
+            {
+                requestUri += '?' + string.Join('&', query.Select((p) => $"{p.Key}={p.Value}"));
+            }
 
             using var response = await client.GetAsync(requestUri, cancellationToken);
 
@@ -141,21 +185,22 @@ internal partial class ContainerRegistryClient(
                 using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
                 using var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
 
-                if (document.RootElement.TryGetProperty("token", out var token) &&
+                if ((document.RootElement.TryGetProperty("token", out var token) ||
+                     document.RootElement.TryGetProperty("access_token", out token)) &&
                     token.ValueKind is JsonValueKind.String)
                 {
-                    Log.GotRegistryToken(logger, realm);
-                    return token.GetString();
+                    Log.GotAuthorizationForRealm(logger, realm);
+                    return new(authorization.Scheme, token.GetString());
                 }
             }
             else
             {
-                Log.FailedToGetRegistryToken(logger, realm, response.StatusCode);
+                Log.FailedToGetAuthorization(logger, realm, response.StatusCode);
             }
         }
         else
         {
-            Log.FailedToParseWwwAuthenticate(logger, registry, parameter);
+            Log.UnableToParseWwwAuthenticate(logger, registry, authorization.Parameter);
         }
 
         return null;
@@ -173,25 +218,31 @@ internal partial class ContainerRegistryClient(
         [LoggerMessage(
             EventId = 2,
             Level = LogLevel.Debug,
-            Message = "Request to container registry {Registry} was unauthorized.")]
-        public static partial void RequestToRegistryUnauthorized(ILogger logger, string registry);
+            Message = "Failed to get the manifest for container {Container} with tag {Tag}: {StatusCode}.")]
+        public static partial void GetManifestFailed(ILogger logger, string container, string tag, HttpStatusCode statusCode);
 
         [LoggerMessage(
             EventId = 3,
             Level = LogLevel.Debug,
-            Message = "Successfully obtained token for realm {Realm}.")]
-        public static partial void GotRegistryToken(ILogger logger, string realm);
+            Message = "Request to container registry {Registry} was unauthorized.")]
+        public static partial void RequestToRegistryUnauthorized(ILogger logger, string registry);
 
         [LoggerMessage(
             EventId = 4,
             Level = LogLevel.Debug,
-            Message = "Failed to get token for realm {Realm}. HTTP status code: {StatusCode}.")]
-        public static partial void FailedToGetRegistryToken(ILogger logger, string realm, HttpStatusCode statusCode);
+            Message = "Successfully obtained authorization for realm {Realm}.")]
+        public static partial void GotAuthorizationForRealm(ILogger logger, string realm);
 
         [LoggerMessage(
             EventId = 5,
             Level = LogLevel.Debug,
-            Message = "Failed to parse WWW-Authenticate parameter from registry {Registry}. Value: {Value}")]
-        public static partial void FailedToParseWwwAuthenticate(ILogger logger, string registry, string value);
+            Message = "Failed to get token for realm {Realm}. HTTP status code: {StatusCode}.")]
+        public static partial void FailedToGetAuthorization(ILogger logger, string realm, HttpStatusCode statusCode);
+
+        [LoggerMessage(
+            EventId = 6,
+            Level = LogLevel.Debug,
+            Message = "Unable to parse WWW-Authenticate parameter for realm from registry {Registry}. Value: {Value}")]
+        public static partial void UnableToParseWwwAuthenticate(ILogger logger, string registry, string value);
     }
 }
