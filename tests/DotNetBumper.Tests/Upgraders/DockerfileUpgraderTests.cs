@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MartinCostello.DotNetBumper.Upgraders;
@@ -453,6 +454,10 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
         using var fixture = new UpgraderFixture(outputHelper);
 
+        await fixture.Project.AddSolutionAsync("Container.sln");
+        await fixture.Project.AddApplicationProjectAsync(["net6.0"]);
+        await fixture.Project.AddTestProjectAsync(["net6.0"]);
+
         string dockerfile = await fixture.Project.AddFileAsync("Dockerfile", fileContents);
 
         var upgrade = new UpgradeInfo()
@@ -497,6 +502,18 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
         // Assert
         actualUpdated.ShouldBe(ProcessingResult.None);
+
+        // Arrange
+        using var process = Process.Start(new ProcessStartInfo("docker", ["build", "."])
+        {
+            WorkingDirectory = fixture.Project.DirectoryName,
+        })!;
+
+        // Act
+        await process.WaitForExitAsync(fixture.CancellationToken);
+
+        // Assert
+        process.ExitCode.ShouldBe(0);
     }
 
     [Fact]
