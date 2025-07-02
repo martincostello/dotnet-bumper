@@ -458,7 +458,8 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = DotNetSupportPhase.Active,
         };
 
-        var target = CreateTarget(fixture);
+        using var httpClient = new HttpClient();
+        var target = CreateTarget(fixture, httpClient);
 
         // Act
         ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
@@ -800,10 +801,9 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
-    private static DockerfileUpgrader CreateTarget(UpgraderFixture fixture)
+    private static DockerfileUpgrader CreateTarget(UpgraderFixture fixture, HttpClient? httpClient = null)
     {
-        var httpClient = new HttpClient();
-        var registryClient = new ContainerRegistryClient(httpClient, fixture.CreateLogger<ContainerRegistryClient>());
+        var registryClient = new ContainerRegistryClient(httpClient!, fixture.CreateLogger<ContainerRegistryClient>());
 
         return new(
             fixture.Console,

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http.Headers;
@@ -14,7 +15,7 @@ internal partial class ContainerRegistryClient(
     ILogger<ContainerRegistryClient> logger)
 {
     private static readonly MediaTypeWithQualityHeaderValue ManifestList = new("application/vnd.docker.distribution.manifest.list.v2+json");
-    private static readonly Dictionary<string, string> DigestCache = [];
+    private static readonly ConcurrentDictionary<string, string> DigestCache = [];
 
     private string? _token;
 
