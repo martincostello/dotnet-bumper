@@ -113,16 +113,16 @@ internal sealed partial class DockerfileUpgrader(
                 {
                     builder.Append(updatedTag);
                     edited = true;
-                }
 
-                if (!string.IsNullOrEmpty(match.Groups["digest"].Value) && updatedTag is not null)
-                {
-                    var digest = await client.GetImageDigestAsync(image, updatedTag, cancellationToken);
-
-                    if (digest is not null)
+                    if (!string.IsNullOrEmpty(match.Groups["digest"].Value))
                     {
-                        builder.Append('@')
-                               .Append(digest);
+                        var digest = await client.GetImageDigestAsync(image, updatedTag, cancellationToken);
+
+                        if (digest is not null)
+                        {
+                            builder.Append('@')
+                                   .Append(digest);
+                        }
                     }
                 }
             }
@@ -149,7 +149,7 @@ internal sealed partial class DockerfileUpgrader(
             ReadOnlySpan<char> tag,
             Version channel,
             DotNetSupportPhase supportPhase,
-            out string? updatedTag)
+            [NotNullWhen(true)] out string? updatedTag)
         {
             var maybeVersion = tag;
             var suffix = ReadOnlySpan<char>.Empty;
