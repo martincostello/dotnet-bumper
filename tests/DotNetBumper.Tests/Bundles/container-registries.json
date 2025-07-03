@@ -1,0 +1,342 @@
+{
+  "$schema": "https://raw.githubusercontent.com/justeat/httpclient-interception/main/src/HttpClientInterception/Bundles/http-request-bundle-schema.json",
+  "id": "container-registries",
+  "version": 1,
+  "comment": "HTTP bundle for container registry queries.",
+  "items": [
+    {
+      "comment": "Get a manifest from the public AWS Elastic Container Registry without authentication",
+      "uri": "https://public.ecr.aws/v2/aquasecurity/trivy-db/manifests/latest",
+      "method": "GET",
+      "requestHeaders": {
+        "Accept": [
+          "application/vnd.docker.distribution.manifest.list.v2+json",
+          "application/vnd.docker.distribution.manifest.v2+json",
+          "application/vnd.oci.image.manifest.v1+json",
+          "application/vnd.oci.image.index.v1+json"
+        ]
+      },
+      "status": "401",
+      "contentHeaders": {
+        "Content-Type": [ "application/json" ]
+      },
+      "contentFormat": "json",
+      "contentJson": {
+        "errors": [
+          {
+            "code": "DENIED",
+            "message": "Not Authorized"
+          }
+        ]
+      },
+      "responseHeaders": {
+        "Docker-Distribution-Api-Version": [ "registry/2.0" ],
+        "WWW-Authenticate": [ "Bearer realm=\"https://public.ecr.aws/token/\",service=\"public.ecr.aws\",scope=\"aws\"" ]
+      }
+    },
+    {
+      "comment": "Get an access token from the public AWS Elastic Container Registry",
+      "uri": "https://public.ecr.aws/token/?service=public.ecr.aws&scope=aws",
+      "method": "GET",
+      "contentHeaders": {
+        "Content-Type": [ "application/json" ]
+      },
+      "contentFormat": "json",
+      "contentJson": {
+        "token": "eyJwYXlsb2FkIjoiYXdzLWVjci1hY2Nlc3MtdG9rZW4ifQ=="
+      }
+    },
+    {
+      "comment": "Get a manifest from the public AWS Elastic Container Registry with authentication",
+      "uri": "https://public.ecr.aws/v2/aquasecurity/trivy-db/manifests/latest",
+      "method": "GET",
+      "requestHeaders": {
+        "Accept": [
+          "application/vnd.docker.distribution.manifest.list.v2+json",
+          "application/vnd.docker.distribution.manifest.v2+json",
+          "application/vnd.oci.image.manifest.v1+json",
+          "application/vnd.oci.image.index.v1+json"
+        ],
+        "Authorization": [
+          "Bearer eyJwYXlsb2FkIjoiYXdzLWVjci1hY2Nlc3MtdG9rZW4ifQ=="
+        ]
+      },
+      "contentHeaders": {
+        "Content-Type": [ "application/vnd.oci.image.manifest.v1+json" ]
+      },
+      "contentFormat": "base64",
+      "contentString": "eyJzY2hlbWFWZXJzaW9uIjoyLCJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi92bmQub2NpLmltYWdlLm1hbmlmZXN0LnYxK2pzb24iLCJhcnRpZmFjdFR5cGUiOiJhcHBsaWNhdGlvbi92bmQuYXF1YXNlYy50cml2eS5jb25maWcudjEranNvbiIsImNvbmZpZyI6eyJtZWRpYVR5cGUiOiJhcHBsaWNhdGlvbi92bmQub2NpLmVtcHR5LnYxK2pzb24iLCJkaWdlc3QiOiJzaGEyNTY6NDQxMzZmYTM1NWIzNjc4YTExNDZhZDE2ZjdlODY0OWU5NGZiNGZjMjFmZTc3ZTgzMTBjMDYwZjYxY2FhZmY4YSIsInNpemUiOjIsImRhdGEiOiJlMzA9In0sImxheWVycyI6W3sibWVkaWFUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFxdWFzZWMudHJpdnkuZGIubGF5ZXIudjEudGFyK2d6aXAiLCJkaWdlc3QiOiJzaGEyNTY6M2Y3ZGU3ZDU1MWM2YzhjNGMwOGJhZTFiZmVjMmM0OTI4NTcyNDA5OTgwNGI4ZWQzYTFhODc2MTVkZWUwZWRlZiIsInNpemUiOjY5NDIyODM0LCJhbm5vdGF0aW9ucyI6eyJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UudGl0bGUiOiJkYi50YXIuZ3oifX1dLCJhbm5vdGF0aW9ucyI6eyJvcmcub3BlbmNvbnRhaW5lcnMuaW1hZ2UuY3JlYXRlZCI6IjIwMjUtMDctMDNUMDY6MzE6MzhaIn19",
+      "responseHeaders": {
+        "Docker-Distribution-Api-Version": [ "registry/2.0" ]
+      }
+    },
+    {
+      "comment": "Get a manifest from Docker Hub without authentication",
+      "uri": "https://registry.hub.docker.com/v2/rhysd/actionlint/manifests/latest",
+      "method": "GET",
+      "requestHeaders": {
+        "Accept": [
+          "application/vnd.docker.distribution.manifest.list.v2+json",
+          "application/vnd.docker.distribution.manifest.v2+json",
+          "application/vnd.oci.image.manifest.v1+json",
+          "application/vnd.oci.image.index.v1+json"
+        ]
+      },
+      "status": "401",
+      "contentHeaders": {
+        "Content-Type": [ "application/json" ]
+      },
+      "contentFormat": "json",
+      "contentJson": {
+        "errors": [
+          {
+            "code": "UNAUTHORIZED",
+            "message": "authentication required"
+          }
+        ],
+        "detail": [
+          {
+            "Type": "repository",
+            "Class": "",
+            "Name": "rhysd/actionlint",
+            "Action": "pull"
+          }
+        ]
+      },
+      "responseHeaders": {
+        "docker-distribution-api-version": [ "registry/2.0" ],
+        "docker-ratelimit-source": [ "127.0.0.1" ],
+        "Strict-Transport-Security": [ "max-age=31536000" ],
+        "WWW-Authenticate": [ "Bearer realm=\"https://auth.docker.io/token\",service=\"registry.docker.io\",scope=\"repository:rhysd/actionlint:pull\"" ]
+      }
+    },
+    {
+      "comment": "Get an access token from Docker Hub",
+      "uri": "https://auth.docker.io/token?service=registry.docker.io&scope=repository:rhysd/actionlint:pull",
+      "method": "GET",
+      "contentHeaders": {
+        "Content-Type": [ "application/json" ]
+      },
+      "contentFormat": "json",
+      "contentJson": {
+        "token": "eyJwYXlsb2FkIjoiZG9ja2VyLWFjY2Vzcy10b2tlbiJ9"
+      }
+    },
+    {
+      "comment": "Get a manifest from Docker Hub with authentication",
+      "uri": "https://registry.hub.docker.com/v2/rhysd/actionlint/manifests/latest",
+      "method": "GET",
+      "requestHeaders": {
+        "Accept": [
+          "application/vnd.docker.distribution.manifest.list.v2+json",
+          "application/vnd.docker.distribution.manifest.v2+json",
+          "application/vnd.oci.image.manifest.v1+json",
+          "application/vnd.oci.image.index.v1+json"
+        ],
+        "Authorization": [
+          "Bearer eyJwYXlsb2FkIjoiZG9ja2VyLWFjY2Vzcy10b2tlbiJ9"
+        ]
+      },
+      "contentHeaders": {
+        "Content-Type": [ "application/vnd.oci.image.index.v1+json" ]
+      },
+      "contentFormat": "json",
+      "contentJson": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.oci.image.index.v1+json",
+        "manifests": [
+          {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:1d74bfc9fd1963af8f89a7c22afaaafd42f49aad711a09951d02cb996398f61d",
+            "size": 1058,
+            "platform": {
+              "architecture": "amd64",
+              "os": "linux"
+            }
+          },
+          {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:2ed5f65788d18230778f7187b1917bf5d3fcd6cb68bbc811a004078b9c935f27",
+            "size": 1058,
+            "platform": {
+              "architecture": "arm64",
+              "os": "linux"
+            }
+          },
+          {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:fbdb28c340d1bdeed52213e1dfee9c361e8c2e627be8f53d2038a24584f3fa34",
+            "size": 567,
+            "annotations": {
+              "vnd.docker.reference.digest": "sha256:1d74bfc9fd1963af8f89a7c22afaaafd42f49aad711a09951d02cb996398f61d",
+              "vnd.docker.reference.type": "attestation-manifest"
+            },
+            "platform": {
+              "architecture": "unknown",
+              "os": "unknown"
+            }
+          },
+          {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:8c96dd28db614b5ad8b581cbf72912fb3aafd68a9d92dffed6421ddda9d20d61",
+            "size": 567,
+            "annotations": {
+              "vnd.docker.reference.digest": "sha256:2ed5f65788d18230778f7187b1917bf5d3fcd6cb68bbc811a004078b9c935f27",
+              "vnd.docker.reference.type": "attestation-manifest"
+            },
+            "platform": {
+              "architecture": "unknown",
+              "os": "unknown"
+            }
+          }
+        ]
+      },
+      "responseHeaders": {
+        "docker-content-digest": [ "sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9" ],
+        "docker-distribution-api-version": [ "registry/2.0" ],
+        "docker-ratelimit-source": [ "127.0.0.1" ],
+        "ratelimit-limit": [ "100;w=21600" ],
+        "ratelimit-remaining": [ "100;w=21600" ]
+      }
+    },
+    {
+      "comment": "Get a manifest from the GitHub Container Registry without authentication",
+      "uri": "https://ghcr.io/v2/martincostello/eurovision-hue/manifests/main",
+      "method": "GET",
+      "requestHeaders": {
+        "Accept": [
+          "application/vnd.docker.distribution.manifest.list.v2+json",
+          "application/vnd.docker.distribution.manifest.v2+json",
+          "application/vnd.oci.image.manifest.v1+json",
+          "application/vnd.oci.image.index.v1+json"
+        ]
+      },
+      "status": "401",
+      "contentHeaders": {
+        "Content-Type": [ "application/json" ]
+      },
+      "contentFormat": "json",
+      "contentJson": {
+        "errors": [
+          {
+            "code": "UNAUTHORIZED",
+            "message": "authentication required"
+          }
+        ]
+      },
+      "responseHeaders": {
+        "WWW-Authenticate": [ "Bearer realm=\"https://ghcr.io/token\",service=\"ghcr.io\",scope=\"repository:martincostello/eurovision-hue:pull\"" ],
+        "X-GitHub-Request-Id": [ "FC18:117459:1446F9:16259C:68663EAF" ]
+      }
+    },
+    {
+      "comment": "Get an access token from the GitHub Container Registry",
+      "uri": "https://ghcr.io/token?service=ghcr.io&scope=repository:martincostello/eurovision-hue:pull",
+      "method": "GET",
+      "contentHeaders": {
+        "Content-Type": [ "application/json" ]
+      },
+      "contentFormat": "json",
+      "contentJson": {
+        "token": "djE6bWFydGluY29zdGVsbG8vZXVyb3Zpc2lvbi1odWU6MTc1MTUzMTMwNTk3Mzc5NjY4Mw=="
+      },
+      "responseHeaders": {
+        "docker-distribution-api-version": [ "registry/2.0" ],
+        "Strict-Transport-Security": [ "max-age=63072000; includeSubDomains; preload" ],
+        "X-GitHub-Request-Id": [ "FC18:117459:1446F9:16259C:68663EAF" ]
+      }
+    },
+    {
+      "comment": "Get a manifest from the GitHub Container Registry with authentication",
+      "uri": "https://ghcr.io/v2/martincostello/eurovision-hue/manifests/main",
+      "method": "GET",
+      "requestHeaders": {
+        "Accept": [
+          "application/vnd.docker.distribution.manifest.list.v2+json",
+          "application/vnd.docker.distribution.manifest.v2+json",
+          "application/vnd.oci.image.manifest.v1+json",
+          "application/vnd.oci.image.index.v1+json"
+        ],
+        "Authorization": [
+          "Bearer djE6bWFydGluY29zdGVsbG8vZXVyb3Zpc2lvbi1odWU6MTc1MTUzMTMwNTk3Mzc5NjY4Mw=="
+        ]
+      },
+      "contentHeaders": {
+        "Content-Type": [ "application/vnd.docker.distribution.manifest.v2+json" ]
+      },
+      "contentFormat": "json",
+      "contentJson": {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+        "config": {
+          "mediaType": "application/vnd.docker.container.image.v1+json",
+          "size": 3574,
+          "digest": "sha256:79213c1b53812d54c94fa752405573043c8230c66a5fd375b3b4c509b26de76e"
+        },
+        "layers": [
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 30587483,
+            "digest": "sha256:489ce25c545cd84af4e21926af62d75a2d26048de532f2b5f514d2929117dbf6"
+
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 16817571,
+            "digest": "sha256:78ef8be0db5018584208957e1c5a2e529946bfedfed89fe3a3c8ff130b861450"
+
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 3535,
+            "digest": "sha256:b5579b842ddc8ed613ae819f61645593efcfe6557d2c5b9d6e47e85c9d2a063e"
+
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 91,
+            "digest": "sha256:de3e6156ac030db250b43cc11302b579c50d13d7b641e1374d525f4ef96427a9"
+
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 85124330,
+            "digest": "sha256:113fb03f57351fafbe18a4361549e58b8245eea8edf9c19754860935b43b9774"
+          },
+          {
+            "mediaType": "application/vnd.docker.image.rootfs.diff.tar.gzip",
+            "size": 266043594,
+            "digest": "sha256:26db5f4c1e33eef290a63af2b76fb3af78b4c3aa6e3c511468d89a76c8a767c4"
+          }
+        ]
+      },
+      "responseHeaders": {
+        "docker-content-digest": [ "sha256:b97f5e6a072557a07a03789bafae1758f7b976b016de7e8d0bb941b560ccef52" ],
+        "docker-distribution-api-version": [ "registry/2.0" ],
+        "Strict-Transport-Security": [ "max-age=63072000; includeSubDomains; preload" ],
+        "X-GitHub-Request-Id": [ "FC18:117459:1446F9:16259C:68663EAF" ]
+      }
+    },
+    {
+      "comment": "Get a manifest from the Microsoft Artifact Registry",
+      "uri": "https://mcr.microsoft.com/v2/dotnet/sdk/manifests/latest",
+      "method": "GET",
+      "requestHeaders": {
+        "Accept": [
+          "application/vnd.docker.distribution.manifest.list.v2+json",
+          "application/vnd.docker.distribution.manifest.v2+json",
+          "application/vnd.oci.image.manifest.v1+json",
+          "application/vnd.oci.image.index.v1+json"
+        ]
+      },
+      "contentHeaders": {
+        "Content-Type": [ "application/vnd.docker.distribution.manifest.v2+json" ]
+      },
+      "contentFormat": "string",
+      "contentString": "",
+      "responseHeaders": {
+        "Docker-Content-Digest": [ "sha256:b768b444028d3c531de90a356836047e48658cd1e26ba07a539a6f1a052a35d9" ]
+      }
+    }
+  ]
+}
