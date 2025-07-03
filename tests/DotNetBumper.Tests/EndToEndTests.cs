@@ -8,7 +8,7 @@ using Spectre.Console.Testing;
 
 namespace MartinCostello.DotNetBumper;
 
-[Collection("End-to-End")]
+[Trait("Category", "End-to-End")]
 public sealed class EndToEndTests(
     ITestOutputHelper outputHelper) : IAsyncDisposable
 {
