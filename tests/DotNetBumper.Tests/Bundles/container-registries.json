@@ -49,7 +49,6 @@
     {
       "comment": "Get a manifest from the public AWS Elastic Container Registry with authentication",
       "uri": "https://public.ecr.aws/v2/aquasecurity/trivy-db/manifests/latest",
-      "priority": 1,
       "method": "GET",
       "requestHeaders": {
         "Accept": [
@@ -125,7 +124,6 @@
     },
     {
       "comment": "Get a manifest from Docker Hub with authentication",
-      "priority": 1,
       "uri": "https://registry.hub.docker.com/v2/rhysd/actionlint/manifests/latest",
       "method": "GET",
       "requestHeaders": {
@@ -250,7 +248,6 @@
     },
     {
       "comment": "Get a manifest from the GitHub Container Registry with authentication",
-      "priority": 1,
       "uri": "https://ghcr.io/v2/martincostello/eurovision-hue/manifests/main",
       "method": "GET",
       "requestHeaders": {
