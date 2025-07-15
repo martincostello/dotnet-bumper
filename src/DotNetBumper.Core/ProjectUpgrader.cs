@@ -7,6 +7,7 @@ using MartinCostello.DotNetBumper.PostProcessors;
 using MartinCostello.DotNetBumper.Upgraders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Versioning;
 using Spectre.Console;
 
 namespace MartinCostello.DotNetBumper;
@@ -129,8 +130,8 @@ public partial class ProjectUpgrader(
             Log.Upgraded(
                 logger,
                 ProjectPath,
-                upgrade.Channel.ToString(),
-                upgrade.SdkVersion.ToString());
+                upgrade.Channel,
+                upgrade.SdkVersion);
 
             foreach (var processor in Order(postProcessors))
             {
@@ -288,8 +289,8 @@ public partial class ProjectUpgrader(
         public static partial void Upgraded(
             ILogger logger,
             string projectPath,
-            string channel,
-            string sdkVersion);
+            Version channel,
+            NuGetVersion sdkVersion);
 
         [LoggerMessage(
             EventId = 3,

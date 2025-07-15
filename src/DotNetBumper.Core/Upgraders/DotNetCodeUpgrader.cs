@@ -115,9 +115,11 @@ internal sealed partial class DotNetCodeUpgrader(
         Dictionary<string, int> fixes = [];
         ProcessingResult result;
 
-        if (!string.IsNullOrWhiteSpace(formatResult.StandardError))
+        var errorsTrimmed = formatResult.StandardError.TrimEnd();
+
+        if (!string.IsNullOrWhiteSpace(errorsTrimmed))
         {
-            Log.DotNetFormatErrors(logger, formatResult.StandardError.TrimEnd());
+            Log.DotNetFormatErrors(logger, errorsTrimmed);
         }
 
         if (formatResult.Success)
