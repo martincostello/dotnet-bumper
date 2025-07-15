@@ -272,8 +272,8 @@ public partial class DotNetUpgradeFinder(
 
         Log.FoundEligibleUpgrade(
             logger,
-            latestChannel.Channel.ToString(),
-            latestChannel.SdkVersion.ToFullString(),
+            latestChannel.Channel,
+            latestChannel.SdkVersion,
             latestChannel.ReleaseType);
 
         return latestChannel;
@@ -306,8 +306,8 @@ public partial class DotNetUpgradeFinder(
             Message = "Found eligible .NET upgrade. Channel: {Channel}, SDK Version: {SdkVersion}, Release Type: {ReleaseType}.")]
         public static partial void FoundEligibleUpgrade(
             ILogger logger,
-            string channel,
-            string sdkVersion,
+            Version channel,
+            NuGetVersion sdkVersion,
             DotNetReleaseType releaseType);
 
         [LoggerMessage(

@@ -63,8 +63,8 @@ internal sealed partial class GlobalJsonUpgrader(
                 Log.UpgradedDotNetSdk(
                     logger,
                     path,
-                    currentVersion.ToString(),
-                    upgrade.SdkVersion.ToString());
+                    currentVersion,
+                    upgrade.SdkVersion);
 
                 logContext.DotNetSdkVersion = upgrade.SdkVersion.ToString();
 
@@ -130,7 +130,7 @@ internal sealed partial class GlobalJsonUpgrader(
         public static partial void UpgradedDotNetSdk(
             ILogger logger,
             string fileName,
-            string previousVersion,
-            string upgradedVersion);
+            NuGetVersion previousVersion,
+            NuGetVersion upgradedVersion);
     }
 }
