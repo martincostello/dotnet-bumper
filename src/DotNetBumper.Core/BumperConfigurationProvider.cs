@@ -53,6 +53,7 @@ internal sealed partial class BumperConfigurationProvider(
             configuration.RemainingReferencesIgnore.UnionWith(custom.RemainingReferencesIgnore);
         }
 
+#pragma warning disable CA1873
         if (logger.IsEnabled(LogLevel.Debug))
         {
             Log.IncludedNuGetPackages(logger, [.. configuration.IncludeNuGetPackages]);
@@ -60,6 +61,7 @@ internal sealed partial class BumperConfigurationProvider(
             Log.NoWarn(logger, [.. configuration.NoWarn]);
             Log.IgnoreRemainingReferences(logger, [.. configuration.RemainingReferencesIgnore]);
         }
+#pragma warning restore CA1873
 
         return configuration;
     }
