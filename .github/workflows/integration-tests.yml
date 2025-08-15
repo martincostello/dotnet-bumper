@@ -40,6 +40,7 @@ jobs:
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         filter: 'tree:0'
+        persist-credentials: false
         show-progress: false
 
     - name: Setup .NET SDK
@@ -133,6 +134,7 @@ jobs:
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       with:
         filter: 'tree:0'
+        persist-credentials: false
         repository: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) }}
         ref: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) == github.repository && github.ref || '' }}
         show-progress: false
