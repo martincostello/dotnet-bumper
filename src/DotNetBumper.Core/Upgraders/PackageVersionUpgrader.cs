@@ -101,9 +101,7 @@ internal sealed partial class PackageVersionUpgrader(
         {
             using var reader = new StringReader(result.StandardOutput);
 
-            string? line;
-
-            while ((line = await reader.ReadLineAsync(cancellationToken)) is not null)
+            while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
                 if (NuGetVersion.TryParse(line, out var version))
                 {
