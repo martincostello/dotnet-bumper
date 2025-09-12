@@ -144,9 +144,8 @@ internal sealed class PowerShellScript
         using var reader = new StreamReader(input, metadata.Encoding);
 
         List<string> lines = [];
-        string? line;
 
-        while ((line = await reader.ReadLineAsync(cancellationToken)) is not null)
+        while (await reader.ReadLineAsync(cancellationToken) is { } line)
         {
             lines.Add(line);
         }
