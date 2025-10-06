@@ -3,18 +3,12 @@
 
 namespace MartinCostello.DotNetBumper.Upgraders;
 
+[Collection<NotInParallelCollection>]
 public class DotNetCodeUpgraderTests(ITestOutputHelper outputHelper)
 {
     private static TimeSpan Timeout { get; } = TimeSpan.FromMinutes(4);
 
-    public static TheoryData<string> Channels()
-    {
-        return
-        [
-            "8.0",
-            "9.0",
-        ];
-    }
+    public static TheoryData<string> Channels() => ["8.0", "9.0"];
 
     [Theory]
     [MemberData(nameof(Channels))]
