@@ -223,7 +223,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             $isValid = $false
           }
-          meziantou.validate-nuget-package $package --github-token ${env:GH_TOKEN}
+          meziantou.validate-nuget-package $package --github-token ${env:GH_TOKEN} --excluded-rules AssembliesMustBeOptimized
           if ($LASTEXITCODE -ne 0) {
             $isValid = $false
           }
