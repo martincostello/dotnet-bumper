@@ -67,7 +67,7 @@ jobs:
       shell: pwsh
       run: |
         $dotnetOutdatedVersion = (Get-Content "./.config/dotnet-tools.json" | Out-String | ConvertFrom-Json).tools.'dotnet-outdated-tool'.version
-        "dotnet-outdated-version=${dotnetOutdatedVersion}" >> $env:GITHUB_OUTPUT
+        "dotnet-outdated-version=${dotnetOutdatedVersion}" >> ${env:GITHUB_OUTPUT}
 
   test:
     needs: [ package ]
@@ -191,7 +191,7 @@ jobs:
           $config | ConvertTo-Json | Out-File -FilePath $tempFile | Out-Null
           $configFile = $tempFile
         }
-        "dotnet-bumper-config=${configFile}" >> $env:GITHUB_OUTPUT
+        "dotnet-bumper-config=${configFile}" >> ${env:GITHUB_OUTPUT}
 
     - name: Run .NET Bumper
       shell: pwsh
