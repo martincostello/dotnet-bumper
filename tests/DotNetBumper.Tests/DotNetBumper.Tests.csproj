@@ -28,6 +28,7 @@
   <ItemGroup>
     <AssemblyMetadata Include="SolutionRoot" Value="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..'))" />
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <CoverletExclude Include="$([MSBuild]::Escape('[Spectre.Console*]*'))" />
     <EmbeddedResource Include="Bundles\**\*.json" />
   </ItemGroup>
   <PropertyGroup>
