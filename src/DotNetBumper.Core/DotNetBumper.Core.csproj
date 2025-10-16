@@ -28,11 +28,11 @@
     <PackageReference Include="YamlDotNet" />
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
-    <PackageReference Update="Microsoft.Build" VersionOverride="[17.11.31,)" />
+    <PackageReference Update="Microsoft.Build" VersionOverride="[17.11.48,)" />
     <PackageReference Update="System.Management.Automation" VersionOverride="[7.4.10,)" />
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
-    <PackageReference Update="Microsoft.Build" VersionOverride="[17.12.6,)" />
+    <PackageReference Update="Microsoft.Build" VersionOverride="[17.12.50,)" />
     <PackageReference Update="System.Management.Automation" VersionOverride="[7.5.1,)" />
   </ItemGroup>
   <ItemGroup>
