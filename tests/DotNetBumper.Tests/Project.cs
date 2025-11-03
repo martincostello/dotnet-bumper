@@ -17,8 +17,9 @@ internal sealed class Project : IDisposable
 
     public string DirectoryName => _directory.Path;
 
-    public static ProjectCreator Create(bool hasSdk = false)
-        => ProjectCreator.Create(sdk: hasSdk ? ProjectCreatorConstants.SdkCsprojDefaultSdk : null);
+    public static ProjectCreator Create(bool hasSdk = false) =>
+        ProjectCreator.Create(sdk: hasSdk ? ProjectCreatorConstants.SdkCsprojDefaultSdk : null)
+                      .Property("SuppressTfmSupportBuildErrors", "true");
 
     public async Task<string> AddFileAsync(string path, string content, Encoding? encoding = null)
     {
@@ -88,14 +89,13 @@ internal sealed class Project : IDisposable
         [
             .. properties,
             KeyValuePair.Create("OutputType", "Exe"),
-            KeyValuePair.Create("SuppressTfmSupportBuildErrors", "true"),
         ];
 
         string[] testPackages =
         [
             "Microsoft.NET.Test.Sdk",
             "xunit.runner.visualstudio",
-            "xunit.v3",
+            "xunit.v3.mtp-off",
         ];
 
         foreach (var id in testPackages.Where((p) => packageReferences is null || !packageReferences.Any((r) => r.Key == p)))
