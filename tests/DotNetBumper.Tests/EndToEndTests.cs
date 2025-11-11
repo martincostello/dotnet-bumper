@@ -37,8 +37,8 @@ public sealed class EndToEndTests(
             new BumperTestCase("6.0.100", ["net6.0"], ["--channel=9.0"]),
             new BumperTestCase("6.0.100", ["net6.0"], ["--upgrade-type=latest"]),
             new BumperTestCase("6.0.100", ["net6.0"], ["--upgrade-type=lts"]),
-            new BumperTestCase("6.0.100", ["net6.0"], [], Packages(("System.Text.Json", "6.0.0"))),
-            new BumperTestCase("7.0.100", ["net7.0"], [], Packages(("System.Text.Json", "7.0.0"))),
+            new BumperTestCase("6.0.100", ["net6.0"], [], Packages(("Microsoft.Extensions.DependencyInjection", "6.0.0"))),
+            new BumperTestCase("7.0.100", ["net7.0"], [], Packages(("Microsoft.Extensions.DependencyInjection", "7.0.0"))),
             new BumperTestCase("8.0.100", ["net6.0", "net8.0"], ["--channel=9.0"]),
         };
 #pragma warning restore IDE0090
