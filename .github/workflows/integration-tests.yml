@@ -97,10 +97,6 @@ jobs:
             upgrade-type: Latest
           - repo: costellobot
             upgrade-type: Preview
-          - repo: dependabot-helper
-            upgrade-type: Latest
-          - repo: dependabot-helper
-            upgrade-type: Preview
           - repo: dotnet-bumper
             upgrade-type: Latest
           - repo: dotnet-bumper
