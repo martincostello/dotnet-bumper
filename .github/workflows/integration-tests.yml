@@ -39,7 +39,7 @@ jobs:
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
         filter: 'tree:0'
         persist-credentials: false
@@ -129,7 +129,7 @@ jobs:
         node-version: '24'
 
     - name: Checkout ${{ format('{0}/{1}', github.repository_owner, matrix.repo) }}
-      uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
         filter: 'tree:0'
         persist-credentials: false
