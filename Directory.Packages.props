@@ -6,7 +6,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="coverlet.msbuild" Version="6.0.4" />
-    <PackageVersion Include="GitHubActionsTestLogger" Version="2.4.1" />
+    <PackageVersion Include="GitHubActionsTestLogger" Version="3.0.0" />
     <PackageVersion Include="Ignore" Version="0.2.1" />
     <PackageVersion Include="JunitXml.TestLogger" Version="7.0.2" />
     <PackageVersion Include="JustEat.HttpClientInterception" Version="5.1.2" />
@@ -34,7 +34,6 @@
     <PackageVersion Include="Spectre.Console.Testing" Version="0.54.0" />
     <PackageVersion Include="System.Management.Automation" Version="7.5.4" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageVersion Include="xunit.v3" Version="3.2.0" />
     <PackageVersion Include="xunit.v3.mtp-off" Version="3.2.0" />
     <PackageVersion Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
