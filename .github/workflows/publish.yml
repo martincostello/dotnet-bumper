@@ -48,6 +48,20 @@ jobs:
       run: |
         gh release download "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}"
 
+    - name: Import GPG public key
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh api "/users/${GITHUB_REPOSITORY_OWNER}/gpg_keys" --jq ".[].raw_key" | gpg --import
+
+    - name: Verify release assets
+      run: |
+        sha256sum "./checksums.txt" --check || exit 1
+        for pkg in *.*nupkg; do
+          echo "Verifying ${pkg}"
+          gpg --verify "${pkg}.sig" "${pkg}" || exit 1
+        done
+
     - name: Get .NET SDK version
       id: get-dotnet-sdk-version
       env:
