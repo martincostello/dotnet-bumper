@@ -82,6 +82,7 @@ jobs:
           "version=${updatedVersion}" >> ${env:GITHUB_OUTPUT}
 
       - name: Import GPG private key
+        shell: bash
         env:
           GPG_PRIVATE_KEY: ${{ secrets.COSTELLOBOT_GPG_PRIVATE_KEY }}
         run: |
