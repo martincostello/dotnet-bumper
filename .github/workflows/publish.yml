@@ -38,6 +38,7 @@ jobs:
       url: https://www.nuget.org/packages/MartinCostello.DotNetBumper
 
     permissions:
+      attestations: read
       id-token: write
 
     steps:
