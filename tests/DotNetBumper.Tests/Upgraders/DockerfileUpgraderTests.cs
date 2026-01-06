@@ -330,7 +330,10 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         var channelVersion = Version.Parse(channel);
 
         using var httpClient = new HttpClient();
-        var registryClient = new ContainerRegistryClient(httpClient, NullLogger<ContainerRegistryClient>.Instance);
+        var registryClient = new ContainerRegistryClient(
+            httpClient,
+            ContainerDigestCache.Instance,
+            NullLogger<ContainerRegistryClient>.Instance);
 
         // Act
         (var actualResult, var actualImage) = await DockerfileUpgrader.TryUpdateImageAsync(
@@ -830,7 +833,10 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
 
     private static DockerfileUpgrader CreateTarget(UpgraderFixture fixture, HttpClient? httpClient = null)
     {
-        var registryClient = new ContainerRegistryClient(httpClient!, fixture.CreateLogger<ContainerRegistryClient>());
+        var registryClient = new ContainerRegistryClient(
+            httpClient!,
+            ContainerDigestCache.Instance,
+            fixture.CreateLogger<ContainerRegistryClient>());
 
         return new(
             fixture.Console,

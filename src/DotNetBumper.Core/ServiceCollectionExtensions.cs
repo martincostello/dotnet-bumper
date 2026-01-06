@@ -46,6 +46,7 @@ public static class ServiceCollectionExtensions
                 .AddSingleton<BumperConfigurationLoader>()
                 .AddSingleton<BumperConfigurationProvider>()
                 .AddSingleton<BumperLogContext>()
+                .AddSingleton(ContainerDigestCache.Instance)
                 .AddSingleton<ContainerRegistryClient>()
                 .AddSingleton<DotNetProcess>()
                 .AddSingleton<IEnvironment, BumperEnvironment>()

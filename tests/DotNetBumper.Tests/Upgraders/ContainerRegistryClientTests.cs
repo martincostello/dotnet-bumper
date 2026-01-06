@@ -21,9 +21,7 @@ public class ContainerRegistryClientTests(ITestOutputHelper outputHelper)
 
         // Arrange
         var logger = outputHelper.ToLogger<ContainerRegistryClient>();
-        var target = new ContainerRegistryClient(client, logger);
-
-        ContainerRegistryClient.DigestCache.Clear();
+        var target = new ContainerRegistryClient(client, ContainerDigestCache.Instance, logger);
 
         // Act
         var actual = await target.GetImageDigestAsync(image, tag, cancellationToken);
@@ -66,11 +64,10 @@ public class ContainerRegistryClientTests(ITestOutputHelper outputHelper)
 
         using var client = options.CreateHttpClient();
 
-        ContainerRegistryClient.DigestCache.Clear();
-
         // Arrange
+        var digestCache = new ContainerDigestCache();
         var logger = outputHelper.ToLogger<ContainerRegistryClient>();
-        var target = new ContainerRegistryClient(client, logger);
+        var target = new ContainerRegistryClient(client, digestCache, logger);
 
         // Act
         var actual = await target.GetImageDigestAsync(image, tag, cancellationToken);
