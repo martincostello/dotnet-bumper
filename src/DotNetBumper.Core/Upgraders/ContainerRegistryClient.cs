@@ -15,12 +15,12 @@ internal partial class ContainerRegistryClient(
     HttpClient client,
     ILogger<ContainerRegistryClient> logger)
 {
+    internal static readonly ConcurrentDictionary<string, string> DigestCache = [];
+
     private static readonly MediaTypeWithQualityHeaderValue ManifestList = new("application/vnd.docker.distribution.manifest.list.v2+json");
     private static readonly MediaTypeWithQualityHeaderValue Manifest = new("application/vnd.docker.distribution.manifest.v2+json");
     private static readonly MediaTypeWithQualityHeaderValue OciManifest = new("application/vnd.oci.image.manifest.v1+json");
     private static readonly MediaTypeWithQualityHeaderValue OciIndex = new("application/vnd.oci.image.index.v1+json");
-
-    private static readonly ConcurrentDictionary<string, string> DigestCache = [];
 
     private AuthenticationHeaderValue? _authorization;
 

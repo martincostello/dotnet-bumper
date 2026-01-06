@@ -23,6 +23,8 @@ public class ContainerRegistryClientTests(ITestOutputHelper outputHelper)
         var logger = outputHelper.ToLogger<ContainerRegistryClient>();
         var target = new ContainerRegistryClient(client, logger);
 
+        ContainerRegistryClient.DigestCache.Clear();
+
         // Act
         var actual = await target.GetImageDigestAsync(image, tag, cancellationToken);
 
@@ -63,6 +65,8 @@ public class ContainerRegistryClientTests(ITestOutputHelper outputHelper)
         await options.RegisterBundleFromResourceStreamAsync("container-registries", cancellationToken: cancellationToken);
 
         using var client = options.CreateHttpClient();
+
+        ContainerRegistryClient.DigestCache.Clear();
 
         // Arrange
         var logger = outputHelper.ToLogger<ContainerRegistryClient>();
