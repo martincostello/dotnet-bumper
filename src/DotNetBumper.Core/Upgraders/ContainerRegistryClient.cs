@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http.Headers;
@@ -13,10 +12,9 @@ namespace MartinCostello.DotNetBumper.Upgraders;
 
 internal partial class ContainerRegistryClient(
     HttpClient client,
+    ContainerDigestCache digestCache,
     ILogger<ContainerRegistryClient> logger)
 {
-    internal static readonly ConcurrentDictionary<string, string> DigestCache = [];
-
     private static readonly MediaTypeWithQualityHeaderValue ManifestList = new("application/vnd.docker.distribution.manifest.list.v2+json");
     private static readonly MediaTypeWithQualityHeaderValue Manifest = new("application/vnd.docker.distribution.manifest.v2+json");
     private static readonly MediaTypeWithQualityHeaderValue OciManifest = new("application/vnd.oci.image.manifest.v1+json");
@@ -31,7 +29,7 @@ internal partial class ContainerRegistryClient(
     {
         var cacheKey = $"{image}:{tag}";
 
-        if (DigestCache.TryGetValue(cacheKey, out var digest))
+        if (digestCache.ImageDigests.TryGetValue(cacheKey, out var digest))
         {
             return digest;
         }
@@ -66,7 +64,7 @@ internal partial class ContainerRegistryClient(
         {
             Log.LatestManifestDigest(logger, image, tag, digest);
 
-            DigestCache[cacheKey] = digest;
+            digestCache.ImageDigests[cacheKey] = digest;
             _authorization = authorization;
         }
 
