@@ -43,6 +43,7 @@ internal partial class ContainerRegistryClient(
         if (digest is not null)
         {
             Log.LatestManifestDigest(logger, image, tag, digest);
+            digestCache.ImageDigests[cacheKey] = digest;
             return digest;
         }
 
