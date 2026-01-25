@@ -19,7 +19,7 @@ public sealed class EndToEndTests(
     public static async Task Application_Validates_Project_Exists()
     {
         // Arrange
-        string projectPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        string projectPath = Directory.CreateTempSubdirectory().FullName;
 
         // Act
         int actual = await Program.Main([projectPath]);
