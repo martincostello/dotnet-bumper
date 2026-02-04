@@ -54,9 +54,9 @@ public sealed class EndToEndTests(
             ]);
         }
 
-        // Skip daily build test in January-December when one release
+        // Skip daily build test in November-February when one release
         // has just finished and the next hasn't ramped up yet.
-        if (TimeProvider.System.GetUtcNow().Month is not (1 or 11 or 12))
+        if (TimeProvider.System.GetUtcNow().Month is not (1 or 2 or 11 or 12))
         {
             testCases.Add(new BumperTestCase("10.0.100", ["net10.0"], ["--upgrade-type=daily"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "10.0.0"))));
         }
