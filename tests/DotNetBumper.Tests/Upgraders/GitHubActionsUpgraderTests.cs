@@ -183,6 +183,7 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
     [Theory]
     [InlineData("9.0")]
     [InlineData("10.0")]
+    [InlineData("11.0")]
     public async Task UpgradeAsync_Upgrades_Setup_DotNet_Action_With_Single_Sdk_Version(string channel)
     {
         // Arrange
@@ -413,6 +414,16 @@ public class GitHubActionsUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("10.0", "10.0.234", ".0.423", "10.0.234")]
     [InlineData("10.0", "10.0.200", ".0.4xx", "10.0.2xx")]
     [InlineData("10.0", "10.0.100-preview.1.2", ".0.4xx", "10.0.1xx")]
+    [InlineData("11.0", "11.0.100", "", "11")]
+    [InlineData("11.0", "11.0.100", ".0", "11.0")]
+    [InlineData("11.0", "11.0.100", ".x", "11.x")]
+    [InlineData("11.0", "11.0.100", ".0.x", "11.0.x")]
+    [InlineData("11.0", "11.0.100", ".0.123", "11.0.100")]
+    [InlineData("11.0", "11.0.100", ".0.4xx", "11.0.1xx")]
+    [InlineData("11.0", "11.0.200", ".0.423", "11.0.200")]
+    [InlineData("11.0", "11.0.234", ".0.423", "11.0.234")]
+    [InlineData("11.0", "11.0.200", ".0.4xx", "11.0.2xx")]
+    [InlineData("11.0", "11.0.100-preview.1.2", ".0.4xx", "11.0.1xx")]
     public async Task UpgradeAsync_Upgrades_Setup_DotNet_Action_With_Multiple_Sdk_Versions(
         string channel,
         string sdkVersion,

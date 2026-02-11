@@ -78,6 +78,9 @@ public class AwsLambdaToolsUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
     [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.Preview)]
     [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.GoLive)]
+    [InlineData("11.0", DotNetReleaseType.Sts, DotNetSupportPhase.Preview)]
+    [InlineData("11.0", DotNetReleaseType.Sts, DotNetSupportPhase.GoLive)]
+    [InlineData("11.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
     public async Task UpgradeAsync_Warns_If_Channel_Unsupported(
         string channel,
         DotNetReleaseType releaseType,

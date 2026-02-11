@@ -97,6 +97,8 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
             { "9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active },
             { "10.0", DotNetReleaseType.Lts, DotNetSupportPhase.Preview },
             { "10.0", DotNetReleaseType.Lts, DotNetSupportPhase.GoLive },
+            { "11.0", DotNetReleaseType.Lts, DotNetSupportPhase.Preview },
+            { "11.0", DotNetReleaseType.Lts, DotNetSupportPhase.GoLive },
         };
     }
 
@@ -202,6 +204,8 @@ public class AwsSamTemplateUpgraderTests(ITestOutputHelper outputHelper)
     [InlineData("9.0", DotNetReleaseType.Sts, DotNetSupportPhase.Active)]
     [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.Preview)]
     [InlineData("10.0", DotNetReleaseType.Lts, DotNetSupportPhase.GoLive)]
+    [InlineData("11.0", DotNetReleaseType.Lts, DotNetSupportPhase.Preview)]
+    [InlineData("11.0", DotNetReleaseType.Lts, DotNetSupportPhase.GoLive)]
     public async Task UpgradeAsync_Warns_If_Channel_Unsupported_Json(
         string channel,
         DotNetReleaseType releaseType,

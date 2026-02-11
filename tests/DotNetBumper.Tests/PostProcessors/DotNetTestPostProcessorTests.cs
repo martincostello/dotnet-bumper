@@ -12,7 +12,7 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
 {
     private static TimeSpan Timeout { get; } = TimeSpan.FromMinutes(4);
 
-    public static TheoryData<string> Channels() => ["8.0", "9.0"];
+    public static TheoryData<string> Channels() => ["8.0", "9.0", "10.0"];
 
     [Theory]
     [MemberData(nameof(Channels))]
@@ -65,6 +65,10 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
     [InlineData("9.0", "false", "")]
     [InlineData("9.0", "true", "")]
     [InlineData("9.0", "true", "$(MSBuildThisFileDirectory)\\.artifacts")]
+    [InlineData("10.0", "", "")]
+    [InlineData("10.0", "false", "")]
+    [InlineData("10.0", "true", "")]
+    [InlineData("10.0", "true", "$(MSBuildThisFileDirectory)\\.artifacts")]
     public async Task PostProcessAsync_Succeeds_When_DirectoryBuildProps_With_Artifacts_Output(
         string channel,
         string useArtifactsOutput,
