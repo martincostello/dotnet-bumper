@@ -14,6 +14,7 @@ public class RuntimeIdentifierUpgraderTests(ITestOutputHelper outputHelper)
             "8.0",
             "9.0",
             "10.0",
+            "11.0",
         ];
 
         string[] fileNames =
