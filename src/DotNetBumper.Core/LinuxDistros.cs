@@ -14,7 +14,7 @@ internal static class LinuxDistros
         return channel.Major switch
         {
             8 => TryUpdateDistro(distro, ["bookworm"], ["jammy", "noble"], ["19", "20"], updateMariner2: false),
-            9 or 10 => TryUpdateDistro(distro, ["bookworm"], ["noble"], ["20"], updateMariner2: true), // Latest known versions as of .NET 9
+            9 or 10 => TryUpdateDistro(distro, ["bookworm"], ["noble"], ["20"], updateMariner2: true),
             _ => TryUpdateDistro(distro, ["bookworm"], ["resolute"], ["20"], updateMariner2: true), // Latest known versions as of .NET 11 preview 1
         };
 
