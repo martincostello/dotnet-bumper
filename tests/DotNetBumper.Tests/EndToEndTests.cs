@@ -172,9 +172,9 @@ public sealed class EndToEndTests(
         var actualVscode = await File.ReadAllTextAsync(vscode, fixture.CancellationToken);
 
 #if NET10_0_OR_GREATER
-        config = JsonElement.Parse(actualConfig);
+        config = JsonElement.Parse(actualVscode);
 #else
-        config = JsonDocument.Parse(actualConfig).RootElement;
+        config = JsonDocument.Parse(actualVscode).RootElement;
 #endif
 
         config.TryGetProperty("configurations", out property).ShouldBeTrue();
