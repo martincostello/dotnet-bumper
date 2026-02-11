@@ -1,4 +1,4 @@
-﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
+// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
 using System.Text.Json;
@@ -156,7 +156,7 @@ public sealed class EndToEndTests(
 
         var actualConfig = await File.ReadAllTextAsync(vsconfig, fixture.CancellationToken);
 
-        var config = JsonDocument.Parse(actualConfig).RootElement;
+        var config = JsonElement.Parse(actualConfig);
         config.TryGetProperty("components", out var property).ShouldBeTrue();
         property.ValueKind.ShouldBe(JsonValueKind.Array);
 
@@ -166,7 +166,7 @@ public sealed class EndToEndTests(
 
         var actualVscode = await File.ReadAllTextAsync(vscode, fixture.CancellationToken);
 
-        config = JsonDocument.Parse(actualVscode).RootElement;
+        config = JsonElement.Parse(actualVscode);
         config.TryGetProperty("configurations", out property).ShouldBeTrue();
         property.ValueKind.ShouldBe(JsonValueKind.Array);
 
