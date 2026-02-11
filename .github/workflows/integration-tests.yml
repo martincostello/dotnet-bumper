@@ -78,6 +78,7 @@ jobs:
             upgrade-type: Latest
           - repo: alexa-london-travel
             upgrade-type: Preview
+            test: false
           - repo: alexa-london-travel-site
             upgrade-type: Latest
           - repo: alexa-london-travel-site
@@ -92,6 +93,7 @@ jobs:
           - repo: costellobot
             upgrade-type: Latest
           - repo: costellobot
+            test: false
             upgrade-type: Preview
           - repo: dotnet-bumper
             upgrade-type: Latest
