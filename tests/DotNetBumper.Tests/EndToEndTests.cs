@@ -156,7 +156,12 @@ public sealed class EndToEndTests(
 
         var actualConfig = await File.ReadAllTextAsync(vsconfig, fixture.CancellationToken);
 
+#if NET10_0_OR_GREATER
+        var config = JsonElement.Parse(actualConfig);
+#else
         var config = JsonDocument.Parse(actualConfig).RootElement;
+#endif
+
         config.TryGetProperty("components", out var property).ShouldBeTrue();
         property.ValueKind.ShouldBe(JsonValueKind.Array);
 
@@ -166,7 +171,12 @@ public sealed class EndToEndTests(
 
         var actualVscode = await File.ReadAllTextAsync(vscode, fixture.CancellationToken);
 
-        config = JsonDocument.Parse(actualVscode).RootElement;
+#if NET10_0_OR_GREATER
+        config = JsonElement.Parse(actualConfig);
+#else
+        config = JsonDocument.Parse(actualConfig).RootElement;
+#endif
+
         config.TryGetProperty("configurations", out property).ShouldBeTrue();
         property.ValueKind.ShouldBe(JsonValueKind.Array);
 
