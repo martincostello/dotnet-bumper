@@ -193,6 +193,8 @@ jobs:
         DOTNET_BUMPER_TEST: ${{ format('{0}', matrix.test) }}
         DOTNET_BUMPER_UPGRADE_TYPE: ${{ matrix.upgrade-type }}
         DOTNET_BUMPER_WARNINGS_AS_ERRORS: ${{ format('{0}', matrix.warnings-as-errors) }}
+        # HACK Workaround for C# preview language features from .NET 11 being applied by dotnet format
+        LangVersion: preview
       run: |
         $bumperArgs = @(
           ".",
