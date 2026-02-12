@@ -60,6 +60,10 @@ internal sealed partial class ContainerBaseImageUpgrader(
                 {
                     edited = true;
                 }
+                else if (TryUpgradeContainerFamily(property, upgrade.Channel))
+                {
+                    edited = true;
+                }
             }
 
             if (edited)
@@ -87,6 +91,22 @@ internal sealed partial class ContainerBaseImageUpgrader(
         {
             property.SetValue(updated);
             return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryUpgradeContainerFamily(XElement property, Version channel)
+    {
+        if (property.Name == (property.GetDefaultNamespace() + "ContainerFamily"))
+        {
+            var updated = LinuxDistros.TryUpdateDistro(channel, property.Value);
+
+            if (!updated.SequenceEqual(property.Value))
+            {
+                property.SetValue(new string(updated));
+                return true;
+            }
         }
 
         return false;
