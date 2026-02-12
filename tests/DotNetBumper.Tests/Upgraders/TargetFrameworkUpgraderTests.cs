@@ -370,6 +370,62 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
         actualUpdated.ShouldBe(ProcessingResult.None);
     }
 
+    [Theory]
+    [InlineData("net6.0", "net10.0")]
+    [InlineData("net6.0;net8.0", "net6.0;net8.0;net10.0")]
+    [InlineData("net8.0;net6.0", "net10.0;net8.0;net6.0")]
+    public async Task UpgradeAsync_Preserves_Ordering(string targetFrameworks, string expected)
+    {
+        // Arrange
+        string fileContents =
+            $"""
+             <Project Sdk="Microsoft.NET.Sdk">
+               <PropertyGroup>
+                 <TargetFrameworks>{targetFrameworks}</TargetFrameworks>
+               </PropertyGroup>
+             </Project>
+             """;
+
+        string expectedContent =
+            $"""
+             <Project Sdk="Microsoft.NET.Sdk">
+               <PropertyGroup>
+                 <TargetFrameworks>{expected}</TargetFrameworks>
+               </PropertyGroup>
+             </Project>
+             """;
+
+        using var fixture = new UpgraderFixture(outputHelper);
+
+        string properties = await fixture.Project.AddFileAsync("Directory.Build.props", fileContents);
+
+        var upgrade = new UpgradeInfo()
+        {
+            Channel = Version.Parse("10.0"),
+            EndOfLife = DateOnly.MaxValue,
+            ReleaseType = DotNetReleaseType.Lts,
+            SdkVersion = new("10.0.100"),
+            SupportPhase = DotNetSupportPhase.Active,
+        };
+
+        var target = CreateTarget(fixture);
+
+        // Act
+        ProcessingResult actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.Success);
+
+        string actualContent = await File.ReadAllTextAsync(properties, fixture.CancellationToken);
+        actualContent.ShouldBe(expectedContent);
+
+        // Act
+        actualUpdated = await target.UpgradeAsync(upgrade, fixture.CancellationToken);
+
+        // Assert
+        actualUpdated.ShouldBe(ProcessingResult.None);
+    }
+
     private static TargetFrameworkUpgrader CreateTarget(UpgraderFixture fixture)
     {
         return new(
