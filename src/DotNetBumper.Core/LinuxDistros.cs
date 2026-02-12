@@ -7,15 +7,16 @@ namespace MartinCostello.DotNetBumper;
 
 internal static class LinuxDistros
 {
-    private static readonly FrozenSet<string> UbuntuCodeNames = new[] { "focal", "jammy", "noble", "resolute" }.ToFrozenSet();
+    private static readonly string[] DebianCodeNames = ["bookworm"];
+    private static readonly FrozenSet<string> UbuntuCodeNames = new[] { "bionic", "focal", "jammy", "noble", "resolute" }.ToFrozenSet();
 
     public static ReadOnlySpan<char> TryUpdateDistro(Version channel, ReadOnlySpan<char> distro)
     {
         return channel.Major switch
         {
-            8 => TryUpdateDistro(distro, ["bookworm"], ["jammy", "noble"], ["19", "20"], updateMariner2: false),
-            9 or 10 => TryUpdateDistro(distro, ["bookworm"], ["noble"], ["20"], updateMariner2: true),
-            _ => TryUpdateDistro(distro, ["bookworm"], ["resolute"], ["20"], updateMariner2: true), // Latest known versions as of .NET 11 preview 1
+            8 => TryUpdateDistro(distro, DebianCodeNames, ["jammy", "noble"], ["19", "20"], updateMariner2: false),
+            9 or 10 => TryUpdateDistro(distro, DebianCodeNames, ["noble"], ["20"], updateMariner2: true),
+            _ => TryUpdateDistro(distro, DebianCodeNames, ["resolute"], ["20"], updateMariner2: true), // Latest known versions as of .NET 11 preview 1
         };
 
         static ReadOnlySpan<char> TryUpdateDistro(
