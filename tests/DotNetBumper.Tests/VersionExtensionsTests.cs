@@ -6,30 +6,39 @@ namespace MartinCostello.DotNetBumper;
 public static class VersionExtensionsTests
 {
     [Theory]
-    [InlineData("netcoreapp1.0")]
-    [InlineData("netcoreapp1.1")]
-    [InlineData("netcoreapp2.0")]
-    [InlineData("netcoreapp2.1")]
-    [InlineData("netcoreapp2.2")]
-    [InlineData("netcoreapp3.0")]
-    [InlineData("netcoreapp3.1")]
-    [InlineData("net5.0")]
-    [InlineData("net6.0")]
-    [InlineData("net7.0")]
-    [InlineData("net8.0")]
-    [InlineData("net9.0")]
-    [InlineData("net10.0")]
-    [InlineData("net11.0")]
-    [InlineData("net20.0")]
-    [InlineData("net99.0")]
-    [InlineData("net100.0")]
-    public static void IsTargetFrameworkMoniker_Is_Valid(string value)
+    [InlineData("", false)]
+    [InlineData(" ", false)]
+    [InlineData("foo", false)]
+    [InlineData("foo1.0", false)]
+    [InlineData("1.0", false)]
+    [InlineData("net452", false)]
+    [InlineData("net481", false)]
+    [InlineData("net0.0", false)]
+    [InlineData("netcoreapp0.0", false)]
+    [InlineData("netcoreapp1.0", true)]
+    [InlineData("netcoreapp1.1", true)]
+    [InlineData("netcoreapp2.0", true)]
+    [InlineData("netcoreapp2.1", true)]
+    [InlineData("netcoreapp2.2", true)]
+    [InlineData("netcoreapp3.0", true)]
+    [InlineData("netcoreapp3.1", true)]
+    [InlineData("net5.0", true)]
+    [InlineData("net6.0", true)]
+    [InlineData("net7.0", true)]
+    [InlineData("net8.0", true)]
+    [InlineData("net9.0", true)]
+    [InlineData("net10.0", true)]
+    [InlineData("net11.0", true)]
+    [InlineData("net20.0", true)]
+    [InlineData("net99.0", true)]
+    [InlineData("net100.0", true)]
+    public static void IsTargetFrameworkMoniker_Returns_Expected_Value(string value, bool expected)
     {
         // Act
         bool actual = value.IsTargetFrameworkMoniker();
 
         // Assert
-        actual.ShouldBeTrue();
+        actual.ShouldBe(expected);
     }
 
     [Theory]
