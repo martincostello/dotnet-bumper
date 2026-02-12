@@ -7,7 +7,7 @@ namespace MartinCostello.DotNetBumper;
 
 internal static partial class VersionExtensions
 {
-    private const string TfmPattern = "net(coreapp)?[1-9]+\\.[0-9]{1}";
+    private const string TfmPattern = "net(coreapp)?[0-9]+\\.[0-9]{1}";
 
     public static bool IsTargetFrameworkMoniker(this string value)
         => TargetFrameworkMoniker().IsMatch(value);

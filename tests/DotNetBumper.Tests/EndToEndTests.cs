@@ -51,6 +51,7 @@ public sealed class EndToEndTests(
                 new BumperTestCase("6.0.100", ["net6.0"], ["--upgrade-type=preview"]),
                 new BumperTestCase("8.0.100", ["net8.0"], ["--upgrade-type=preview"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "8.0.0"))),
                 new BumperTestCase("9.0.100", ["net9.0"], ["--upgrade-type=preview"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "9.0.0"))),
+                new BumperTestCase("10.0.100", ["net10.0"], ["--upgrade-type=preview"], Packages(("Microsoft.Extensions.Configuration.UserSecrets", "10.0.0"))),
             ]);
         }
 
