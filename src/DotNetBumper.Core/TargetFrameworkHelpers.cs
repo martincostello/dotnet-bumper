@@ -67,22 +67,20 @@ internal static class TargetFrameworkHelpers
 
         if (validTfms > 1)
         {
-            var firstVersion = updateableTfms[0].ToVersionFromTargetFramework();
-            var secondVersion = updateableTfms[1].ToVersionFromTargetFramework();
-
-            ReadOnlySpan<char> prefix;
-            ReadOnlySpan<char> suffix;
+            var prefix = value;
+            var suffix = newTfm.AsSpan();
 
             // Insert the new TFM in the correct order based on the existing sorting of the TFMs
-            if (firstVersion > secondVersion)
+            if (updateableTfms.Count > 1)
             {
-                prefix = newTfm;
-                suffix = value;
-            }
-            else
-            {
-                prefix = value;
-                suffix = newTfm;
+                var firstVersion = updateableTfms[0].ToVersionFromTargetFramework();
+                var secondVersion = updateableTfms[1].ToVersionFromTargetFramework();
+
+                if (firstVersion > secondVersion)
+                {
+                    prefix = newTfm;
+                    suffix = value;
+                }
             }
 
             updated = new StringBuilder()

@@ -372,8 +372,12 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
 
     [Theory]
     [InlineData("net6.0", "net10.0")]
+    [InlineData("net6.0;net481", "net6.0;net481;net10.0")]
+    [InlineData("net6.0;netstandard2.0", "net6.0;netstandard2.0;net10.0")]
     [InlineData("net6.0;net8.0", "net6.0;net8.0;net10.0")]
+    [InlineData("net6.0;net481;net8.0", "net6.0;net481;net8.0;net10.0")]
     [InlineData("net8.0;net6.0", "net10.0;net8.0;net6.0")]
+    [InlineData("net8.0;net481;net6.0", "net10.0;net8.0;net481;net6.0")]
     public async Task UpgradeAsync_Preserves_Ordering(string targetFrameworks, string expected)
     {
         // Arrange
