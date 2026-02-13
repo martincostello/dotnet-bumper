@@ -18,7 +18,7 @@ internal static class TargetFrameworkHelpers
         var remaining = value;
 
         int validTfms = 0;
-        int updateableTfms = 0;
+        var updateableTfms = new List<string>();
 
         while (!remaining.IsEmpty)
         {
@@ -44,7 +44,7 @@ internal static class TargetFrameworkHelpers
                         return false;
                     }
 
-                    updateableTfms++;
+                    updateableTfms.Add(part.ToString());
                 }
 
                 validTfms++;
@@ -58,19 +58,41 @@ internal static class TargetFrameworkHelpers
             }
         }
 
-        if (updateableTfms < 1)
+        if (updateableTfms.Count < 1)
         {
             return false;
         }
 
         var newTfm = channel.ToTargetFramework();
-        var append = validTfms > 1;
 
-        updated = !append ? newTfm : new StringBuilder()
-            .Append(value)
-            .Append(Delimiter)
-            .Append(newTfm)
-            .ToString();
+        if (validTfms > 1)
+        {
+            var prefix = value;
+            var suffix = newTfm.AsSpan();
+
+            // Insert the new TFM in the correct order based on the existing sorting of the TFMs
+            if (updateableTfms.Count > 1)
+            {
+                var firstVersion = updateableTfms[0].ToVersionFromTargetFramework();
+                var secondVersion = updateableTfms[1].ToVersionFromTargetFramework();
+
+                if (firstVersion > secondVersion)
+                {
+                    prefix = newTfm;
+                    suffix = value;
+                }
+            }
+
+            updated = new StringBuilder()
+                .Append(prefix)
+                .Append(Delimiter)
+                .Append(suffix)
+                .ToString();
+        }
+        else
+        {
+            updated = newTfm;
+        }
 
         return !value.SequenceEqual(updated);
     }
