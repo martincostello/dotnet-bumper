@@ -90,11 +90,13 @@ internal sealed class PatchedGlobalJsonFile : IDisposable
 
             if (editVersion)
             {
+                var newSdkVersion = sdkVersion.ToString();
+
                 sdk.Remove(VersionProperty);
-                sdk.Add(new(VersionProperty, JsonValue.Create(sdkVersion)));
+                sdk.Add(new(VersionProperty, JsonValue.Create(newSdkVersion)));
 
                 edited = true;
-                SdkVersion = sdkVersion.ToString();
+                SdkVersion = newSdkVersion;
             }
 
             if (sdkVersion.IsPrerelease &&
