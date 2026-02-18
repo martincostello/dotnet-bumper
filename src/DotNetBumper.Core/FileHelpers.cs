@@ -15,7 +15,7 @@ internal static class FileHelpers
 
         do
         {
-            var directoryName = Path.Join(directory.FullName, relativePath);
+            var directoryName = Path.Combine(directory.FullName, relativePath);
 
             if (Directory.Exists(directoryName))
             {
@@ -35,7 +35,7 @@ internal static class FileHelpers
 
         do
         {
-            var fileName = Path.Join(directory.FullName, relativePath);
+            var fileName = Path.Combine(directory.FullName, relativePath);
 
             if (File.Exists(fileName))
             {

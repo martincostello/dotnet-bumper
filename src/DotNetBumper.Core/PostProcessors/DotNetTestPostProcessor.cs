@@ -122,7 +122,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
         try
         {
-            File.Copy(loggerAssembly, Path.Join(directory.Path, copyFileName), overwrite: true);
+            File.Copy(loggerAssembly, Path.Combine(directory.Path, copyFileName), overwrite: true);
             return directory;
         }
         catch (Exception)
@@ -348,7 +348,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
             if (string.IsNullOrWhiteSpace(artifactsPath))
             {
-                artifactsPath = Path.Join(Path.GetDirectoryName(projectFile)!, "artifacts");
+                artifactsPath = Path.Combine(Path.GetDirectoryName(projectFile)!, "artifacts");
             }
         }
 

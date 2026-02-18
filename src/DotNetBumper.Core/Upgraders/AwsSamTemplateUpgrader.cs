@@ -106,7 +106,7 @@ internal sealed partial class AwsSamTemplateUpgrader(
 
                 foreach (var candidate in candidates)
                 {
-                    var templatePath = Path.GetFullPath(Path.Join(candidate, templateFile));
+                    var templatePath = Path.GetFullPath(Path.Combine(candidate, templateFile));
 
                     if (File.Exists(templatePath))
                     {

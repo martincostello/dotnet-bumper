@@ -48,7 +48,7 @@ internal sealed partial class NuGetConfigUpgrader(
 
         if (fileNames.Count == 0)
         {
-            var fileName = Path.Join(Options.ProjectPath, WellKnownFileNames.NuGetConfiguration);
+            var fileName = Path.Combine(Options.ProjectPath, WellKnownFileNames.NuGetConfiguration);
 
             var defaultConfiguration =
                 """

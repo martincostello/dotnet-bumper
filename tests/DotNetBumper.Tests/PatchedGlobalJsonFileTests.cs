@@ -30,7 +30,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string globalJsonContent =
@@ -64,7 +64,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string globalJsonContent =
@@ -99,7 +99,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string globalJsonContent =
@@ -134,7 +134,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string globalJsonContent =
@@ -170,7 +170,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string globalJsonContent =
@@ -203,7 +203,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string globalJsonContent =
@@ -239,7 +239,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string globalJsonContent =
@@ -278,7 +278,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string originalContent =
@@ -315,7 +315,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string globalJsonContent =
@@ -350,7 +350,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string globalJsonContent =
@@ -383,7 +383,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
         string globalJsonContent = "[]";
 
         await File.WriteAllTextAsync(globalJsonPath, globalJsonContent, cancellationToken);
@@ -405,7 +405,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string globalJsonContent =
@@ -439,7 +439,7 @@ public static class PatchedGlobalJsonFileTests
         using var directory = new TemporaryDirectory();
 
         var cancellationToken = TestContext.Current.CancellationToken;
-        string globalJsonPath = Path.Join(directory.Path, "global.json");
+        string globalJsonPath = Path.Combine(directory.Path, "global.json");
 
         /*lang=json,strict*/
         string globalJsonContent =
@@ -453,7 +453,7 @@ public static class PatchedGlobalJsonFileTests
 
         await File.WriteAllTextAsync(globalJsonPath, globalJsonContent, cancellationToken);
 
-        string subDirectory = Path.Join(directory.Path, "src");
+        string subDirectory = Path.Combine(directory.Path, "src");
         Directory.CreateDirectory(subDirectory);
 
         var sdkVersion = NuGetVersion.Parse("8.0.100");

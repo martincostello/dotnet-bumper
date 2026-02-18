@@ -85,7 +85,7 @@ internal sealed partial class DotNetInstaller(HttpClient httpClient, ILogger log
 
     private static bool IsDotNetSdkInstalled(string installationPath, string version)
     {
-        var sdkPath = Path.Join(installationPath, "sdk", version);
+        var sdkPath = Path.Combine(installationPath, "sdk", version);
         return Directory.Exists(sdkPath);
     }
 

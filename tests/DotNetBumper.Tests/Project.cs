@@ -39,7 +39,7 @@ internal sealed class Project : IDisposable
         return fullPath;
     }
 
-    public string GetFilePath(string path) => Path.Join(DirectoryName, path);
+    public string GetFilePath(string path) => Path.Combine(DirectoryName, path);
 
     public async Task<string> GetFileAsync(string path)
         => await File.ReadAllTextAsync(GetFilePath(path));
@@ -57,7 +57,9 @@ internal sealed class Project : IDisposable
     }
 
     public void AddGitRepository()
-        => Directory.CreateDirectory(Path.Join(DirectoryName, ".git"));
+    {
+        Directory.CreateDirectory(Path.Combine(DirectoryName, ".git"));
+    }
 
     public async Task<string> AddGlobalJsonAsync(string sdkVersion, string path = "global.json")
     {
@@ -429,7 +431,7 @@ internal sealed class Project : IDisposable
             .First((p) => p.Key is "SolutionRoot")
             .Value!;
 
-        var path = Path.Join(solutionRoot, ".config", "dotnet-tools.json");
+        var path = Path.Combine(solutionRoot, ".config", "dotnet-tools.json");
         using var stream = File.OpenRead(path);
         using var manifest = JsonDocument.Parse(stream);
 
@@ -445,9 +447,9 @@ internal sealed class Project : IDisposable
         var solutionRoot = typeof(Project).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .First((p) => p.Key is "SolutionRoot")
-            .Value;
+            .Value!;
 
-        var path = Path.Join(solutionRoot, "Directory.Packages.props");
+        var path = Path.Combine(solutionRoot, "Directory.Packages.props");
         var xml = File.ReadAllText(path);
 
         var project = XDocument.Parse(xml);

@@ -43,7 +43,7 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         var fixture = new UpgraderFixture(outputHelper);
         var channel = new Version(8, 0);
 
-        string relativePath = Path.Join("README.md");
+        string relativePath = Path.Combine("README.md");
         string fullPath = await fixture.Project.AddFileAsync(relativePath, fileContents);
 
         var projectFile = new ProjectFile(fullPath, relativePath);
@@ -68,7 +68,7 @@ public class LeftoverReferencesPostProcessorTests(ITestOutputHelper outputHelper
         actual[2].Text.ShouldBe("win10-x64");
 
         // Arrange
-        relativePath = Path.Join("version.txt");
+        relativePath = Path.Combine("version.txt");
         fullPath = await fixture.Project.AddFileAsync(relativePath, "1.0.0");
 
         projectFile = new ProjectFile(fullPath, relativePath);
