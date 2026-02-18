@@ -31,8 +31,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string globalJsonContent =
-            /*lang=json,strict*/
             """
             {
                 "sdk": {
@@ -64,8 +65,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string globalJsonContent =
-            /*lang=json,strict*/
             """
             {
                 "sdk": {
@@ -98,8 +100,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string globalJsonContent =
-            /*lang=json,strict*/
             """
             {
                 "sdk": {
@@ -132,8 +135,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string globalJsonContent =
-            /*lang=json,strict*/
             """
             {
                 "sdk": {
@@ -167,8 +171,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string globalJsonContent =
-            /*lang=json,strict*/
             """
             {
                 "sdk": {
@@ -199,8 +204,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string globalJsonContent =
-            /*lang=json,strict*/
             """
             {
                 "sdk": {
@@ -234,8 +240,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string globalJsonContent =
-            /*lang=json,strict*/
             """
             {
                 "sdk": {
@@ -272,8 +279,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string originalContent =
-            /*lang=json,strict*/
             """
             {
                 "sdk": {
@@ -308,8 +316,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string globalJsonContent =
-            /*lang=json,strict*/
             """
             {
                 "msbuild-sdks": {
@@ -342,8 +351,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string globalJsonContent =
-            /*lang=json,strict*/
             """
             {
                 "sdk": "string value"
@@ -396,8 +406,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string globalJsonContent =
-            /*lang=json,strict*/
             """
             {
                 "sdk": {
@@ -429,8 +440,9 @@ public static class PatchedGlobalJsonFileTests
 
         var cancellationToken = TestContext.Current.CancellationToken;
         string globalJsonPath = Path.Join(directory.Path, "global.json");
+
+        /*lang=json,strict*/
         string globalJsonContent =
-            /*lang=json,strict*/
             """
             {
                 "sdk": {
