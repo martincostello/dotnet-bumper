@@ -19,7 +19,7 @@ public sealed class EndToEndTests(
     public static async Task Application_Validates_Project_Exists()
     {
         // Arrange
-        string projectPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        string projectPath = Path.Join(Path.GetTempPath(), Path.GetRandomFileName());
 
         // Act
         int actual = await Program.Main([projectPath]);
@@ -279,7 +279,7 @@ public sealed class EndToEndTests(
 
         if (expectedLogFile is not null)
         {
-            args.AddRange(["--log-path", Path.Combine(fixture.Project.DirectoryName, expectedLogFile)]);
+            args.AddRange(["--log-path", Path.Join(fixture.Project.DirectoryName, expectedLogFile)]);
         }
 
         // Act
@@ -294,7 +294,7 @@ public sealed class EndToEndTests(
 
         if (expectedLogFile is not null)
         {
-            var logFile = Path.Combine(fixture.Project.DirectoryName, expectedLogFile);
+            var logFile = Path.Join(fixture.Project.DirectoryName, expectedLogFile);
             File.Exists(logFile).ShouldBeTrue();
 
             string logContent = await File.ReadAllTextAsync(logFile, fixture.CancellationToken);

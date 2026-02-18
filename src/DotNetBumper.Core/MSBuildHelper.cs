@@ -38,17 +38,17 @@ internal static class MSBuildHelper
     private static void TryAddMSBuildProperties(IDictionary<string, string?> environment, string sdkVersion)
     {
         var dotnetPath = DotNetProcess.TryFindDotNetInstallation();
-        var dotNetSdkPath = Path.Combine(dotnetPath, "sdk", sdkVersion);
+        var dotNetSdkPath = Path.Join(dotnetPath, "sdk", sdkVersion);
 
         if (!Directory.Exists(dotNetSdkPath))
         {
             return;
         }
 
-        environment[WellKnownEnvironmentVariables.MSBuildExePath] = Path.Combine(dotNetSdkPath, "MSBuild.dll");
+        environment[WellKnownEnvironmentVariables.MSBuildExePath] = Path.Join(dotNetSdkPath, "MSBuild.dll");
         environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath] = dotNetSdkPath;
         environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath32] = dotNetSdkPath;
         environment[WellKnownEnvironmentVariables.MSBuildExtensionsPath64] = dotNetSdkPath;
-        environment[WellKnownEnvironmentVariables.MSBuildSdksPath] = Path.Combine(dotNetSdkPath, "Sdks");
+        environment[WellKnownEnvironmentVariables.MSBuildSdksPath] = Path.Join(dotNetSdkPath, "Sdks");
     }
 }

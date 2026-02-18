@@ -49,9 +49,9 @@ internal partial class BumperConfigurationLoader(
 
         var fileNames = new[]
         {
-            (Path.Combine(path, ".dotnet-bumper.json"), true),
-            (Path.Combine(path, ".dotnet-bumper.yml"), false),
-            (Path.Combine(path, ".dotnet-bumper.yaml"), false),
+            (Path.Join(path, ".dotnet-bumper.json"), true),
+            (Path.Join(path, ".dotnet-bumper.yml"), false),
+            (Path.Join(path, ".dotnet-bumper.yaml"), false),
         };
 
         foreach ((var fileName, bool isJson) in fileNames)

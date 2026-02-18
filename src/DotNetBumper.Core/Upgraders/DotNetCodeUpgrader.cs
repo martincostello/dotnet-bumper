@@ -125,7 +125,7 @@ internal sealed partial class DotNetCodeUpgrader(
         if (formatResult.Success)
         {
             int fixCount = 0;
-            string reportPath = Path.Combine(tempDirectory.Path, "format-report.json");
+            string reportPath = Path.Join(tempDirectory.Path, "format-report.json");
 
             if (File.Exists(reportPath))
             {

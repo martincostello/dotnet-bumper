@@ -31,7 +31,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
 
         var options = new UpgradeOptions()
         {
-            ConfigurationPath = Path.Combine(fixture.Project.DirectoryName, "custom.json"),
+            ConfigurationPath = Path.Join(fixture.Project.DirectoryName, "custom.json"),
             ProjectPath = fixture.Project.DirectoryName,
         };
 
@@ -167,7 +167,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
         // Arrange
         using var fixture = new UpgraderFixture(outputHelper);
 
-        await File.WriteAllTextAsync(Path.Combine(fixture.Project.DirectoryName, fileName), content, fixture.CancellationToken);
+        await File.WriteAllTextAsync(Path.Join(fixture.Project.DirectoryName, fileName), content, fixture.CancellationToken);
 
         var target = CreateTarget(fixture);
 
@@ -180,7 +180,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
 
     internal static async Task CreateJsonConfigurationAsync(UpgraderFixture fixture)
     {
-        var path = Path.Combine(fixture.Project.DirectoryName, ".dotnet-bumper.json");
+        var path = Path.Join(fixture.Project.DirectoryName, ".dotnet-bumper.json");
 
         /*lang=json*/
         string content =
@@ -211,7 +211,7 @@ public class BumperConfigurationLoaderTests(ITestOutputHelper outputHelper)
 
     internal static async Task CreateYamlConfigurationAsync(UpgraderFixture fixture, string extension = "yml")
     {
-        var path = Path.Combine(fixture.Project.DirectoryName, $".dotnet-bumper.{extension}");
+        var path = Path.Join(fixture.Project.DirectoryName, $".dotnet-bumper.{extension}");
 
         string content =
             """

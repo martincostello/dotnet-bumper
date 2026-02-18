@@ -29,8 +29,8 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             // See https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables
             string[] candidates = OperatingSystem.IsWindows() ?
             [
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
+                Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
+                Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
             ]
             :
             [
@@ -150,7 +150,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
             return mainModule.FileName;
         }
 
-        return Path.Combine(TryFindDotNetInstallation(), fileName);
+        return Path.Join(TryFindDotNetInstallation(), fileName);
     }
 
     private static ProcessStartInfo CreateDotNetStartInfo(
