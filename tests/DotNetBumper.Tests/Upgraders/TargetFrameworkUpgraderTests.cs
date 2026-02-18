@@ -371,14 +371,15 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
     }
 
     [Theory]
-    [InlineData("net6.0", "net10.0")]
-    [InlineData("net6.0;net481", "net6.0;net481;net10.0")]
-    [InlineData("net6.0;netstandard2.0", "net6.0;netstandard2.0;net10.0")]
-    [InlineData("net6.0;net8.0", "net6.0;net8.0;net10.0")]
-    [InlineData("net6.0;net481;net8.0", "net6.0;net481;net8.0;net10.0")]
-    [InlineData("net8.0;net6.0", "net10.0;net8.0;net6.0")]
-    [InlineData("net8.0;net481;net6.0", "net10.0;net8.0;net481;net6.0")]
-    public async Task UpgradeAsync_Preserves_Ordering(string targetFrameworks, string expected)
+    [InlineData("10.0", "net6.0", "net10.0")]
+    [InlineData("10.0", "net6.0;net481", "net6.0;net481;net10.0")]
+    [InlineData("10.0", "net6.0;netstandard2.0", "net6.0;netstandard2.0;net10.0")]
+    [InlineData("10.0", "net6.0;net8.0", "net6.0;net8.0;net10.0")]
+    [InlineData("10.0", "net6.0;net481;net8.0", "net6.0;net481;net8.0;net10.0")]
+    [InlineData("10.0", "net8.0;net6.0", "net10.0;net8.0;net6.0")]
+    [InlineData("10.0", "net8.0;net481;net6.0", "net10.0;net8.0;net481;net6.0")]
+    [InlineData("11.0", "net10.0;net8.0;netstandard2.0;net462", "net11.0;net10.0;net8.0;netstandard2.0;net462")]
+    public async Task UpgradeAsync_Preserves_Ordering(string channel, string targetFrameworks, string expected)
     {
         // Arrange
         string fileContents =
@@ -405,10 +406,10 @@ public class TargetFrameworkUpgraderTests(ITestOutputHelper outputHelper)
 
         var upgrade = new UpgradeInfo()
         {
-            Channel = Version.Parse("10.0"),
+            Channel = Version.Parse(channel),
             EndOfLife = DateOnly.MaxValue,
             ReleaseType = DotNetReleaseType.Lts,
-            SdkVersion = new("10.0.100"),
+            SdkVersion = new($"{channel}.100"),
             SupportPhase = DotNetSupportPhase.Active,
         };
 
