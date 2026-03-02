@@ -27,7 +27,7 @@ internal static class DotNetPreviewFixture
                     using var client = new HttpClient();
                     var sdkVersion = await client.GetStringAsync($"https://aka.ms/dotnet/{channel}/daily/sdk-productVersion.txt");
 
-                    _hasDaily = NuGetVersion.TryParse(sdkVersion, out var version) && version.IsPrerelease;
+                    _hasDaily = NuGetVersion.TryParse(sdkVersion.Trim(), out var version) && version.IsPrerelease;
                 }
                 catch (Exception)
                 {
