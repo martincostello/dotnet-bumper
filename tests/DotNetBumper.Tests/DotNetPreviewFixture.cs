@@ -3,12 +3,41 @@
 
 using System.Net.Http.Json;
 using System.Text.Json;
+using NuGet.Versioning;
 
 namespace MartinCostello.DotNetBumper;
 
 internal static class DotNetPreviewFixture
 {
     private static (bool HasPreview, string Channel)? _latest;
+    private static bool? _hasDaily;
+
+    public static async Task<bool> HasDailyAsync()
+    {
+        if (_hasDaily is null)
+        {
+            _hasDaily = false;
+
+            (var hasPreview, var channel) = await DotNetHasPreviewAsync();
+
+            if (hasPreview)
+            {
+                try
+                {
+                    using var client = new HttpClient();
+                    var sdkVersion = await client.GetStringAsync($"https://aka.ms/dotnet/{channel}/daily/sdk-productVersion.txt");
+
+                    _hasDaily = NuGetVersion.TryParse(sdkVersion, out var version) && version.IsPrerelease;
+                }
+                catch (Exception)
+                {
+                    // Ignore
+                }
+            }
+        }
+
+        return _hasDaily.Value;
+    }
 
     public static async Task<bool> HasPreviewAsync()
     {
