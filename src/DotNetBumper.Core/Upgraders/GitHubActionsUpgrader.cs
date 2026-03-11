@@ -421,7 +421,11 @@ internal sealed partial class GitHubActionsUpgrader(
                             // All versions are of the format "6.0.x"
                             version.Append(FloatingVersionChar);
                         }
+#if NET11_0_OR_GREATER
+                        else if (sdkVersionsParts.All((p) => p.Length is 3 && p[2].EndsWith(FloatingVersionChar, StringComparison.Ordinal)))
+#else
                         else if (sdkVersionsParts.All((p) => p.Length is 3 && p[2].EndsWith(FloatingVersionChar)))
+#endif
                         {
                             // All versions are of the format "6.0.1xx"
                             int featureBand = (FeatureBandFloor(sdkVersion.Patch) / FeatureBandMultiplier) + '0';
@@ -491,7 +495,11 @@ internal sealed partial class GitHubActionsUpgrader(
 
             bool hasFloatingVersion =
                 versionParts.Length > 1 &&
+#if NET11_0_OR_GREATER
+                versionParts[^1].EndsWith(FloatingVersionChar, StringComparison.Ordinal);
+#else
                 versionParts[^1].EndsWith(FloatingVersionChar);
+#endif
 
             int targetFeature = upgrade.SdkVersion.Patch;
 
