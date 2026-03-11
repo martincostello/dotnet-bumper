@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "dotnet-outdated-tool": {
-      "version": "4.7.0",
+      "version": "4.7.1",
       "commands": [
         "dotnet-outdated"
       ],
@@ -17,7 +17,7 @@
       "rollForward": false
     },
     "meziantou.framework.nugetpackagevalidation.tool": {
-      "version": "1.0.43",
+      "version": "1.0.44",
       "commands": [
         "meziantou.validate-nuget-package"
       ],

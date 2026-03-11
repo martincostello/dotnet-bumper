@@ -10,7 +10,7 @@
     <PackageVersion Include="Ignore" Version="0.2.1" />
     <PackageVersion Include="JunitXml.TestLogger" Version="8.0.0" />
     <PackageVersion Include="JustEat.HttpClientInterception" Version="5.1.2" />
-    <PackageVersion Include="MartinCostello.Logging.XUnit.v3" Version="0.7.0" />
+    <PackageVersion Include="MartinCostello.Logging.XUnit.v3" Version="0.7.1" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="5.0.1" />
     <PackageVersion Include="Microsoft.Build" Version="17.14.28" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="17.14.28" />
@@ -28,7 +28,7 @@
     <PackageVersion Include="MSBuild.ProjectCreation" Version="17.0.1" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="NuGet.Versioning" Version="7.3.0" />
-    <PackageVersion Include="ReportGenerator" Version="5.5.1" />
+    <PackageVersion Include="ReportGenerator" Version="5.5.3" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Spectre.Console" Version="0.54.0" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.54.0" />
