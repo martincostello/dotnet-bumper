@@ -33,14 +33,18 @@ Build output goes to `./artifacts/` (configured via `UseArtifactsOutput`). `MSBu
 The `lint.yml` CI workflow runs additional checks. The core PSScriptAnalyzer step can be reproduced locally via:
 
 ```powershell
-pwsh -NoLogo -NoProfile -Command "Invoke-ScriptAnalyzer -Path . -Recurse -EnableExit -Severity Warning,Error"
+pwsh -NoLogo -NoProfile -Command "& {
+  $settings = @{ IncludeDefaultRules = $true }
+  $issues = Invoke-ScriptAnalyzer -Path . -Recurse -Settings $settings -ReportSummary -Severity Warning,Error
+  if ($issues.Count -gt 0) { exit 1 }
+}"
 ```
 
 See `.github/workflows/lint.yml` for the full set of linters and options used in CI.
 
 ## Solution Structure
 
-The main CLI tool multi-targets `net8.0;net9.0;net10.0`. Tests run on `net10.0` only.
+The main CLI tool multi-targets all currently supported versions of .NET. Tests run on the latest supported version of .NET only.
 
 - **`src/DotNetBumper`** — CLI entry point; thin wrapper that wires up DI and calls `ProjectUpgrader`
 - **`src/DotNetBumper.Core`** — Core library; all upgrade logic lives here
@@ -52,7 +56,7 @@ The main CLI tool multi-targets `net8.0;net9.0;net10.0`. Tests run on `net10.0` 
 
 `ProjectUpgrader` is the top-level orchestrator:
 
-1. Calls `DotNetUpgradeFinder` to resolve the target .NET version (via `releases.json` from `dotnetcli.blob.core.windows.net`)
+1. Calls `DotNetUpgradeFinder` to resolve the target .NET version (via `releases-index.json` from the dotnet/core GitHub repo, and `aka.ms/dotnet/.../sdk-productVersion.txt` for daily builds)
 2. Runs each `IUpgrader` implementation in a defined order (global.json → NuGet config → TFM upgraders → packages → code formatter)
 3. On success, runs each `IPostProcessor` implementation (runs `dotnet test`, checks for leftover old-version references)
 
@@ -81,7 +85,7 @@ Same pattern as upgraders, but implement `IPostProcessor`, inherit from `PostPro
 ## Testing Conventions
 
 - Test framework: **xUnit v3** with `Shouldly` for assertions and `NSubstitute` for mocks
-- `UpgraderFixture` is the standard test helper — provides `IAnsiConsole`, `IEnvironment` (NSubstitute mock), `Project` (temp directory), `IOptions<UpgradeOptions>`, and `ILogger<T>`
+- `UpgraderFixture` is the standard test helper — exposes `IAnsiConsole`, `IEnvironment` (NSubstitute mock), and `Project` (temp directory) as properties, and provides helper methods such as `CreateOptions()` and `CreateLogger<T>()` to obtain `IOptions<UpgradeOptions>` and `ILogger<T>`
 - The `Project` class manages a temporary directory; use `fixture.Project.AddFileAsync(path, content)` to seed files
 - HTTP calls are intercepted using `JustEat.HttpClientInterception`
 - Test pattern: Arrange via `UpgraderFixture`, instantiate the target with `CreateTarget(fixture)`, call `UpgradeAsync(upgrade, fixture.CancellationToken)`, assert on `ProcessingResult` and file contents
