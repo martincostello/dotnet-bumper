@@ -30,12 +30,13 @@ dotnet test --configuration Release --filter "FullyQualifiedName~TargetFramework
 
 Build output goes to `./artifacts/` (configured via `UseArtifactsOutput`). `MSBuildTreatWarningsAsErrors` is enabled globally — there must be zero warnings.
 
-The `lint.yml` CI workflow runs additional checks locally reproducible via:
+The `lint.yml` CI workflow runs additional checks. The core PSScriptAnalyzer step can be reproduced locally via:
 
 ```powershell
-dotnet tool restore
-dotnet psscriptanalyzer *.ps1  # PSScriptAnalyzer, warnings-as-errors
+pwsh -NoLogo -NoProfile -Command "Invoke-ScriptAnalyzer -Path . -Recurse -EnableExit -Severity Warning,Error"
 ```
+
+See `.github/workflows/lint.yml` for the full set of linters and options used in CI.
 
 ## Solution Structure
 
@@ -103,7 +104,7 @@ Same pattern as upgraders, but implement `IPostProcessor`, inherit from `PostPro
 
 - `.cs` files use **UTF-8 BOM** encoding — preserve this when writing or modifying source files
 - Line endings are **CRLF** throughout
-- All files begin with `// Copyright (c) Martin Costello, 2024. All rights reserved.` header
+- All C# source files (`.cs`) begin with the standard file header (copyright and Apache 2.0 license) configured via `.editorconfig`
 - StyleCop.Analyzers is applied globally (see `stylecop.json` for config)
 - Logging uses `[LoggerMessage]` source-generated partial methods inside a nested `private static partial class Log` decorated with `[ExcludeFromCodeCoverage]`
 - Central Package Management via `Directory.Packages.props` — never add a `Version` attribute to `<PackageReference>` in project files; only add `<PackageVersion>` entries to `Directory.Packages.props`
