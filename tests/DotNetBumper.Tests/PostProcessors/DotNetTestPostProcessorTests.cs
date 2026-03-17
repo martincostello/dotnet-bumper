@@ -3,6 +3,7 @@
 
 using MartinCostello.DotNetBumper.Upgraders;
 using Microsoft.Build.Utilities.ProjectCreation;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace MartinCostello.DotNetBumper.PostProcessors;
@@ -46,6 +47,32 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
         await fixture.Project.AddDirectoryBuildPropsAsync();
 
         var target = CreateTarget(fixture);
+
+        using var cts = new CancellationTokenSource(Timeout);
+
+        // Act
+        var actual = await target.PostProcessAsync(upgrade, cts.Token);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.Success);
+    }
+
+    [Theory]
+    [MemberData(nameof(Channels))]
+    public async Task PostProcessAsync_Succeeds_When_Project_In_Subdirectory_With_DirectoryBuildProps(string channel)
+    {
+        // Arrange
+        var upgrade = await GetUpgradeAsync(channel);
+
+        using var fixture = await CreateFixtureAsync(upgrade);
+
+        await fixture.Project.AddDirectoryBuildPropsAsync();
+
+        var options = fixture.CreateOptions();
+        options.Value.ProjectPath = fixture.Project.GetFilePath("src");
+        options.Value.TestUpgrade = true;
+
+        var target = CreateTarget(fixture, options);
 
         using var cts = new CancellationTokenSource(Timeout);
 
@@ -102,12 +129,14 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.Success);
     }
 
-    private static DotNetTestPostProcessor CreateTarget(UpgraderFixture fixture)
+    private static DotNetTestPostProcessor CreateTarget(
+        UpgraderFixture fixture,
+        IOptions<UpgradeOptions>? options = null)
     {
         var environment = Substitute.For<IEnvironment>();
         environment.SupportsLinks.Returns(true);
 
-        var options = fixture.CreateOptions();
+        options ??= fixture.CreateOptions();
         options.Value.TestUpgrade = true;
 
         var configurationLoader = Substitute.For<BumperConfigurationLoader>(
