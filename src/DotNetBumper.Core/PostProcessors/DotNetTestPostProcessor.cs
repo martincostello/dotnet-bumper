@@ -206,7 +206,7 @@ internal sealed partial class DotNetTestPostProcessor(
 
         if (configuration.NoWarn is { Count: > 0 } noWarn)
         {
-            propertiesOverrides = await GenerateDirectoryBuildPropsAsync(sdkVersion, noWarn, cancellationToken);
+            propertiesOverrides = await GenerateDirectoryBuildPropsAsync(project, sdkVersion, noWarn, cancellationToken);
             environmentVariables[WellKnownEnvironmentVariables.DirectoryBuildPropertiesPath] = propertiesOverrides.Path;
         }
 
@@ -246,6 +246,7 @@ internal sealed partial class DotNetTestPostProcessor(
     }
 
     private async Task<TemporaryFile> GenerateDirectoryBuildPropsAsync(
+        string projectPath,
         NuGetVersion sdkVersion,
         HashSet<string> suppressWarnings,
         CancellationToken cancellationToken)
@@ -255,7 +256,7 @@ internal sealed partial class DotNetTestPostProcessor(
         var noWarn = string.Join(";", suppressWarnings);
         var useArtifactsOutput = "false";
 
-        var existing = FileHelpers.FindFileInProject(Options.ProjectPath, WellKnownFileNames.DirectoryBuildProps);
+        var existing = FileHelpers.FindFileInProject(projectPath, WellKnownFileNames.DirectoryBuildProps);
 
         if (existing is not null)
         {
