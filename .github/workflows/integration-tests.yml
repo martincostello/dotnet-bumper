@@ -125,16 +125,6 @@ jobs:
       with:
         node-version: '24'
 
-    - name: Checkout ${{ format('{0}/{1}', github.repository_owner, matrix.repo) }}
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      with:
-        filter: 'tree:0'
-        persist-credentials: false
-        repository: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) }}
-        ref: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) == github.repository && github.ref || '' }}
-        show-progress: false
-        submodules: 'recursive'
-
     - name: Install .NET SDKs
       uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
       with:
@@ -146,27 +136,41 @@ jobs:
           10.0.x
           11.0.x
 
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
-
-    - name: Setup .NET SDK for .NET Bumper
-      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
-      with:
-        dotnet-version: ${{ needs.package.outputs.dotnet-sdk-version }}
-
     - name: Download packages
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         name: packages
         path: ./packages
 
+    - name: Setup .NET SDK for .NET Bumper
+      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+      with:
+        dotnet-version: ${{ needs.package.outputs.dotnet-sdk-version }}
+
     - name: Install .NET Bumper
+      shell: pwsh
+      run: |
+        dotnet tool install --global MartinCostello.DotNetBumper --add-source ./packages --prerelease
+
+    - name: Checkout ${{ format('{0}/{1}', github.repository_owner, matrix.repo) }}
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        filter: 'tree:0'
+        persist-credentials: false
+        repository: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) }}
+        ref: ${{ format('{0}/{1}', github.repository_owner, matrix.repo) == github.repository && github.ref || '' }}
+        show-progress: false
+        submodules: 'recursive'
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+
+    - name: Install .NET Outdated
       shell: pwsh
       env:
         DOTNET_OUTDATED_VERSION: ${{ needs.package.outputs.dotnet-outdated-version }}
       run: |
         dotnet tool install --global dotnet-outdated-tool --version ${env:DOTNET_OUTDATED_VERSION}
-        dotnet tool install --global MartinCostello.DotNetBumper --add-source ./packages --prerelease
 
     - name: Generate .NET Bumper config
       id: generate-config
