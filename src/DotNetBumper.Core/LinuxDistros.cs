@@ -15,7 +15,8 @@ internal static class LinuxDistros
         return channel.Major switch
         {
             8 => TryUpdateDistro(distro, DebianCodeNames, ["jammy", "noble"], ["19", "20"], updateMariner2: false),
-            9 or 10 => TryUpdateDistro(distro, DebianCodeNames, ["noble"], ["20"], updateMariner2: true),
+            9 => TryUpdateDistro(distro, DebianCodeNames, ["noble"], ["20"], updateMariner2: true),
+            10 => TryUpdateDistro(distro, DebianCodeNames, ["noble", "resolute"], ["20"], updateMariner2: true),
             _ => TryUpdateDistro(distro, DebianCodeNames, ["resolute"], ["20"], updateMariner2: true), // Latest known versions as of .NET 11 preview 1
         };
 
