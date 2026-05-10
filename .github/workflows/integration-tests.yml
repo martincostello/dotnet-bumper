@@ -22,7 +22,7 @@ env:
 
 jobs:
   package:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     permissions:
       contents: read
@@ -66,7 +66,7 @@ jobs:
 
   test:
     needs: [ package ]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     strategy:
@@ -237,7 +237,7 @@ jobs:
     if: ${{ !cancelled() }}
     env:
       TESTS_SUCCESS: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - run: |
         if [ "$TESTS_SUCCESS" == "true" ]
