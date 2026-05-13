@@ -95,7 +95,7 @@ internal sealed class Project : IDisposable
         [
             "Microsoft.NET.Test.Sdk",
             "xunit.runner.visualstudio",
-            "xunit.v3.mtp-v2",
+            "xunit.v3.mtp-off",
         ];
 
         foreach (var id in testPackages.Where((p) => packageReferences is null || !packageReferences.Any((r) => r.Key == p)))
@@ -319,7 +319,7 @@ internal sealed class Project : IDisposable
 
     public void Dispose() => _directory.Dispose();
 
-    private static string CreateGlobalJson(string sdkVersion)
+    private static string CreateGlobalJson(string sdkVersion, bool useMtp = false)
     {
         var globalJson = new JsonObject()
         {
@@ -327,11 +327,15 @@ internal sealed class Project : IDisposable
             {
                 ["version"] = sdkVersion,
             },
-            ["test"] = new JsonObject()
+        };
+
+        if (useMtp)
+        {
+            globalJson["test"] = new JsonObject()
             {
                 ["runner"] = "Microsoft.Testing.Platform",
-            },
-        };
+            };
+        }
 
         return globalJson.PrettyPrint();
     }
