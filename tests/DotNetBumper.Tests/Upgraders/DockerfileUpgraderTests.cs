@@ -321,7 +321,6 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-sdk", "11.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:11.0-resolute AS dotnet-sdk");
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-sdk", "11.0", DotNetSupportPhase.Preview, true, "FROM mcr.microsoft.com/dotnet/sdk:11.0-preview-resolute AS dotnet-sdk");
         testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-sdk", "11.0", DotNetSupportPhase.GoLive, true, "FROM mcr.microsoft.com/dotnet/sdk:11.0-resolute AS dotnet-sdk");
-        testCases.Add("FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-sdk", "11.0", DotNetSupportPhase.Active, true, "FROM mcr.microsoft.com/dotnet/sdk:11.0-resolute AS dotnet-sdk");
 
         testCases.Add("FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:6.0-jammy-chiseled-extra", "8.0", DotNetSupportPhase.Active, true, "FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra");
         testCases.Add("FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:6.0-jammy-chiseled-extra", "9.0", DotNetSupportPhase.Active, true, "FROM docker-virtual.custom-domain.com/dotnet/runtime-deps:9.0-noble-chiseled-extra");
