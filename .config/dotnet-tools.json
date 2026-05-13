@@ -9,6 +9,13 @@
       ],
       "rollForward": true
     },
+    "dotnet-reportgenerator-globaltool": {
+      "version": "5.5.10",
+      "commands": [
+        "reportgenerator"
+      ],
+      "rollForward": false
+    },
     "dotnet-validate": {
       "version": "0.0.1-preview.582",
       "commands": [
