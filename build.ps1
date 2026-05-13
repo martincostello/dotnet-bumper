@@ -182,7 +182,7 @@ if (-Not $SkipTests) {
     $testProjects = @(
         (Join-Path $solutionPath "tests" "DotNetBumper.Tests" "DotNetBumper.Tests.csproj")
     )
-    
+
     Write-Information "Testing $($testProjects.Count) project(s)..."
     ForEach ($project in $testProjects) {
         DotNetTest $project

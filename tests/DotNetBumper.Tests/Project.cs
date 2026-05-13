@@ -327,6 +327,10 @@ internal sealed class Project : IDisposable
             {
                 ["version"] = sdkVersion,
             },
+            ["test"] = new JsonObject()
+            {
+                ["runner"] = "Microsoft.Testing.Platform",
+            },
         };
 
         return globalJson.PrettyPrint();
