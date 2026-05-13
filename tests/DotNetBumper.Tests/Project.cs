@@ -95,7 +95,7 @@ internal sealed class Project : IDisposable
         [
             "Microsoft.NET.Test.Sdk",
             "xunit.runner.visualstudio",
-            "xunit.v3.mtp-off",
+            "xunit.v3.mtp-v2",
         ];
 
         foreach (var id in testPackages.Where((p) => packageReferences is null || !packageReferences.Any((r) => r.Key == p)))
