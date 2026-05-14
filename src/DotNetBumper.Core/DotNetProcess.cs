@@ -163,6 +163,7 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         {
             EnvironmentVariables =
             {
+                [WellKnownEnvironmentVariables.DotNetCliTelemetryOptOut] = "true",
                 [WellKnownEnvironmentVariables.DotNetNoLogo] = "true",
                 [WellKnownEnvironmentVariables.DotNetRollForward] = "Minor",
                 [BumperBuildLogger.LoggerFilePathVariableName] = customLoggerFileName,
