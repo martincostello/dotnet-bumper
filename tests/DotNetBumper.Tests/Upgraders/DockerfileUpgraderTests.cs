@@ -532,16 +532,16 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         if (await IsDockerInstalledAsync(fixture.CancellationToken))
         {
-            using var process = Process.Start(new ProcessStartInfo("docker", ["build", "."])
+            var startInfo = new ProcessStartInfo("docker", ["build", "."])
             {
                 WorkingDirectory = fixture.Project.DirectoryName,
-            })!;
+            };
 
             // Act
-            await process.WaitForExitAsync(fixture.CancellationToken);
+            var result = await Process.RunAsync(startInfo, fixture.CancellationToken);
 
             // Assert
-            process.ExitCode.ShouldBe(0);
+            result.ExitCode.ShouldBe(0);
         }
     }
 
