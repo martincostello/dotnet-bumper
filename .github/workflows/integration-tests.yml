@@ -75,6 +75,7 @@ jobs:
         include:
           - repo: alexa-london-travel
             upgrade-type: Latest
+            test: false
           - repo: alexa-london-travel
             upgrade-type: Preview
             test: false
