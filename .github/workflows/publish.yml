@@ -39,13 +39,14 @@ jobs:
 
     permissions:
       attestations: read
+      contents: read
       id-token: write
 
     steps:
 
     - name: Download files from release
       env:
-        GH_TOKEN: ${{ secrets.COSTELLOBOT_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release download "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}"
 
@@ -70,13 +71,13 @@ jobs:
     - name: Get .NET SDK version
       id: get-dotnet-sdk-version
       env:
-        GH_TOKEN: ${{ secrets.COSTELLOBOT_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         dotnet_sdk_version="$(gh api -H "Accept: application/vnd.github.v3.raw" "repos/${GITHUB_REPOSITORY}/contents/global.json?ref=${RELEASE_TAG}" | jq -r .sdk.version)"
         echo "dotnet-sdk-version=${dotnet_sdk_version}" >> "${GITHUB_OUTPUT}"
 
     - name: Setup .NET SDK
-      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+      uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5.3.0
       with:
         dotnet-version: ${{ steps.get-dotnet-sdk-version.outputs.dotnet-sdk-version }}
 
@@ -102,12 +103,18 @@ jobs:
       run: |
         dotnet nuget push "*.nupkg" --api-key "${API_KEY}" --skip-duplicate --source "${SOURCE}" && echo "::notice title=nuget.org::Published version ${PACKAGE_VERSION} to NuGet.org."
 
+    - name: Get GitHub token
+      id: get-github-token
+      uses: martincostello/github-automation/actions/get-github-token@36f156b090e9259937ebf5151c165ddb1fcf6eac # get-github-token/v4.3.0
+      with:
+        profile-name: publish
+
     - name: Publish nuget_packages_published
       uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
       with:
         event-type: nuget_packages_published
         repository: ${{ github.repository_owner }}/github-automation
-        token: ${{ secrets.COSTELLOBOT_TOKEN }}
+        token: ${{ steps.get-github-token.outputs.token }}
         client-payload: |-
           {
             "repository": "${{ github.repository }}",

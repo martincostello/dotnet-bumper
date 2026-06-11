@@ -18,22 +18,36 @@ permissions: {}
 
 jobs:
   release:
-    runs-on: [ ubuntu-24.04 ]
+    runs-on: ubuntu-24.04
+    if: github.event.repository.fork == false
 
     concurrency:
       group: ${{ github.workflow }}
       cancel-in-progress: false
 
+    environment:
+      name: release
+      deployment: false
+
+    permissions:
+      id-token: write
+
     steps:
 
+      - name: Get GitHub token
+        id: get-github-token
+        uses: martincostello/github-automation/actions/get-github-token@36f156b090e9259937ebf5151c165ddb1fcf6eac # get-github-token/v4.3.0
+        with:
+          profile-name: tag
+
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
-          persist-credentials: true # zizmor: ignore[artipacked] Needed to push commits
+          persist-credentials: true # zizmor: ignore[artipacked] Needed to push tag
           ref: ${{ github.event.inputs.branch || github.event.repository.default_branch }}
           show-progress: false
-          token: ${{ secrets.COSTELLOBOT_TOKEN }}
+          token: ${{ steps.get-github-token.outputs.token }}
 
       - name: Get version
         id: get-version
@@ -89,4 +103,4 @@ jobs:
           VERSION: ${{ steps.get-version.outputs.version }}
         run: |
           TAG="v${VERSION}"
-          git tag "${TAG}" -m "Release ${TAG}" && git push origin "refs/tags/$TAG"
+          git tag "${TAG}" -m "Release ${TAG}" && git push origin "refs/tags/${TAG}"
