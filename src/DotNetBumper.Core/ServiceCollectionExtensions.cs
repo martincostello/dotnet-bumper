@@ -77,6 +77,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IUpgrader, DotNetCodeUpgrader>();
         services.AddSingleton<IUpgrader, GitHubActionsUpgrader>();
         services.AddSingleton<IUpgrader, GlobalJsonUpgrader>();
+        services.AddSingleton<IUpgrader, MicrosoftTestingPlatformUpgrader>();
         services.AddSingleton<IUpgrader, NuGetConfigUpgrader>();
         services.AddSingleton<IUpgrader, PackageVersionUpgrader>();
         services.AddSingleton<IUpgrader, PowerShellScriptUpgrader>();

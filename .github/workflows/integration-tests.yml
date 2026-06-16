@@ -75,30 +75,23 @@ jobs:
         include:
           - repo: alexa-london-travel
             upgrade-type: Latest
-            test: false
           - repo: alexa-london-travel
             upgrade-type: Preview
-            test: false
           - repo: alexa-london-travel-site
             upgrade-type: Latest
           - repo: alexa-london-travel-site
-            test: false
             upgrade-type: Preview
-            warnings-as-errors: false
           - repo: apple-fitness-workout-mapper
             upgrade-type: Latest
           - repo: apple-fitness-workout-mapper
-            test: false
             upgrade-type: Preview
           - repo: costellobot
             upgrade-type: Latest
           - repo: costellobot
-            test: false
             upgrade-type: Preview
           - repo: dotnet-bumper
             upgrade-type: Latest
           - repo: dotnet-bumper
-            test: false
             upgrade-type: Preview
           - repo: dotnet-bumper-test
             upgrade-type: Latest

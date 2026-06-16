@@ -129,6 +129,48 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
         actual.ShouldBe(ProcessingResult.Success);
     }
 
+    [Fact]
+    public async Task PostProcessAsync_Succeeds_For_Microsoft_Testing_Platform_With_Trx_Report()
+    {
+        // Arrange
+        var upgrade = await GetUpgradeAsync("10.0");
+
+        using var fixture = await CreateFixtureAsync(upgrade, useMtp: true, useTrxReport: true);
+
+        var target = CreateTarget(fixture);
+
+        using var cts = new CancellationTokenSource(Timeout);
+
+        // Act
+        var actual = await target.PostProcessAsync(upgrade, cts.Token);
+
+        // Assert
+        actual.ShouldBe(ProcessingResult.Success);
+
+        // The results should have been read from the TRX report
+        fixture.LogContext.TestLogs.ShouldNotBeNull();
+        fixture.LogContext.TestLogs.Summary.Values.Sum((p) => p.Values.Sum()).ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task PostProcessAsync_Succeeds_For_Microsoft_Testing_Platform_Without_Trx_Report()
+    {
+        // Arrange
+        var upgrade = await GetUpgradeAsync("10.0");
+
+        using var fixture = await CreateFixtureAsync(upgrade, useMtp: true);
+
+        var target = CreateTarget(fixture);
+
+        using var cts = new CancellationTokenSource(Timeout);
+
+        // Act
+        var actual = await target.PostProcessAsync(upgrade, cts.Token);
+
+        // Assert - success is determined by the exit code when no TRX report is available
+        actual.ShouldBe(ProcessingResult.Success);
+    }
+
     private static DotNetTestPostProcessor CreateTarget(
         UpgraderFixture fixture,
         IOptions<UpgradeOptions>? options = null)
@@ -177,7 +219,10 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
         return upgrade;
     }
 
-    private async Task<UpgraderFixture> CreateFixtureAsync(UpgradeInfo upgrade)
+    private async Task<UpgraderFixture> CreateFixtureAsync(
+        UpgradeInfo upgrade,
+        bool useMtp = false,
+        bool useTrxReport = false)
     {
         var fixture = new UpgraderFixture(outputHelper);
 
@@ -188,9 +233,13 @@ public class DotNetTestPostProcessorTests(ITestOutputHelper outputHelper)
             await fixture.Project.AddGitIgnoreAsync();
 
             await fixture.Project.AddApplicationProjectAsync(targetFrameworks);
-            await fixture.Project.AddGlobalJsonAsync(upgrade.SdkVersion.ToString());
+            await fixture.Project.AddGlobalJsonAsync(upgrade.SdkVersion.ToString(), useMtp: useMtp);
 
-            await fixture.Project.AddTestProjectAsync(targetFrameworks);
+            await fixture.Project.AddTestProjectAsync(
+                targetFrameworks,
+                useMtp: useMtp,
+                useTrxReport: useTrxReport);
+
             await fixture.Project.AddUnitTestsAsync();
 
             return fixture;
