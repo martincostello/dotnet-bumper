@@ -14,6 +14,7 @@ permissions: {}
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
   DOTNET_NOLOGO: true
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
   FORCE_COLOR: 3
@@ -75,10 +76,8 @@ jobs:
         include:
           - repo: alexa-london-travel
             upgrade-type: Latest
-            test: false
           - repo: alexa-london-travel
             upgrade-type: Preview
-            test: false
           - repo: alexa-london-travel-site
             upgrade-type: Latest
           - repo: alexa-london-travel-site
@@ -88,7 +87,6 @@ jobs:
           - repo: apple-fitness-workout-mapper
             upgrade-type: Latest
           - repo: apple-fitness-workout-mapper
-            test: false
             upgrade-type: Preview
           - repo: costellobot
             upgrade-type: Latest

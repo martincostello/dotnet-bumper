@@ -61,9 +61,9 @@ internal sealed class Project : IDisposable
         Directory.CreateDirectory(Path.Combine(DirectoryName, ".git"));
     }
 
-    public async Task<string> AddGlobalJsonAsync(string sdkVersion, string path = "global.json")
+    public async Task<string> AddGlobalJsonAsync(string sdkVersion, string path = "global.json", bool useMtp = false)
     {
-        var globalJson = CreateGlobalJson(sdkVersion);
+        var globalJson = CreateGlobalJson(sdkVersion, useMtp);
         return await AddFileAsync(path, globalJson);
     }
 
@@ -80,7 +80,9 @@ internal sealed class Project : IDisposable
         ICollection<KeyValuePair<string, string>>? packageReferences = default,
         ICollection<string>? projectReferences = default,
         string path = "tests/Project.Tests/Project.Tests.csproj",
-        ICollection<KeyValuePair<string, string>>? properties = default)
+        ICollection<KeyValuePair<string, string>>? properties = default,
+        bool useMtp = false,
+        bool useTrxReport = false)
     {
         packageReferences ??= [];
 
@@ -91,12 +93,18 @@ internal sealed class Project : IDisposable
             KeyValuePair.Create("OutputType", "Exe"),
         ];
 
-        string[] testPackages =
+        // "xunit.v3.mtp-off" uses VSTest, whereas "xunit.v3.mtp-v2" uses Microsoft Testing Platform.
+        List<string> testPackages =
         [
             "Microsoft.NET.Test.Sdk",
             "xunit.runner.visualstudio",
-            "xunit.v3.mtp-off",
+            useMtp ? "xunit.v3.mtp-v2" : "xunit.v3.mtp-off",
         ];
+
+        if (useTrxReport)
+        {
+            testPackages.Add("Microsoft.Testing.Extensions.TrxReport");
+        }
 
         foreach (var id in testPackages.Where((p) => packageReferences is null || !packageReferences.Any((r) => r.Key == p)))
         {

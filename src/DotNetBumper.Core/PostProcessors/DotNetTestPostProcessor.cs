@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Martin Costello, 2024. All rights reserved.
 // Licensed under the Apache 2.0 license. See the LICENSE file in the project root for full license information.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using MartinCostello.DotNetBumper.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -132,6 +134,55 @@ internal sealed partial class DotNetTestPostProcessor(
         }
     }
 
+    private static bool UsesMicrosoftTestingPlatformRunner(string projectDirectory)
+    {
+        var globalJson = FileHelpers.FindFileInProject(projectDirectory, WellKnownFileNames.GlobalJson);
+
+        if (globalJson is null)
+        {
+            return false;
+        }
+
+        try
+        {
+            if (JsonHelpers.TryLoadObject(globalJson, out var root) &&
+                root.TryGetPropertyValue("test", out var test) &&
+                test is JsonObject testObject &&
+                testObject.TryGetPropertyValue("runner", out var runner) &&
+                runner is JsonValue value &&
+                value.GetValueKind() is JsonValueKind.String &&
+                string.Equals(value.GetValue<string>(), "Microsoft.Testing.Platform", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        catch (Exception)
+        {
+            // Ignore malformed global.json file
+        }
+
+        return false;
+    }
+
+    private static List<string> ResolveProjectFiles(string projectDirectory)
+    {
+        var projectFiles = new List<string>();
+
+        foreach (var file in ProjectHelpers.FindProjectFiles(projectDirectory, SearchOption.TopDirectoryOnly))
+        {
+            if (Path.GetExtension(file) is ".sln" or ".slnx")
+            {
+                projectFiles.AddRange(ProjectHelpers.GetSolutionProjects(file));
+            }
+            else
+            {
+                projectFiles.Add(file);
+            }
+        }
+
+        return projectFiles;
+    }
+
     private async Task<DotNetResult> RunTestsAsync(
         List<string> projects,
         NuGetVersion sdkVersion,
@@ -182,12 +233,8 @@ internal sealed partial class DotNetTestPostProcessor(
         BumperConfiguration configuration,
         CancellationToken cancellationToken)
     {
-        using var adapterDirectory = GetTestAdapter();
-        using var logsDirectory = new TemporaryDirectory();
-
         var environmentVariables = new Dictionary<string, string?>()
         {
-            [BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path,
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
         };
 
@@ -210,6 +257,33 @@ internal sealed partial class DotNetTestPostProcessor(
             environmentVariables[WellKnownEnvironmentVariables.DirectoryBuildPropertiesPath] = propertiesOverrides.Path;
         }
 
+        try
+        {
+            // The custom VSTest logger cannot be used with Microsoft Testing Platform (MTP),
+            // so when MTP is in use the tests are run differently and the results captured from
+            // a TRX report instead (if the relevant extension is available to the project).
+            var platform = await DetectTestPlatformAsync(project, cancellationToken);
+
+            return platform is TestPlatform.MicrosoftTestingPlatform
+                ? await RunTestsWithTestingPlatformAsync(project, environmentVariables, cancellationToken)
+                : await RunTestsWithVSTestAsync(project, environmentVariables, cancellationToken);
+        }
+        finally
+        {
+            propertiesOverrides?.Dispose();
+        }
+    }
+
+    private async Task<DotNetResult> RunTestsWithVSTestAsync(
+        string project,
+        Dictionary<string, string?> environmentVariables,
+        CancellationToken cancellationToken)
+    {
+        using var adapterDirectory = GetTestAdapter();
+        using var logsDirectory = new TemporaryDirectory();
+
+        environmentVariables[BumperTestLogger.LoggerDirectoryPathVariableName] = logsDirectory.Path;
+
         string[] arguments =
         [
             "test",
@@ -224,25 +298,200 @@ internal sealed partial class DotNetTestPostProcessor(
             Logger.GetMSBuildVerbosity(),
         ];
 
-        DotNetResult result;
-
-        try
-        {
-            // See https://learn.microsoft.com/dotnet/core/tools/dotnet-test
-            result = await dotnet.RunWithLoggerAsync(
-                project,
-                arguments,
-                environmentVariables,
-                cancellationToken);
-        }
-        finally
-        {
-            propertiesOverrides?.Dispose();
-        }
+        // See https://learn.microsoft.com/dotnet/core/tools/dotnet-test
+        var result = await dotnet.RunWithLoggerAsync(
+            project,
+            arguments,
+            environmentVariables,
+            cancellationToken);
 
         result.TestLogs = await LogReader.GetTestLogsAsync(logsDirectory.Path, Logger, cancellationToken);
 
         return result;
+    }
+
+    private async Task<DotNetResult> RunTestsWithTestingPlatformAsync(
+        string project,
+        Dictionary<string, string?> environmentVariables,
+        CancellationToken cancellationToken)
+    {
+        // The custom MSBuild logger used to capture build errors and warnings cannot be passed to
+        // "dotnet test" when Microsoft Testing Platform is in use, so build the project separately
+        // first (which the logger does support) and then run the already-built tests.
+        // See https://learn.microsoft.com/dotnet/core/testing/unit-testing-with-dotnet-test.
+        string[] buildArguments =
+        [
+            "build",
+            "--configuration",
+            "Release",
+            "--verbosity",
+            Logger.GetMSBuildVerbosity(),
+        ];
+
+        var buildResult = await dotnet.RunWithLoggerAsync(
+            project,
+            buildArguments,
+            environmentVariables,
+            cancellationToken);
+
+        if (!buildResult.Success)
+        {
+            return buildResult;
+        }
+
+        // Unlike VSTest, "dotnet test" with Microsoft Testing Platform fails if it is run for a
+        // project that is not a test project (such as an application project), so there is nothing
+        // more to do in that case as the test projects that reference it have now been built too.
+        // This is determined after the build so that the relevant MSBuild properties are available.
+        if (!await IsTestProjectAsync(project, cancellationToken))
+        {
+            return buildResult;
+        }
+
+        bool supportsTrx = await SupportsTrxReportAsync(project, cancellationToken);
+
+        using var resultsDirectory = new TemporaryDirectory();
+
+        List<string> testArguments =
+        [
+            "test",
+            "--no-build",
+            "--configuration",
+            "Release",
+        ];
+
+        if (supportsTrx)
+        {
+            // The results directory is an argument to "dotnet test" itself, whereas arguments after
+            // "--" are forwarded to the test application, which produces a TRX report in that
+            // directory which the test results are then read from.
+            testArguments.Add("--results-directory");
+            testArguments.Add(resultsDirectory.Path);
+            testArguments.Add("--");
+            testArguments.Add("--report-trx");
+        }
+
+        var result = await dotnet.RunAsync(
+            project,
+            testArguments,
+            environmentVariables,
+            cancellationToken);
+
+        result.BuildLogs = buildResult.BuildLogs;
+
+        if (supportsTrx)
+        {
+            result.TestLogs = await LogReader.GetTestLogsFromTrxAsync(resultsDirectory.Path, Logger, cancellationToken);
+        }
+
+        return result;
+    }
+
+    private async Task<TestPlatform> DetectTestPlatformAsync(
+        string projectDirectory,
+        CancellationToken cancellationToken)
+    {
+        if (UsesMicrosoftTestingPlatformRunner(projectDirectory))
+        {
+            return TestPlatform.MicrosoftTestingPlatform;
+        }
+
+        foreach (var projectFile in ResolveProjectFiles(projectDirectory))
+        {
+            var value = await EvaluateMSBuildPropertyAsync(
+                projectFile,
+                "TestingPlatformDotnetTestSupport",
+                cancellationToken);
+
+            if (string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+                return TestPlatform.MicrosoftTestingPlatform;
+            }
+        }
+
+        return TestPlatform.VSTest;
+    }
+
+    private async Task<bool> IsTestProjectAsync(
+        string projectDirectory,
+        CancellationToken cancellationToken)
+    {
+        foreach (var projectFile in ResolveProjectFiles(projectDirectory))
+        {
+            var isTestProject = await EvaluateMSBuildPropertyAsync(projectFile, "IsTestProject", cancellationToken);
+            var isTestingPlatformApplication = await EvaluateMSBuildPropertyAsync(projectFile, "IsTestingPlatformApplication", cancellationToken);
+
+            if (string.Equals(isTestProject, bool.TrueString, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(isTestingPlatformApplication, bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private async Task<bool> SupportsTrxReportAsync(
+        string projectDirectory,
+        CancellationToken cancellationToken)
+    {
+        const string TrxReportPackage = "Microsoft.Testing.Extensions.TrxReport";
+
+        foreach (var projectFile in ResolveProjectFiles(projectDirectory))
+        {
+            var packages = await EvaluateMSBuildItemsAsync(projectFile, "PackageReference", cancellationToken);
+
+            if (packages.Any((p) => string.Equals(p, TrxReportPackage, StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private async Task<IReadOnlyList<string>> EvaluateMSBuildItemsAsync(
+        string projectFile,
+        string itemType,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var getItem = await dotnet.RunAsync(
+                Options.ProjectPath,
+                ["msbuild", projectFile, $"-getItem:{itemType}"],
+                cancellationToken);
+
+            if (getItem.Success && !string.IsNullOrWhiteSpace(getItem.StandardOutput))
+            {
+                using var document = JsonDocument.Parse(getItem.StandardOutput);
+
+                if (document.RootElement.TryGetProperty("Items", out var items) &&
+                    items.TryGetProperty(itemType, out var values) &&
+                    values.ValueKind is JsonValueKind.Array)
+                {
+                    var identities = new List<string>(values.GetArrayLength());
+
+                    foreach (var value in values.EnumerateArray())
+                    {
+                        if (value.TryGetProperty("Identity", out var identity) &&
+                            identity.ValueKind is JsonValueKind.String &&
+                            identity.GetString() is { Length: > 0 } id)
+                        {
+                            identities.Add(id);
+                        }
+                    }
+
+                    return identities;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.FailedToEvaluateItems(Logger, itemType, projectFile, ex);
+        }
+
+        return [];
     }
 
     private async Task<TemporaryFile> GenerateDirectoryBuildPropsAsync(
@@ -450,5 +699,11 @@ internal sealed partial class DotNetTestPostProcessor(
             Level = LogLevel.Debug,
             Message = "Test {Container}.{Id} failed: {ErrorMessage}")]
         public static partial void TestFailed(ILogger logger, string container, string? id, string? errorMessage);
+
+        [LoggerMessage(
+            EventId = 3,
+            Level = LogLevel.Debug,
+            Message = "Failed to evaluate the {ItemType} MSBuild items from {ProjectFile}.")]
+        public static partial void FailedToEvaluateItems(ILogger logger, string itemType, string projectFile, Exception exception);
     }
 }
