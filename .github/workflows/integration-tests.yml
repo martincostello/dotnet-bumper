@@ -111,6 +111,8 @@ jobs:
             upgrade-type: Latest
           - repo: website
             upgrade-type: Preview
+            test: true
+            warnings-as-errors: true
 
     steps:
 
