@@ -80,18 +80,21 @@ jobs:
           - repo: alexa-london-travel-site
             upgrade-type: Latest
           - repo: alexa-london-travel-site
+            test: false
             upgrade-type: Preview
           - repo: apple-fitness-workout-mapper
             upgrade-type: Latest
           - repo: apple-fitness-workout-mapper
             upgrade-type: Preview
           - repo: costellobot
+            test: false
             upgrade-type: Latest
           - repo: costellobot
             upgrade-type: Preview
           - repo: dotnet-bumper
             upgrade-type: Latest
           - repo: dotnet-bumper
+            test: false
             upgrade-type: Preview
           - repo: dotnet-bumper-test
             upgrade-type: Latest
