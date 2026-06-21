@@ -329,23 +329,14 @@ internal sealed class Project : IDisposable
 
     private static string CreateGlobalJson(string sdkVersion, bool useMtp = false)
     {
-        var globalJson = new JsonObject()
-        {
-            ["sdk"] = new JsonObject()
-            {
-                ["version"] = sdkVersion,
-            },
-        };
+        var creator = GlobalJsonCreator.Create().SdkVersion(sdkVersion);
 
         if (useMtp)
         {
-            globalJson["test"] = new JsonObject()
-            {
-                ["runner"] = "Microsoft.Testing.Platform",
-            };
+            creator.TestRunner("Microsoft.Testing.Platform");
         }
 
-        return globalJson.PrettyPrint();
+        return creator.ToJson();
     }
 
     private static ProjectCreator CreateProject(
