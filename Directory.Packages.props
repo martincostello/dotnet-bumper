@@ -23,7 +23,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.9" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
     <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.9.0" />
-    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.3.1" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.3.2" />
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.7.0" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="19.1.4" />
     <PackageVersion Include="NSubstitute" Version="6.0.0" />
