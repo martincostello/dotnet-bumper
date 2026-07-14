@@ -109,7 +109,7 @@ internal sealed partial class DotNetInstaller(HttpClient httpClient, ILogger log
         {
             // Make the script executable
 #if NET11_0_OR_GREATER
-            _ = await Process.RunAsync("chmod", ["+x", scriptPath], cancellationToken);
+            _ = await Process.RunAsync("chmod", ["+x", scriptPath], cancellationToken: cancellationToken);
 #else
             using var chmod = Process.Start("chmod", ["+x", scriptPath]);
             if (chmod is not null)
