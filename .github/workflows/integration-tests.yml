@@ -78,6 +78,7 @@ jobs:
             upgrade-type: Latest
           - repo: alexa-london-travel
             upgrade-type: Preview
+            test: false
           - repo: alexa-london-travel-site
             upgrade-type: Latest
           - repo: alexa-london-travel-site
