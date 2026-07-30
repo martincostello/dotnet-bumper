@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/dotnet:latest@sha256:be5bd898d964c0d081cb22285c2318e488882103702c8831418fdd59218fd5dd
+FROM mcr.microsoft.com/devcontainers/dotnet:latest@sha256:0ad11caaa728e35cbc46b0592dd11ca0df8111e565a96471024a795f4d412c7c
 
 ARG INSTALL_NODE="true"
 ARG NODE_VERSION="lts/*"
