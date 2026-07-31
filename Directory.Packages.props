@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageVersion Include="GitHubActionsTestLogger" Version="3.0.5" />
     <PackageVersion Include="Ignore" Version="0.2.1" />
-    <PackageVersion Include="JustEat.HttpClientInterception" Version="5.1.2" />
+    <PackageVersion Include="JustEat.HttpClientInterception" Version="5.1.4" />
     <PackageVersion Include="MartinCostello.Logging.XUnit.v3" Version="0.7.1" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="5.1.0" />
     <PackageVersion Include="Microsoft.Build" Version="17.14.28" />
