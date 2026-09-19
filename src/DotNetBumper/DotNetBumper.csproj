@@ -8,7 +8,7 @@
     <PackageId>MartinCostello.DotNetBumper</PackageId>
     <RootNamespace>MartinCostello.DotNetBumper</RootNamespace>
     <RuntimeIdentifier>any</RuntimeIdentifier>
-    <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
     <Title>DotNetBumper</Title>
     <ToolCommandName>dotnet-bumper</ToolCommandName>
     <ToolType>agnostic</ToolType>
