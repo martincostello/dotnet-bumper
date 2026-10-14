@@ -32,6 +32,7 @@
     <PackageReference Update="System.Management.Automation" VersionOverride="[7.4.21,)" />
   </ItemGroup>
   <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
+    <PackageReference Update="Microsoft.Build" VersionOverride="[17.12.50,)" />
     <PackageReference Update="System.Management.Automation" VersionOverride="[7.5.12,)" />
   </ItemGroup>
   <ItemGroup>
