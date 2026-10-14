@@ -252,6 +252,9 @@ internal sealed partial class DotNetTestPostProcessor(
 
         TemporaryFile? propertiesOverrides = null;
 
+        configuration.NoWarn ??= [];
+        configuration.NoWarn.Add("NETSDK1138");
+
         if (configuration.NoWarn is { Count: > 0 } noWarn)
         {
             propertiesOverrides = await GenerateDirectoryBuildPropsAsync(project, sdkVersion, noWarn, cancellationToken);
