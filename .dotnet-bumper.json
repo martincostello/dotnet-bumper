@@ -4,7 +4,8 @@
     "System.Text.Json"
   ],
   "noWarn": [
-    "CA1515"
+    "CA1515",
+    "NETSDK1138"
   ],
   "remainingReferencesIgnore": [
     "docs/demo.yml",
