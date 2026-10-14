@@ -235,6 +235,7 @@ internal sealed partial class DotNetTestPostProcessor(
     {
         var environmentVariables = new Dictionary<string, string?>()
         {
+            [WellKnownEnvironmentVariables.CheckSdkVulnerabilities] = "false",
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
         };
 
