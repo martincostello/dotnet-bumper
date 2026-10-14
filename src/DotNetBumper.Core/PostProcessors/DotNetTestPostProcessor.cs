@@ -235,6 +235,7 @@ internal sealed partial class DotNetTestPostProcessor(
     {
         var environmentVariables = new Dictionary<string, string?>()
         {
+            [WellKnownEnvironmentVariables.CheckSdkVulnerabilities] = "false",
             [WellKnownEnvironmentVariables.NuGetAudit] = "false",
         };
 
@@ -250,6 +251,9 @@ internal sealed partial class DotNetTestPostProcessor(
         MSBuildHelper.TryAddSdkProperties(environmentVariables, sdkVersion.ToString());
 
         TemporaryFile? propertiesOverrides = null;
+
+        configuration.NoWarn ??= [];
+        configuration.NoWarn.Add("NETSDK1138");
 
         if (configuration.NoWarn is { Count: > 0 } noWarn)
         {

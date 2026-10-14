@@ -8,6 +8,7 @@ namespace MartinCostello.DotNetBumper;
 /// </summary>
 internal static class WellKnownEnvironmentVariables
 {
+    internal const string CheckSdkVulnerabilities = "CheckSdkVulnerabilities";
     internal const string DirectoryBuildPropertiesPath = "DirectoryBuildPropsPath";
     internal const string DotNetCliTelemetryOptOut = "DOTNET_CLI_TELEMETRY_OPTOUT";
     internal const string DotNetNoLogo = "DOTNET_NOLOGO";
