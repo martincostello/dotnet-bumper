@@ -218,7 +218,11 @@ internal sealed partial class LeftoverReferencesPostProcessor(
 
                 foreach (var rule in await File.ReadAllLinesAsync(gitignore, cancellationToken))
                 {
+#if NET11_0_OR_GREATER
+                    if (!string.IsNullOrWhiteSpace(rule) && !rule.StartsWith('#', StringComparison.Ordinal))
+#else
                     if (!string.IsNullOrWhiteSpace(rule) && !rule.StartsWith('#'))
+#endif
                     {
                         ignore.Add(rule);
                     }
