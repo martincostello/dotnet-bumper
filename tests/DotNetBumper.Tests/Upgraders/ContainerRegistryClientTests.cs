@@ -17,9 +17,8 @@ public class ContainerRegistryClientTests(ITestOutputHelper outputHelper)
     {
         // Arrange
         var cancellationToken = TestContext.Current.CancellationToken;
-        using var client = new HttpClient();
+        using var client = ResilientHttpClient.Create();
 
-        // Arrange
         var logger = outputHelper.ToLogger<ContainerRegistryClient>();
         var target = new ContainerRegistryClient(client, ContainerDigestCache.Instance, logger);
 
