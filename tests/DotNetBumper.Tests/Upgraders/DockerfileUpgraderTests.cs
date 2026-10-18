@@ -351,7 +351,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         var channelVersion = Version.Parse(channel);
 
-        using var httpClient = new HttpClient();
+        using var httpClient = ResilientHttpClient.Create();
         var registryClient = new ContainerRegistryClient(
             httpClient,
             ContainerDigestCache.Instance,
@@ -495,7 +495,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = supportPhase,
         };
 
-        using var httpClient = new HttpClient();
+        using var httpClient = ResilientHttpClient.Create();
         var target = CreateTarget(fixture, httpClient);
 
         // Act

@@ -561,7 +561,11 @@ internal sealed partial class DotNetTestPostProcessor(
 
             if (getProperty.Success)
             {
-                return getProperty.StandardOutput.Trim();
+                var value = getProperty.StandardOutput.Trim();
+
+                Log.EvaluatedProperty(Logger, propertyName, projectPath, value);
+
+                return value;
             }
         }
         catch (Exception ex)
@@ -709,5 +713,11 @@ internal sealed partial class DotNetTestPostProcessor(
             Level = LogLevel.Debug,
             Message = "Failed to evaluate the {ItemType} MSBuild items from {ProjectFile}.")]
         public static partial void FailedToEvaluateItems(ILogger logger, string itemType, string projectFile, Exception exception);
+
+        [LoggerMessage(
+            EventId = 4,
+            Level = LogLevel.Debug,
+            Message = "Evaluated the value of the {PropertyName} MSBuild property from {ProjectFile} as \"{Value}\".")]
+        public static partial void EvaluatedProperty(ILogger logger, string propertyName, string projectFile, string value);
     }
 }
