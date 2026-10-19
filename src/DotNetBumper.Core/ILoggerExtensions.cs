@@ -7,11 +7,11 @@ namespace Microsoft.Extensions.Logging;
 internal static class ILoggerExtensions
 {
     public static string GetMSBuildVerbosity(this ILogger logger)
-        => logger.IsEnabled(LogLevel.Debug) ?
+        => logger.IsEnabled(LogLevel.Debug)
 #if DEBUG
-            "detailed" :
+            ? "detailed"
 #else
-            "normal" :
+            ? "normal"
 #endif
-            "minimal";
+            : "minimal";
 }

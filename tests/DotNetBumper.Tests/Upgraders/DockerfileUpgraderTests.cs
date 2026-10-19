@@ -351,7 +351,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
         // Arrange
         var channelVersion = Version.Parse(channel);
 
-        using var httpClient = new HttpClient();
+        using var httpClient = ResilientHttpClient.Create();
         var registryClient = new ContainerRegistryClient(
             httpClient,
             ContainerDigestCache.Instance,
@@ -441,10 +441,9 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Upgrades_Dockerfile_With_Digest(string channel)
     {
         // Arrange
-        var supportPhase =
-            await DotNetPreviewFixture.HasPreviewAsync() && await DotNetPreviewFixture.LatestChannelAsync() == channel ?
-            DotNetSupportPhase.Preview :
-            DotNetSupportPhase.Active;
+        var supportPhase = await DotNetPreviewFixture.HasPreviewAsync() && await DotNetPreviewFixture.LatestChannelAsync() == channel
+            ? DotNetSupportPhase.Preview
+            : DotNetSupportPhase.Active;
 
         var digest = "sha256:4763240791cd850c6803964c38ec22d88b259ac7c127b4ad1000a4fd41a08e01";
         var suffix = supportPhase is DotNetSupportPhase.Preview ? "-preview" : string.Empty;
@@ -495,7 +494,7 @@ public class DockerfileUpgraderTests(ITestOutputHelper outputHelper)
             SupportPhase = supportPhase,
         };
 
-        using var httpClient = new HttpClient();
+        using var httpClient = ResilientHttpClient.Create();
         var target = CreateTarget(fixture, httpClient);
 
         // Act
