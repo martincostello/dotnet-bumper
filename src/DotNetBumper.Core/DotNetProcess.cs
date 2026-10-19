@@ -27,17 +27,25 @@ public sealed partial class DotNetProcess(ILogger<DotNetProcess> logger)
         if (string.IsNullOrEmpty(dotnetRoot))
         {
             // See https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables
-            string[] candidates = OperatingSystem.IsWindows() ?
-            [
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
-            ]
-            :
-            [
-                "/usr/local/share/dotnet",
-                "/usr/share/dotnet",
-                "/usr/lib/dotnet",
-            ];
+            string[] candidates;
+
+            if (OperatingSystem.IsWindows())
+            {
+                candidates =
+                [
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet"),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet"),
+                ];
+            }
+            else
+            {
+                candidates =
+                [
+                    "/usr/local/share/dotnet",
+                    "/usr/share/dotnet",
+                    "/usr/lib/dotnet",
+                ];
+            }
 
             string? root = null;
 

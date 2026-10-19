@@ -26,7 +26,7 @@ internal sealed partial class AwsSamTemplateUpgrader(
         "*.json",
         "*.template",
         "*.yml",
-        "*.yaml"
+        "*.yaml",
     ];
 
     protected override async Task<ProcessingResult> UpgradeCoreAsync(
@@ -164,9 +164,9 @@ internal sealed partial class AwsSamTemplateUpgrader(
         string fileName,
         [NotNullWhen(true)] out SamTemplate? template)
     {
-        return TryLoadJsonObject(fileName, out _) ?
-            TryParseSamJsonTemplate(fileName, out template) :
-            TryParseSamYamlTemplate(fileName, out template);
+        return TryLoadJsonObject(fileName, out _)
+            ? TryParseSamJsonTemplate(fileName, out template)
+            : TryParseSamYamlTemplate(fileName, out template);
     }
 
     private bool TryParseSamJsonTemplate(
