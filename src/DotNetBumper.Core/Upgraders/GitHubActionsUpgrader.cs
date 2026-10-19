@@ -546,10 +546,9 @@ internal sealed partial class GitHubActionsUpgrader(
                     string feature = versionParts[^1];
 
                     // Treat "6.0.x" as "6.0.100", "6.0.1xx" as "6.0.100", "6.0.2x" as "6.0.200", etc.
-                    int currentFeature =
-                        feature == FloatingVersionString ?
-                        FeatureBandMultiplier :
-                        (feature[0] - '0') * FeatureBandMultiplier;
+                    int currentFeature = feature == FloatingVersionString
+                        ? FeatureBandMultiplier
+                        : (feature[0] - '0') * FeatureBandMultiplier;
 
                     currentVersion = new(majorMinor.Major, majorMinor.Minor, currentFeature);
 
@@ -601,10 +600,9 @@ internal sealed partial class GitHubActionsUpgrader(
             }
             else
             {
-                upgradedVersion =
-                    targetVersion.IsPrerelease && versionParts.Length is 3 ?
-                    targetVersion.ToString() : // Use the exact pre-release version
-                    targetVersion.Version.ToString(versionParts.Length); // Truncate the target version to how many version parts the original version specified
+                upgradedVersion = targetVersion.IsPrerelease && versionParts.Length is 3
+                    ? targetVersion.ToString() // Use the exact pre-release version
+                    : targetVersion.Version.ToString(versionParts.Length); // Truncate the target version to how many version parts the original version specified
             }
 
             upgradedVersion = prefix + upgradedVersion;

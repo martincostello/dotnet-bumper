@@ -32,10 +32,9 @@ internal sealed partial class DotNetInstaller(HttpClient httpClient, ILogger log
 
         var command = OperatingSystem.IsWindows() ? "powershell" : scriptPath;
 
-        string[] scriptArgs =
-            OperatingSystem.IsWindows() ?
-            ["-File", scriptPath, "-Version", version, "-InstallDir", installationPath, "-SkipNonVersionedFiles"] :
-            ["--version", version, "--install-dir", installationPath, "--skip-non-versioned-files"];
+        string[] scriptArgs = OperatingSystem.IsWindows()
+            ? ["-File", scriptPath, "-Version", version, "-InstallDir", installationPath, "-SkipNonVersionedFiles"]
+            : ["--version", version, "--install-dir", installationPath, "--skip-non-versioned-files"];
 
         var startInfo = new ProcessStartInfo(command, scriptArgs)
         {

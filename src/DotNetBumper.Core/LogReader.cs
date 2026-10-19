@@ -34,10 +34,9 @@ internal static partial class LogReader
                 {
                     foreach ((var container, var outcomes) in logs.Outcomes)
                     {
-                        result.Outcomes[container] =
-                            result.Outcomes.TryGetValue(container, out var existing) ?
-                            [.. existing, .. outcomes] :
-                            outcomes;
+                        result.Outcomes[container] = result.Outcomes.TryGetValue(container, out var existing)
+                            ? [.. existing, .. outcomes]
+                            : outcomes;
                     }
                 }
 
@@ -152,10 +151,9 @@ internal static partial class LogReader
 
             if (outcomes.Count > 0)
             {
-                result.Outcomes[container] =
-                    result.Outcomes.TryGetValue(container, out var existing) ?
-                    [.. existing, .. outcomes] :
-                    outcomes;
+                result.Outcomes[container] = result.Outcomes.TryGetValue(container, out var existing)
+                    ? [.. existing, .. outcomes]
+                    : outcomes;
             }
         }
 
