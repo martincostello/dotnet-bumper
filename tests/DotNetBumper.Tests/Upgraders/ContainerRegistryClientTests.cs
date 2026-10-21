@@ -16,6 +16,8 @@ public class ContainerRegistryClientTests(ITestOutputHelper outputHelper)
     public async Task Can_Get_Latest_Image_Digest(string image, string tag)
     {
         // Arrange
+        Assert.SkipWhen(IsPublicEcr(image) && IsGitHubActions(), "Avoid rate limiting in CI.");
+
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = ResilientHttpClient.Create();
 
@@ -56,6 +58,8 @@ public class ContainerRegistryClientTests(ITestOutputHelper outputHelper)
     public async Task Can_Get_Latest_Image_Digest_Using_Snapshot(string image, string tag, string expectedDigest)
     {
         // Arrange
+        Assert.SkipWhen(IsPublicEcr(image) && IsGitHubActions(), "Avoid rate limiting in CI.");
+
         var cancellationToken = TestContext.Current.CancellationToken;
 
         var options = new HttpClientInterceptorOptions().ThrowsOnMissingRegistration();
@@ -74,4 +78,8 @@ public class ContainerRegistryClientTests(ITestOutputHelper outputHelper)
         // Assert
         actual.ShouldBe(expectedDigest);
     }
+
+    private static bool IsPublicEcr(string image) => image.StartsWith("public.ecr.aws/", StringComparison.Ordinal);
+
+    private static bool IsGitHubActions() => Environment.GetEnvironmentVariable("GITHUB_ACTIONS") is "true";
 }
