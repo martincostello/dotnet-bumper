@@ -19,6 +19,15 @@ internal static class ProcessHelper
         TimeSpan drainTimeout,
         CancellationToken cancellationToken)
     {
+#if NET11_0_OR_GREATER
+        var result = await Process.RunAndCaptureTextAsync(startInfo, cancellationToken);
+
+        return new(
+            result.ExitStatus.ExitCode is 0,
+            result.ExitStatus.ExitCode,
+            result.StandardOutput,
+            result.StandardError);
+#else
         using var process = Process.Start(startInfo) ?? throw new InvalidOperationException($"Failed to start process for {startInfo.FileName}.");
 
         // The redirected streams are read concurrently with waiting for the process to exit to avoid a deadlock
@@ -68,7 +77,7 @@ internal static class ProcessHelper
         cancellationToken.ThrowIfCancellationRequested();
 
         return new ProcessResult(
-            process.ExitCode == 0,
+            process.ExitCode is 0,
             process.ExitCode,
             output.ToString(),
             error.ToString());
@@ -124,5 +133,6 @@ internal static class ProcessHelper
                 return _builder.ToString();
             }
         }
+#endif
     }
 }
