@@ -14,7 +14,7 @@ public class PackageVersionUpgraderTests(ITestOutputHelper outputHelper)
     public async Task UpgradeAsync_Does_Not_Include_Prerelease_Packages()
     {
         // Arrange
-        var channel = new Version(8, 0);
+        var channel = new Version(10, 0);
         string[] targetFrameworks = ["net6.0"];
 
         var upgrade = await GetUpgradeAsync(channel.ToString());
