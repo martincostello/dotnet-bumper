@@ -28,7 +28,7 @@
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="18.11.1" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="20.0.0" />
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
-    <PackageVersion Include="NuGet.Versioning" Version="7.9.0" />
+    <PackageVersion Include="NuGet.Versioning" Version="8.0.0" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Spectre.Console" Version="0.57.2" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.57.2" />
