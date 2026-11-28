@@ -6,7 +6,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/artifacts/bin/DotNetBumper/debug/DotNetBumper.dll",
+      "program": "${workspaceFolder}/artifacts/bin/DotNetBumper/debug_net11.0_any/DotNetBumper.dll",
       "args": [],
       "cwd": "${workspaceFolder}/src/DotNetBumper",
       "stopAtEntry": false,
